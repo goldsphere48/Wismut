@@ -1,0 +1,3 @@
+[submodule "Wismut/vendor/spdlog"]
+	path = Wismut/vendor/spdlog
+	url = https://github.com/gabime/spdlog
