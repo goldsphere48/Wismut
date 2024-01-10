@@ -17,7 +17,8 @@ links {
 }
 
 includedirs {
-	"%{wks.location}/Wismut/src"
+	"%{wks.location}/Wismut/src",
+	HeaderOnlyLibraries.spdlog
 }
 
 filter "configurations:Debug"

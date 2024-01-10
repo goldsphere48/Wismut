@@ -5,6 +5,9 @@ namespace Wi
 	class Application
 	{
 	public:
+		Application();
+		~Application();
+
 		void Run();
 	};
 }

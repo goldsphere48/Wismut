@@ -10,6 +10,7 @@ objdir("%{wks.location}/obj/%{prj.name}/" .. outputdir)
 files {
 	"src/**.cpp",
 	"src/**.h",
+	HeaderOnlyLibraries.spdlog
 }
 
 pchheader "wipch.h"
@@ -18,7 +19,8 @@ filter "action:vs*"
 	pchsource "src/wipch.cpp"
 
 includedirs {
-	"src/"
+	"src/",
+	HeaderOnlyLibraries.spdlog
 }
 
 filter "configurations:Debug"

@@ -1,10 +1,21 @@
 #include "wipch.h"
 #include "Application.h"
 
+#include "Logger.h"
+
 namespace Wi
 {
+	Application::Application()
+	{
+		Logger::Initialize();
+	}
+
+	Application::~Application()
+	{
+	}
+
 	void Application::Run()
 	{
-		std::cout << "Hello, world!" << std::endl;
+		WI_CORE_INFO("Starting application...")
 	}
 }
