@@ -8,14 +8,20 @@ namespace Wi
 	Application::Application()
 	{
 		Logger::Initialize();
+		WI_CORE_INFO("Initializing application...")
 	}
 
 	Application::~Application()
 	{
+		m_LayerStack.Destroy();
 	}
 
 	void Application::Run()
 	{
-		WI_CORE_INFO("Starting application...")
+		while(m_Running)
+		{
+			for (const auto layer : m_LayerStack)
+				layer->Update();
+		}
 	}
 }
