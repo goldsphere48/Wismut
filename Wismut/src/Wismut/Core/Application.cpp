@@ -9,6 +9,15 @@ namespace Wi
 	{
 		Logger::Initialize();
 		WI_CORE_INFO("Initializing application...")
+
+		const auto windowSpecification = WindowSpecification
+		{
+			.Title = "Wismut App",
+			.Width = 1280,
+			.Height = 720,
+		};
+
+		m_Window = Window::Create(windowSpecification);
 	}
 
 	Application::~Application()
@@ -20,8 +29,15 @@ namespace Wi
 	{
 		while(m_Running)
 		{
+			ProcessEvents();
+
 			for (const auto layer : m_LayerStack)
 				layer->Update();
 		}
+	}
+
+	void Application::ProcessEvents() const
+	{
+		m_Window->PollEvents();
 	}
 }

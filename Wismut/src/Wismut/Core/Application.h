@@ -1,5 +1,6 @@
 #pragma once
 #include "LayerStack.h"
+#include "Window.h"
 
 namespace Wi
 {
@@ -15,7 +16,11 @@ namespace Wi
 		void PushOverlay(Layer* layer) { m_LayerStack.PushOverlay(layer); }
 
 	private:
+		void ProcessEvents() const;
+
+	private:
 		LayerStack m_LayerStack;
+		std::shared_ptr<Window> m_Window;
 		bool m_Running = true;
 	};
 }
