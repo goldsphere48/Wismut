@@ -1,3 +1,5 @@
+#include "wipch.h"
+
 #include <Wismut.h>
 #include <Wismut/EntryPoint.h>
 

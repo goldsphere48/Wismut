@@ -12,6 +12,11 @@ files {
 	"src/**.h",
 }
 
+pchheader "wipch.h"
+
+filter "action:vs*"
+	pchsource "src/wipch.cpp"
+
 links {
 	"Wismut"
 }
