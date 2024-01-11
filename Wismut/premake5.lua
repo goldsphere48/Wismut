@@ -20,7 +20,12 @@ filter "action:vs*"
 
 includedirs {
 	"src/",
-	HeaderOnlyLibraries.spdlog
+	HeaderOnlyLibraries.spdlog,
+	IncludeDirs.glfw
+}
+
+links {
+	"GLFW"
 }
 
 filter "configurations:Debug"
@@ -35,3 +40,4 @@ filter "configurations:Release"
 
 filter "system:windows"
 	systemversion "latest"
+	defines "WI_PLATFORM_WIN"
