@@ -1,4 +1,5 @@
 #pragma once
+#include "Events/Event.h"
 
 namespace Wi
 {
@@ -7,8 +8,9 @@ namespace Wi
 	public:
 		virtual ~Layer() = default;
 
-		void virtual OnAttach() {}
-		void virtual OnDetach() {}
-		void virtual Update() {}
+		virtual void OnAttach() {}
+		virtual void OnDetach() {}
+		virtual bool OnEvent(Event& event) { return false; }
+		virtual void Update() {}
 	};
 }

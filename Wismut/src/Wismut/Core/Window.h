@@ -1,4 +1,5 @@
 #pragma once
+#include "Events/Event.h"
 
 namespace Wi
 {
@@ -8,6 +9,7 @@ namespace Wi
 		std::string Title;
 		int Width;
 		int Height;
+		EventCallback EventCallback;
 	};
 
 	class Window

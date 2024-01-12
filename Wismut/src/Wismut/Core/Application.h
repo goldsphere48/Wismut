@@ -1,6 +1,8 @@
 #pragma once
 #include "LayerStack.h"
 #include "Window.h"
+#include "Events/Event.h"
+#include "Events/WindowEvents.h"
 
 namespace Wi
 {
@@ -8,7 +10,7 @@ namespace Wi
 	{
 	public:
 		Application();
-		virtual ~Application();
+		virtual ~Application() = default;
 
 		void Run();
 
@@ -17,6 +19,9 @@ namespace Wi
 
 	private:
 		void ProcessEvents() const;
+		bool OnEvent(Event& event);
+		bool OnCloseEvent(WindowCloseEvent& event);
+		void OnShutdown();
 
 	private:
 		LayerStack m_LayerStack;
