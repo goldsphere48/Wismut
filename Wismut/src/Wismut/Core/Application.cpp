@@ -3,6 +3,7 @@
 
 #include "Input.h"
 #include "Logger.h"
+#include "Wismut/Renderer/Renderer.h"
 
 namespace Wi
 {
@@ -13,6 +14,7 @@ namespace Wi
 		WI_CORE_INFO("Initializing application...")
 
 		Input::Initialize();
+		Renderer::Initialize();
 
 		const auto windowSpecification = WindowSpecification
 		{
@@ -68,6 +70,7 @@ namespace Wi
 	void Application::OnShutdown()
 	{
 		m_Window->Destroy();
+		Renderer::Shutdown();
 		m_LayerStack.Destroy();
 	}
 }

@@ -21,22 +21,40 @@ filter "action:vs*"
 includedirs {
 	"src/",
 	HeaderOnlyLibraries.spdlog,
-	IncludeDirs.glfw
+	IncludeDirs.glfw,
+	IncludeDirs.Vulkan,
 }
 
 links {
-	"GLFW"
+	"GLFW",
+	Libraries.Vulkan
+}
+
+defines {
+	"VULKAN_HPP_NO_CONSTRUCTORS"
 }
 
 filter "configurations:Debug"
 	runtime "Debug"
 	symbols "On"
 	defines "WI_DEBUG"
+	links {
+		Libraries.SPRIV_Cross_Debug,
+		Libraries.SPRIV_Tools_Debug,
+		Libraries.SPRIV_Cross_GLSL_Debug,
+		Libraries.shaderc_combined_Debug
+	}
 
 filter "configurations:Release"
 	runtime "Release"
 	optimize "On"
 	defines "WI_RELEASE"
+	links {
+		Libraries.SPRIV_Cross_Release,
+		Libraries.SPRIV_Tools_Release,
+		Libraries.SPRIV_Cross_GLSL_Release,
+		Libraries.shaderc_combined_Release
+	}
 
 filter "system:windows"
 	systemversion "latest"
