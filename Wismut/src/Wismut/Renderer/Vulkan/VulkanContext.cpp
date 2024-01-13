@@ -86,10 +86,13 @@ namespace Wi
 			const auto result = m_VkInstance.createDebugUtilsMessengerEXT(&debugMessengerCreateInfo, nullptr, &m_DebugMessenger, m_DynamicLoader);
 			VK_CHECK_RESULT(result, "Failed to create debug messenger")
 		}
+
+		m_Device = std::make_unique<VulkanDevice>(m_VkInstance);
 	}
 
 	void VulkanContext::Destroy()
 	{
+		m_Device->Destroy();
 		m_VkInstance.destroyDebugUtilsMessengerEXT(m_DebugMessenger, nullptr, m_DynamicLoader);
 		m_VkInstance.destroy();
 	}

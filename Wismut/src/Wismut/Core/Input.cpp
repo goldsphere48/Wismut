@@ -5,6 +5,8 @@ namespace Wi
 {
 	void Input::Initialize()
 	{
+		WI_CORE_INFO("Initializing input...")
+
 		for (int i = 0; i < static_cast<int>(KeyCode::LastKeyCode); ++i) {
 			s_KeyData[static_cast<KeyCode>(i)] = KeyData();
 		}

@@ -19,6 +19,8 @@ namespace Wi
 	
 	void Renderer::Initialize()
 	{
+		WI_CORE_INFO("Initializing renderer...")
+
 		s_RendererContext = CreateRenderModule();
 		s_RenderAPI = CreateRenderAPI();
 

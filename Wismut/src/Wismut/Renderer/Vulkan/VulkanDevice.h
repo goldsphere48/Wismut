@@ -20,15 +20,22 @@ namespace Wi
 	{
 	public:
 		VulkanDevice(vk::Instance instance);
-		~VulkanDevice();
 
-		const vk::PhysicalDevice& GetPhysicalDevice() const { return m_vkPhysicalDevice; }
-		const vk::Device& GetLogicalDevice() const { return m_vkLogicalDevice; }
+		void Destroy() const;
+
+		const vk::PhysicalDevice& GetPhysicalDevice() const { return m_PhysicalDevice; }
+		const vk::Device& GetLogicalDevice() const { return m_LogicalDevice; }
 		const VulkanQueueFamilyIndices& GetQueueFamilyIndices() const { return m_QueueFamilyIndices; }
+		const vk::Queue& GetGraphicsQueue() const { return m_GraphicsQueue; }
+		const vk::Queue& GetComputeQueue() const { return m_ComputeQueue; }
+		const vk::Queue& GetTransferQueue() const { return m_TransferQueue; }
 
 	private:
-		vk::PhysicalDevice m_vkPhysicalDevice;
-		vk::Device m_vkLogicalDevice;
+		vk::PhysicalDevice m_PhysicalDevice;
+		vk::Device m_LogicalDevice;
+		vk::Queue m_GraphicsQueue;
+		vk::Queue m_TransferQueue;
+		vk::Queue m_ComputeQueue;
 		VulkanQueueFamilyIndices m_QueueFamilyIndices;
 	};
 }
