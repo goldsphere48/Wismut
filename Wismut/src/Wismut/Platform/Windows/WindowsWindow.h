@@ -21,6 +21,7 @@ namespace Wi
 
 		void PollEvents() override;
 		void Destroy() override;
+		void* GetNativeWindow() override { return m_Window; }
 
 	private:
 		GLFWwindow* m_Window;

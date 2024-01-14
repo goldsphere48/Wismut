@@ -13,6 +13,12 @@ namespace Wi
 	bool VulkanContext::s_ValidationEnabled = false;
 #endif
 
+	struct PhysicDeviceRequirements
+	{
+		std::vector<vk::PhysicalDeviceType> SuitableDeviceTypes;
+		std::vector<std::string> RequiredExtensions;
+	};
+
 	static VKAPI_ATTR VkBool32 VKAPI_CALL DebugMessengerCallback
 	(
 		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -28,6 +34,44 @@ namespace Wi
 			WI_CORE_ERROR(pCallbackData->pMessage);
 
 		return VK_FALSE;
+	}
+
+	static VulkanPhysicalDevice* SelectDevice(vk::Instance instance)
+	{
+		const auto deviceRequirements = PhysicDeviceRequirements
+		{
+			.SuitableDeviceTypes = { vk::PhysicalDeviceType::eDiscreteGpu, vk::PhysicalDeviceType::eIntegratedGpu },
+			.RequiredExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME },
+		};
+
+		for (const auto requiredDeviceType : deviceRequirements.SuitableDeviceTypes)
+		{
+			for (const auto vkDevice : instance.enumeratePhysicalDevices())
+			{
+				const auto device = new VulkanPhysicalDevice(vkDevice);
+				device->QueueFamilyIndices = device->GetQueueFamilies();
+
+				if (!device->QueueFamilyIndices.IsComplete())
+					continue;
+
+				bool allExtensionsSupported = true;
+				if (device->Properties.deviceType == requiredDeviceType)
+				{
+					for (const auto& requiredExtension : deviceRequirements.RequiredExtensions)
+					{
+						const auto found = device->IsSupportExtension(requiredExtension);
+
+						if (!found)
+							allExtensionsSupported = false;
+					}
+				}
+
+				if (allExtensionsSupported)
+					return device;
+			}
+		}
+
+		return nullptr;
 	}
 
 	void VulkanContext::Initialize()
@@ -87,7 +131,8 @@ namespace Wi
 			VK_CHECK_RESULT(result, "Failed to create debug messenger")
 		}
 
-		m_Device = std::make_unique<VulkanDevice>(m_VkInstance);
+		m_PhysicalDevice = SelectDevice(m_VkInstance);
+		m_Device = std::make_unique<VulkanDevice>(m_VkInstance, m_PhysicalDevice);
 	}
 
 	void VulkanContext::Destroy()
@@ -95,5 +140,6 @@ namespace Wi
 		m_Device->Destroy();
 		m_VkInstance.destroyDebugUtilsMessengerEXT(m_DebugMessenger, nullptr, m_DynamicLoader);
 		m_VkInstance.destroy();
+		delete m_PhysicalDevice;
 	}
 }

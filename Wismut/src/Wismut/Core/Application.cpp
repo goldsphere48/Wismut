@@ -11,7 +11,11 @@ namespace Wi
 	{
 		Logger::Initialize();
 
-		WI_CORE_INFO("Initializing application...")
+		WI_CORE_ASSERT(!s_Instance, "Attempt to create application twice");
+
+		s_Instance = this;
+
+		WI_CORE_INFO("Initializing application...");
 
 		Input::Initialize();
 		Renderer::Initialize();

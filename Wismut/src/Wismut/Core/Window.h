@@ -19,6 +19,7 @@ namespace Wi
 
 		virtual void PollEvents() = 0;
 		virtual void Destroy() = 0;
+		virtual void* GetNativeWindow() = 0;
 
 	public:
 		static std::shared_ptr<Window> Create(const WindowSpecification& specification);

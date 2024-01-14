@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.hpp>
 
 #include "VulkanDevice.h"
+#include "VulkanPhysicalDevice.h"
 
 namespace Wi
 {
@@ -20,6 +21,7 @@ namespace Wi
 		vk::Instance m_VkInstance;
 		vk::DispatchLoaderDynamic m_DynamicLoader;
 		vk::DebugUtilsMessengerEXT m_DebugMessenger;
+		VulkanPhysicalDevice* m_PhysicalDevice = nullptr;
 		std::unique_ptr<VulkanDevice> m_Device;
 	};
 }

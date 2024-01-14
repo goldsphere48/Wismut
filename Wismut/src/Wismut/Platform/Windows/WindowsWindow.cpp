@@ -4,6 +4,7 @@
 #include "Wismut/Core/Events/KeyEvent.h"
 #include "Wismut/Core/Events/MouseEvents.h"
 #include "Wismut/Core/Events/WindowEvents.h"
+#include "Wismut/Renderer/Renderer.h"
 
 #ifdef WI_PLATFORM_WIN
 #include "WindowsWindow.h"
