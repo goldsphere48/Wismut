@@ -11,6 +11,7 @@ namespace Wi
 	public:
 		static std::vector<const char*> GetExtensions();
 		static vk::SurfaceKHR CreateSurface(const vk::Instance& instance);
+		static std::pair<uint32_t, uint32_t> GetFramebufferSize();
 	};
 
 	using VulkanPlatform = WindowsVulkanPlatform;

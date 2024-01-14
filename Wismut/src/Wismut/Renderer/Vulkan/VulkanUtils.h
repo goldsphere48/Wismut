@@ -6,11 +6,9 @@ namespace Wi
 	#define VK_CHECK_RESULT(result, msg) WI_CORE_ASSERT(result == vk::Result::eSuccess, msg)
 
 	template<typename T>
-	T ZeroVulkanStructure(vk::StructureType type)
+	void ZeroVulkanStruct(T& structure, vk::StructureType type)
 	{
-		T structure;
 		structure.sType = type;
-		memset(&structure + sizeof(type), 0, sizeof(T));
-		return structure;
+		memset(reinterpret_cast<char*>(&structure) + sizeof(type), 0, sizeof(T) - sizeof(type));
 	}
 }

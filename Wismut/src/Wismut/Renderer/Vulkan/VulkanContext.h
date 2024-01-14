@@ -4,6 +4,7 @@
 
 #include "VulkanDevice.h"
 #include "VulkanPhysicalDevice.h"
+#include "VulkanSwapchain.h"
 
 namespace Wi
 {
@@ -22,6 +23,7 @@ namespace Wi
 		vk::DispatchLoaderDynamic m_DynamicLoader;
 		vk::DebugUtilsMessengerEXT m_DebugMessenger;
 		VulkanPhysicalDevice* m_PhysicalDevice = nullptr;
-		std::unique_ptr<VulkanDevice> m_Device;
+		std::shared_ptr<VulkanDevice> m_Device;
+		std::shared_ptr<VulkanSwapchain> m_Swapchain;
 	};
 }

@@ -21,7 +21,7 @@ namespace Wi
 		return false;
 	}
 
-	VulkanQueueFamilyIndices VulkanPhysicalDevice::GetQueueFamilies() const
+	VulkanQueueFamilyIndices VulkanPhysicalDevice::GetQueueFamilies(vk::SurfaceKHR surface) const
 	{
 		VulkanQueueFamilyIndices indices;
 
@@ -58,11 +58,16 @@ namespace Wi
 		index = 0;
 		for (auto family : FamilyProperties)
 		{
+			const bool presentationSupported = Device.getSurfaceSupportKHR(index, surface);
 			if (family.queueFlags & vk::QueueFlagBits::eGraphics)
-			{
 				indices.Graphics = index;
+
+			if (family.queueCount > 0 && presentationSupported)
+				indices.Present = index;
+
+			if (indices.Graphics == indices.Present)
 				break;
-			}
+
 			index++;
 		}
 
@@ -88,20 +93,6 @@ namespace Wi
 				if (family.queueFlags & vk::QueueFlagBits::eCompute)
 				{
 					indices.Compute = index;
-					break;
-				}
-				index++;
-			}
-		}
-
-		index = 0;
-		if (!indices.Graphics.has_value())
-		{
-			for (auto family : FamilyProperties)
-			{
-				if (family.queueFlags & vk::QueueFlagBits::eGraphics)
-				{
-					indices.Graphics = index;
 					break;
 				}
 				index++;

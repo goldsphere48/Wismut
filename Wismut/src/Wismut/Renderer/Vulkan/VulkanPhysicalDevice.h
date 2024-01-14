@@ -13,7 +13,7 @@ namespace Wi
 
 		bool IsComplete() const
 		{
-			return Graphics.has_value() && Transfer.has_value() && Compute.has_value();
+			return Graphics.has_value() && Transfer.has_value() && Compute.has_value() && Present.has_value();
 		}
 	};
 
@@ -23,7 +23,7 @@ namespace Wi
 		VulkanPhysicalDevice(vk::PhysicalDevice device);
 
 		bool IsSupportExtension(const std::string& extension) const;
-		VulkanQueueFamilyIndices GetQueueFamilies() const;
+		VulkanQueueFamilyIndices GetQueueFamilies(vk::SurfaceKHR surface) const;
 
 	public:
 		VulkanQueueFamilyIndices QueueFamilyIndices;

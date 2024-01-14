@@ -13,16 +13,18 @@ namespace Wi
 
 		void Destroy() const;
 
-		const vk::Device& GetLogicalDevice() const { return m_LogicalDevice; }
 		const vk::Queue& GetGraphicsQueue() const { return m_GraphicsQueue; }
 		const vk::Queue& GetComputeQueue() const { return m_ComputeQueue; }
 		const vk::Queue& GetTransferQueue() const { return m_TransferQueue; }
 
+		VulkanPhysicalDevice* PhysicalDevice = nullptr;
+		vk::Device LogicalDevice;
+
 	private:
-		vk::Device m_LogicalDevice;
 		vk::Queue m_GraphicsQueue;
 		vk::Queue m_TransferQueue;
 		vk::Queue m_ComputeQueue;
+		vk::Queue m_PresentQueue;
 	};
 }
 

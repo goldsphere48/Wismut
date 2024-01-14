@@ -36,7 +36,7 @@ namespace Wi
 		return VK_FALSE;
 	}
 
-	static VulkanPhysicalDevice* SelectDevice(vk::Instance instance)
+	static VulkanPhysicalDevice* SelectDevice(vk::Instance instance, const std::shared_ptr<VulkanSwapchain>& swapchain)
 	{
 		const auto deviceRequirements = PhysicDeviceRequirements
 		{
@@ -49,7 +49,7 @@ namespace Wi
 			for (const auto vkDevice : instance.enumeratePhysicalDevices())
 			{
 				const auto device = new VulkanPhysicalDevice(vkDevice);
-				device->QueueFamilyIndices = device->GetQueueFamilies();
+				device->QueueFamilyIndices = device->GetQueueFamilies(swapchain->GetSurface());
 
 				if (!device->QueueFamilyIndices.IsComplete())
 					continue;
@@ -65,6 +65,9 @@ namespace Wi
 							allExtensionsSupported = false;
 					}
 				}
+
+				if (!swapchain->GetCapabilities(vkDevice).IsSuitable())
+					continue;
 
 				if (allExtensionsSupported)
 					return device;
@@ -131,12 +134,18 @@ namespace Wi
 			VK_CHECK_RESULT(result, "Failed to create debug messenger")
 		}
 
-		m_PhysicalDevice = SelectDevice(m_VkInstance);
-		m_Device = std::make_unique<VulkanDevice>(m_VkInstance, m_PhysicalDevice);
+		m_Swapchain = std::make_shared<VulkanSwapchain>(m_VkInstance);
+		m_Swapchain->CreateSurface();
+
+		m_PhysicalDevice = SelectDevice(m_VkInstance, m_Swapchain);
+		m_Device = std::make_shared<VulkanDevice>(m_VkInstance, m_PhysicalDevice);
+
+		m_Swapchain->Initialize(m_Device);
 	}
 
 	void VulkanContext::Destroy()
 	{
+		m_Swapchain->Destroy();
 		m_Device->Destroy();
 		m_VkInstance.destroyDebugUtilsMessengerEXT(m_DebugMessenger, nullptr, m_DynamicLoader);
 		m_VkInstance.destroy();

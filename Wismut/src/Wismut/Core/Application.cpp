@@ -18,7 +18,6 @@ namespace Wi
 		WI_CORE_INFO("Initializing application...");
 
 		Input::Initialize();
-		Renderer::Initialize();
 
 		const auto windowSpecification = WindowSpecification
 		{
@@ -29,6 +28,8 @@ namespace Wi
 		};
 
 		m_Window = Window::Create(windowSpecification);
+
+		Renderer::Initialize();
 	}
 
 	void Application::Run()

@@ -27,5 +27,13 @@ namespace Wi
 		glfwCreateWindowSurface(instance, window, nullptr, &surface);
 		return { surface };
 	}
+
+	std::pair<uint32_t, uint32_t> WindowsVulkanPlatform::GetFramebufferSize()
+	{
+		const auto window = static_cast<GLFWwindow*>(Application::Get()->GetWindow()->GetNativeWindow());
+		int width, height;
+		glfwGetFramebufferSize(window, &width, &height);
+		return { width, height };
+	}
 }
 #endif

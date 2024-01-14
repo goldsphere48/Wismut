@@ -1,9 +1,11 @@
 #include "wipch.h"
 #include "VulkanDevice.h"
 
+#include "VulkanUtils.h"
+
 namespace Wi
 {
-	VulkanDevice::VulkanDevice(vk::Instance instance, VulkanPhysicalDevice* physicalDevice)
+	VulkanDevice::VulkanDevice(vk::Instance instance, VulkanPhysicalDevice* physicalDevice) : PhysicalDevice(physicalDevice)
 	{
 		constexpr float queuePriority = 1.0f;
 
@@ -31,12 +33,24 @@ namespace Wi
 			.pQueuePriorities = &queuePriority,
 		};
 
-		const std::vector queueCreateInfos =
+		std::vector queueCreateInfos =
 		{
 			graphicsQueueCreateInfo,
 			transferQueueCreateInfo,
 			computeQueueCreateInfo
 		};
+
+		vk::DeviceQueueCreateInfo presentQueueCreateInfo;
+		ZeroVulkanStruct<vk::DeviceQueueCreateInfo>(presentQueueCreateInfo, vk::StructureType::eDeviceQueueCreateInfo);
+
+		if (physicalDevice->QueueFamilyIndices.Graphics != physicalDevice->QueueFamilyIndices.Present)
+		{
+			presentQueueCreateInfo.pQueuePriorities = &queuePriority;
+			presentQueueCreateInfo.queueCount = 1;
+			presentQueueCreateInfo.queueFamilyIndex = physicalDevice->QueueFamilyIndices.Present.value();
+
+			queueCreateInfos.push_back(presentQueueCreateInfo);
+		}
 
 		const std::vector extensions = 
 		{
@@ -59,15 +73,16 @@ namespace Wi
 			.pEnabledFeatures = &deviceFeatures,
 		};
 
-		m_LogicalDevice = physicalDevice->Device.createDevice(deviceCreateInfo);
+		LogicalDevice = physicalDevice->Device.createDevice(deviceCreateInfo);
 
-		m_GraphicsQueue = m_LogicalDevice.getQueue(physicalDevice->QueueFamilyIndices.Graphics.value(), 0);
-		m_TransferQueue = m_LogicalDevice.getQueue(physicalDevice->QueueFamilyIndices.Transfer.value(), 0);
-		m_ComputeQueue = m_LogicalDevice.getQueue(physicalDevice->QueueFamilyIndices.Compute.value(), 0);
+		m_GraphicsQueue = LogicalDevice.getQueue(physicalDevice->QueueFamilyIndices.Graphics.value(), 0);
+		m_TransferQueue = LogicalDevice.getQueue(physicalDevice->QueueFamilyIndices.Transfer.value(), 0);
+		m_ComputeQueue = LogicalDevice.getQueue(physicalDevice->QueueFamilyIndices.Compute.value(), 0);
+		m_PresentQueue = LogicalDevice.getQueue(physicalDevice->QueueFamilyIndices.Present.value(), 0);
 	}
 
 	void VulkanDevice::Destroy() const
 	{
-		m_LogicalDevice.destroy();
+		LogicalDevice.destroy();
 	}
 }
