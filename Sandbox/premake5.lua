@@ -25,6 +25,7 @@ includedirs {
 	"%{wks.location}/Wismut/src",
 	HeaderOnlyLibraries.spdlog,
 	IncludeDirs.toml,
+	IncludeDirs.magic_enum,
 }
 
 filter "configurations:Debug"

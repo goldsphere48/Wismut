@@ -4,3 +4,6 @@
 [submodule "Wismut/vendor/glfw/glfw"]
 	path = Wismut/vendor/glfw/glfw
 	url = https://github.com/glfw/glfw
+[submodule "Wismut/vendor/magic_enum"]
+	path = Wismut/vendor/magic_enum
+	url = https://github.com/Neargye/magic_enum.git

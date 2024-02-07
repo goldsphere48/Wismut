@@ -24,6 +24,7 @@ includedirs {
 	IncludeDirs.toml,
 	IncludeDirs.glfw,
 	IncludeDirs.Vulkan,
+	IncludeDirs.magic_enum,
 }
 
 links {

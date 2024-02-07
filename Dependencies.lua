@@ -6,6 +6,7 @@ VULKAN_SDK = os.getenv("VULKAN_SDK")
 
 HeaderOnlyLibraries["spdlog"] = "%{wks.location}/Wismut/vendor/spdlog/include"
 
+IncludeDirs["magic_enum"] = "%{wks.location}/Wismut/vendor/magic_enum/include"
 IncludeDirs["toml"] = "%{wks.location}/Wismut/vendor/tomlplusplus"
 IncludeDirs["glfw"] = "%{wks.location}/Wismut/vendor/glfw/glfw/include"
 IncludeDirs["Vulkan"] = "%{VULKAN_SDK}/Include"
