@@ -157,10 +157,6 @@ namespace Wi
 			m_Device->LogicalDevice.destroyImageView(view);
 
 		m_ImageViews.clear();
-
-		for (const auto& image : m_Images)
-			m_Device->LogicalDevice.destroyImage(image);
-
 		m_Images.clear();
 
 		m_Device->LogicalDevice.destroySwapchainKHR(m_Swapchain);

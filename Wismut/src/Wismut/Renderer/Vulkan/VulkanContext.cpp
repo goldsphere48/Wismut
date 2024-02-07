@@ -3,6 +3,8 @@
 
 #include "VulkanUtils.h"
 #include "VulkanPlatform.h"
+#include "VulkanShader.h"
+#include "VulkanShaderCompiler.h"
 
 namespace Wi
 {

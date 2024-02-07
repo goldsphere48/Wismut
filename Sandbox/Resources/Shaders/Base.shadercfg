@@ -1,0 +1,9 @@
+Language = "GLSL"
+
+[Stages]
+	[Stages.Vertex]
+		Entry = "main"
+		Source = "Base.vert.glsl"
+	[Stages.Fragment]
+		Entry = "main"
+		Source = "Base.frag.glsl"

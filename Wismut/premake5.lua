@@ -10,6 +10,8 @@ objdir("%{wks.location}/obj/%{prj.name}/" .. outputdir)
 files {
 	"src/**.cpp",
 	"src/**.h",
+	"Resources/Shaders/**.shadercfg",
+	"Resources/Shaders/**.glsl",
 	HeaderOnlyLibraries.spdlog,
 }
 

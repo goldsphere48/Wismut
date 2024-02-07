@@ -25,10 +25,13 @@ namespace Wi
 		s_RenderAPI = CreateRenderAPI();
 
 		s_RendererContext->Initialize();
+
+		s_Library.Load("Resources/Shaders/Base.shadercfg");
 	}
 
 	void Renderer::Shutdown()
 	{
+
 		s_RendererContext->Destroy();
 	}
 }

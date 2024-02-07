@@ -5,16 +5,17 @@
 #include "VulkanDevice.h"
 #include "VulkanPhysicalDevice.h"
 #include "VulkanSwapchain.h"
+#include "Wismut/Renderer/Shader.h"
 
 namespace Wi
 {
 	class VulkanContext : public RendererContext
 	{
 	public:
-		virtual ~VulkanContext() = default;
-
 		void Initialize() override;
 		void Destroy() override;
+
+		const std::shared_ptr<VulkanDevice>& GetDevice() const { return m_Device; }
 
 	private:
 		static bool s_ValidationEnabled;
