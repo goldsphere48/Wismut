@@ -2,6 +2,8 @@
 
 namespace Wi
 {
+	class RendererAPI;
+
 	class RendererContext
 	{
 	public:
@@ -9,6 +11,8 @@ namespace Wi
 
 		virtual void Initialize() = 0;
 		virtual void Destroy() = 0;
+
+		virtual RendererAPI* GetApi() const = 0;
 	};
 }
 

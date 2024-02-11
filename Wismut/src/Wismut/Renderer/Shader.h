@@ -28,12 +28,12 @@ namespace Wi
 	struct ShaderConfig
 	{
 		ShaderLanguage Language;
-		std::unordered_map<ShaderStage, ShaderStageConfig> Stages;
+		std::vector<ShaderStageConfig> Stages;
 		std::string Name;
 	};
 
-	class Shader
+	struct Shader
 	{
-	public:
+
 	};
 }

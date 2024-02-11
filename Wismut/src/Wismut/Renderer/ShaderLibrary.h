@@ -12,7 +12,7 @@ namespace Wi
 
 	private:
 		static ShaderLanguage ParseLanguage(const toml::table& table);
-		static std::unordered_map<ShaderStage, ShaderStageConfig> ParseStages(const std::filesystem::path& cfg, const toml::table& table);
+		static std::vector<ShaderStageConfig> ParseStages(const std::filesystem::path& cfg, const toml::table& table);
 	};
 
 	class ShaderLibrary

@@ -9,7 +9,7 @@ namespace Wi
 	class VulkanDevice
 	{
 	public:
-		VulkanDevice(vk::Instance instance, VulkanPhysicalDevice* physicalDevice);
+		VulkanDevice(vk::Instance instance, std::shared_ptr<VulkanPhysicalDevice> physicalDevice);
 
 		void Destroy() const;
 
@@ -17,7 +17,7 @@ namespace Wi
 		const vk::Queue& GetComputeQueue() const { return m_ComputeQueue; }
 		const vk::Queue& GetTransferQueue() const { return m_TransferQueue; }
 
-		VulkanPhysicalDevice* PhysicalDevice = nullptr;
+		std::shared_ptr<VulkanPhysicalDevice> PhysicalDevice;
 		vk::Device LogicalDevice;
 
 	private:

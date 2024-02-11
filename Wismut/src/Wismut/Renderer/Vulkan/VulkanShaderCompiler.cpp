@@ -1,6 +1,7 @@
 #include "wipch.h"
 #include "VulkanShaderCompiler.h"
 
+#include <magic_enum/magic_enum.hpp>
 #include <shaderc/shaderc.hpp>
 
 namespace Wi
@@ -27,9 +28,13 @@ namespace Wi
 		shaderc::Compiler compiler;
 		shaderc::CompileOptions options;
 
+		WI_CORE_INFO("Compiling shader {0} stage {1} ...", config.SourceFilePath, magic_enum::enum_name(config.Stage));
+
 		const auto result = compiler.CompileGlslToSpv(config.Source, ToShaderCGLSLStage(config.Stage), config.SourceFilePath.c_str(), options);
 
 		WI_CORE_ASSERT(result.GetCompilationStatus() == shaderc_compilation_status_success, "Failed to compile glsl shader to spirv assembly. Error: {0}", result.GetErrorMessage());
+
+		WI_CORE_INFO("Success");
 
 		return { result.begin(), result.end() };
 	}

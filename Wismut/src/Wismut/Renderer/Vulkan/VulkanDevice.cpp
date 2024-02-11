@@ -5,7 +5,7 @@
 
 namespace Wi
 {
-	VulkanDevice::VulkanDevice(vk::Instance instance, VulkanPhysicalDevice* physicalDevice) : PhysicalDevice(physicalDevice)
+	VulkanDevice::VulkanDevice(vk::Instance instance, std::shared_ptr<VulkanPhysicalDevice> physicalDevice) : PhysicalDevice(physicalDevice)
 	{
 		constexpr float queuePriority = 1.0f;
 

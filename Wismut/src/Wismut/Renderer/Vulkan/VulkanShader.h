@@ -4,8 +4,8 @@
 
 namespace Wi
 {
-	class VulkanShader : public Shader
+	struct VulkanShader : Shader
 	{
-	
+		std::vector<vk::PipelineShaderStageCreateInfo> VkStagesCreateInfo;
 	};
 }

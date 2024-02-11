@@ -11,12 +11,12 @@ namespace Wi
 		static void Initialize();
 		static void Shutdown();
 
-		static const std::shared_ptr<RendererContext>& GetContext() { return s_RendererContext; }
-		static const std::unique_ptr<RendererAPI>& GetApi() { return s_RenderAPI; }
+		static const RendererContext* GetContext() { return s_RendererContext; }
+		static const RendererAPI* GetApi() { return s_RenderAPI; }
 
 	private:
 		inline static ShaderLibrary s_Library;
-		inline static std::unique_ptr<RendererAPI> s_RenderAPI = nullptr;
-		inline static std::shared_ptr<RendererContext> s_RendererContext = nullptr;
+		inline static const RendererAPI* s_RenderAPI = nullptr;
+		inline static RendererContext* s_RendererContext = nullptr;
 	};
 }

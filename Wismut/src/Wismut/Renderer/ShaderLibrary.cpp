@@ -1,9 +1,10 @@
 #include "wipch.h"
 #include "ShaderLibrary.h"
-#include "Renderer.h"
 
 #include <ThirdParty/Toml/Toml.h>
 #include <magic_enum/magic_enum.hpp>
+
+#include "Renderer.h"
 
 
 namespace Wi
@@ -51,10 +52,15 @@ namespace Wi
 			WI_CORE_WARN("Shader {0} is already loaded. Maybe you need invoke Reload instead ?", config.Name);
 			return;
 		}
+
+		m_Shaders[config.Name] = Renderer::GetApi()->CreateShaderProgram(config);
 	}
 
 	void ShaderLibrary::Destroy()
 	{
+		for (auto shader : m_Shaders | std::views::values)
+			Renderer::GetApi()->DestroyShaderProgram(shader);
+		
 		m_Shaders.clear();
 	}
 
@@ -99,12 +105,12 @@ namespace Wi
 		return languageOptional.value_or(ShaderLanguage::None);
 	}
 
-	std::unordered_map<ShaderStage, ShaderStageConfig> ShaderLoader::ParseStages(const std::filesystem::path& cfg, const toml::table& table)
+	std::vector<ShaderStageConfig> ShaderLoader::ParseStages(const std::filesystem::path& cfg, const toml::table& table)
 	{
 		const auto stagesTable = table["Stages"].as_table();
 		WI_CORE_ASSERT(stagesTable, "Stages table is undeclared");
 
-		std::unordered_map<ShaderStage, ShaderStageConfig> stages;
+		std::vector<ShaderStageConfig> stages;
 
 		for (const std::string_view stage : magic_enum::enum_names<ShaderStage>())
 		{
@@ -119,7 +125,7 @@ namespace Wi
 				config.SourceFileName = shaderPath.filename().generic_string();
 				config.Entry = stageTable->at("Entry").as<std::string>()->get();
 				config.Source = ReadUTF8FileWithoutBOM(config.SourceFilePath);
-				stages[config.Stage] = config;
+				stages.push_back(config);
 			}
 		}
 

@@ -4,8 +4,8 @@
 
 #include "VulkanDevice.h"
 #include "VulkanPhysicalDevice.h"
+#include "VulkanRendererAPI.h"
 #include "VulkanSwapchain.h"
-#include "Wismut/Renderer/Shader.h"
 
 namespace Wi
 {
@@ -16,14 +16,16 @@ namespace Wi
 		void Destroy() override;
 
 		const std::shared_ptr<VulkanDevice>& GetDevice() const { return m_Device; }
+		RendererAPI* GetApi() const override { return m_RendererApi; }
 
 	private:
 		static bool s_ValidationEnabled;
 
+		VulkanRendererAPI* m_RendererApi;
 		vk::Instance m_VkInstance;
 		vk::DispatchLoaderDynamic m_DynamicLoader;
 		vk::DebugUtilsMessengerEXT m_DebugMessenger;
-		VulkanPhysicalDevice* m_PhysicalDevice = nullptr;
+		std::shared_ptr<VulkanPhysicalDevice> m_PhysicalDevice;
 		std::shared_ptr<VulkanDevice> m_Device;
 		std::shared_ptr<VulkanSwapchain> m_Swapchain;
 	};

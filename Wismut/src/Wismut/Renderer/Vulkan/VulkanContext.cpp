@@ -3,8 +3,6 @@
 
 #include "VulkanUtils.h"
 #include "VulkanPlatform.h"
-#include "VulkanShader.h"
-#include "VulkanShaderCompiler.h"
 
 namespace Wi
 {
@@ -38,7 +36,7 @@ namespace Wi
 		return VK_FALSE;
 	}
 
-	static VulkanPhysicalDevice* SelectDevice(vk::Instance instance, const std::shared_ptr<VulkanSwapchain>& swapchain)
+	static std::shared_ptr<VulkanPhysicalDevice> SelectDevice(vk::Instance instance, const std::shared_ptr<VulkanSwapchain>& swapchain)
 	{
 		const auto deviceRequirements = PhysicDeviceRequirements
 		{
@@ -50,7 +48,7 @@ namespace Wi
 		{
 			for (const auto vkDevice : instance.enumeratePhysicalDevices())
 			{
-				const auto device = new VulkanPhysicalDevice(vkDevice);
+				const auto device = std::make_shared<VulkanPhysicalDevice>(vkDevice);
 				device->QueueFamilyIndices = device->GetQueueFamilies(swapchain->GetSurface());
 
 				if (!device->QueueFamilyIndices.IsComplete())
@@ -119,6 +117,7 @@ namespace Wi
 		{
 			.sType = vk::StructureType::eInstanceCreateInfo,
 			.pNext = &debugMessengerCreateInfo,
+			.pApplicationInfo = &appInfo,
 			.enabledLayerCount = static_cast<uint32_t>(validationLayers.size()),
 			.ppEnabledLayerNames = validationLayers.data(),
 			.enabledExtensionCount = static_cast<uint32_t>(extensions.size()),
@@ -142,15 +141,17 @@ namespace Wi
 		m_PhysicalDevice = SelectDevice(m_VkInstance, m_Swapchain);
 		m_Device = std::make_shared<VulkanDevice>(m_VkInstance, m_PhysicalDevice);
 
+		m_RendererApi = new VulkanRendererAPI(this);
+
 		m_Swapchain->Initialize(m_Device);
 	}
 
 	void VulkanContext::Destroy()
 	{
 		m_Swapchain->Destroy();
+		delete m_RendererApi;
 		m_Device->Destroy();
 		m_VkInstance.destroyDebugUtilsMessengerEXT(m_DebugMessenger, nullptr, m_DynamicLoader);
 		m_VkInstance.destroy();
-		delete m_PhysicalDevice;
 	}
 }

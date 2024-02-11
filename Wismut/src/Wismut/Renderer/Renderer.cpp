@@ -3,18 +3,13 @@
 
 #include "RendererContext.h"
 #include "Vulkan/VulkanContext.h"
-#include "Vulkan/VulkanRenderAPI.h"
+#include "Vulkan/VulkanRendererAPI.h"
 
 namespace Wi
 {
-	static std::unique_ptr<RendererAPI> CreateRenderAPI()
+	static RendererContext* CreateRenderModule()
 	{
-		return std::make_unique<VulkanRenderAPI>();
-	}
-
-	static std::unique_ptr<RendererContext> CreateRenderModule()
-	{
-		return std::make_unique<VulkanContext>();
+		return new VulkanContext();
 	}
 	
 	void Renderer::Initialize()
@@ -22,16 +17,16 @@ namespace Wi
 		WI_CORE_INFO("Initializing renderer...")
 
 		s_RendererContext = CreateRenderModule();
-		s_RenderAPI = CreateRenderAPI();
-
 		s_RendererContext->Initialize();
+		s_RenderAPI = s_RendererContext->GetApi();
 
 		s_Library.Load("Resources/Shaders/Base.shadercfg");
 	}
 
 	void Renderer::Shutdown()
 	{
-
+		s_Library.Destroy();
 		s_RendererContext->Destroy();
+		delete s_RendererContext;
 	}
 }
