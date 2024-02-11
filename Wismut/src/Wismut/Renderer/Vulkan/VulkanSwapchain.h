@@ -29,6 +29,7 @@ namespace Wi
 		void CreateSurface();
 
 		vk::SurfaceKHR GetSurface() const { return m_Surface; }
+		vk::Format GetImageFormat() const { return m_SurfaceFormat.format; }
 		VulkanSwapchainCapabilities GetCapabilities(const vk::PhysicalDevice& device) const;
 
 	private:

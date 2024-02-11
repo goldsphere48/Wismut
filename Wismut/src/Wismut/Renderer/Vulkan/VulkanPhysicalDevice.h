@@ -24,6 +24,7 @@ namespace Wi
 
 		bool IsSupportExtension(const std::string& extension) const;
 		VulkanQueueFamilyIndices GetQueueFamilies(vk::SurfaceKHR surface) const;
+		uint32_t GetSuitableMemoryTypeIndex(uint32_t memoryTypeBits, vk::MemoryPropertyFlags properties) const;
 
 	public:
 		VulkanQueueFamilyIndices QueueFamilyIndices;

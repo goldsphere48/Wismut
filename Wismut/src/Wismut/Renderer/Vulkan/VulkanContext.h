@@ -16,6 +16,7 @@ namespace Wi
 		void Destroy() override;
 
 		const std::shared_ptr<VulkanDevice>& GetDevice() const { return m_Device; }
+		const std::shared_ptr<VulkanSwapchain>& GetSwapchain() const { return m_Swapchain; }
 		RendererAPI* GetApi() const override { return m_RendererApi; }
 
 	private:

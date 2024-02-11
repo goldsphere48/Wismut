@@ -10,6 +10,7 @@ namespace Wi
 		MemoryProperties = device.getMemoryProperties();
 		FamilyProperties = device.getQueueFamilyProperties();
 		DeviceSupportedExtensions = device.enumerateDeviceExtensionProperties();
+
 	}
 
 	bool VulkanPhysicalDevice::IsSupportExtension(const std::string& extension) const
@@ -100,5 +101,19 @@ namespace Wi
 		}
 
 		return indices;
+	}
+
+	uint32_t VulkanPhysicalDevice::GetSuitableMemoryTypeIndex(uint32_t memoryTypeBits, vk::MemoryPropertyFlags properties) const
+	{
+		for (uint32_t i = 0; i < MemoryProperties.memoryTypeCount; ++i)
+		{
+			if ((memoryTypeBits & (1 << i)) && (MemoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
+			{
+				return i;
+			}
+		}
+
+		WI_CORE_ASSERT(false, "Faield to find suitable memory type");
+		return -1;
 	}
 }

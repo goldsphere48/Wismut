@@ -7,5 +7,6 @@ namespace Wi
 	struct VulkanShader : Shader
 	{
 		std::vector<vk::PipelineShaderStageCreateInfo> VkStagesCreateInfo;
+		vk::PipelineLayout PipelineLayout;
 	};
 }
