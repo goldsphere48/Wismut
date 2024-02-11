@@ -7,3 +7,6 @@
 [submodule "Wismut/vendor/magic_enum"]
 	path = Wismut/vendor/magic_enum
 	url = https://github.com/Neargye/magic_enum.git
+[submodule "Wismut/vendor/glm"]
+	path = Wismut/vendor/glm
+	url = git@github.com:g-truc/glm.git

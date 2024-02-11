@@ -26,6 +26,7 @@ includedirs {
 	HeaderOnlyLibraries.spdlog,
 	IncludeDirs.toml,
 	IncludeDirs.magic_enum,
+	IncludeDirs.glm,
 }
 
 filter "configurations:Debug"
