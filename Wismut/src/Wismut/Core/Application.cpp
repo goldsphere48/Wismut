@@ -38,8 +38,14 @@ namespace Wi
 		{
 			ProcessEvents();
 
+			Renderer::Begin();
+
 			for (const auto layer : m_LayerStack)
 				layer->Update();
+
+			Renderer::End();
+
+			m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % Renderer::MAX_FRAMES_IN_FLIGHT;
 
 			Input::ClearReleasedKeys();
 		}

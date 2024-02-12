@@ -20,6 +20,7 @@ namespace Wi
 		const std::shared_ptr<Window>& GetWindow() { return m_Window; }
 
 		static Application* Get() { return s_Instance; }
+		uint32_t GetCurrentFrameIndex() const { return m_CurrentFrameIndex; }
 
 	private:
 		void ProcessEvents() const;
@@ -29,6 +30,7 @@ namespace Wi
 
 	private:
 		inline static Application* s_Instance;
+		uint32_t m_CurrentFrameIndex = 0;
 		LayerStack m_LayerStack;
 		std::shared_ptr<Window> m_Window;
 		bool m_Running = true;

@@ -15,9 +15,13 @@ namespace Wi
 		void Initialize() override;
 		void Destroy() override;
 
+		void OnWindowResize(int width, int height) override;
+
 		const std::shared_ptr<VulkanDevice>& GetDevice() const { return m_Device; }
 		const std::shared_ptr<VulkanSwapchain>& GetSwapchain() const { return m_Swapchain; }
 		RendererAPI* GetApi() const override { return m_RendererApi; }
+		const vk::Framebuffer& GetCurrentFrameBuffer() const { return m_Swapchain->GetCurrentFramebuffer(); }
+		const vk::CommandBuffer& GetCurrentCommandBuffer() const { return m_Swapchain->GetCurrentCommandBuffer(); }
 
 	private:
 		static bool s_ValidationEnabled;

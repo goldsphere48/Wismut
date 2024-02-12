@@ -154,4 +154,9 @@ namespace Wi
 		m_VkInstance.destroyDebugUtilsMessengerEXT(m_DebugMessenger, nullptr, m_DynamicLoader);
 		m_VkInstance.destroy();
 	}
+
+	void VulkanContext::OnWindowResize(int width, int height)
+	{
+		m_Swapchain->RecreateSwapchain();
+	}
 }

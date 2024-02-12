@@ -2,6 +2,7 @@
 #include "VulkanSwapchain.h"
 
 #include "Windows/WindowsVulkanPlatform.h"
+#include "Wismut/Renderer/Renderer.h"
 
 namespace Wi
 {
@@ -47,6 +48,66 @@ namespace Wi
 		WI_CORE_ASSERT(m_Surface, "Failed to create vulkan surface");
 	}
 
+	void VulkanSwapchain::Present()
+	{
+		vk::PipelineStageFlags waitStages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
+
+		const uint32_t currentFrameIndex = Renderer::GetCurrentFrameIndex();
+
+		const vk::SubmitInfo submitInfo {
+			.sType = vk::StructureType::eSubmitInfo,
+			.waitSemaphoreCount = 1,
+			.pWaitSemaphores = &m_ImagesAvailableSemaphores[currentFrameIndex],
+			.pWaitDstStageMask = waitStages,
+			.commandBufferCount = 1,
+			.pCommandBuffers = &m_CommandBuffers[m_CurrentImageIndex],
+			.signalSemaphoreCount = 1,
+			.pSignalSemaphores = &m_RenderFinishedSemaphores[currentFrameIndex]
+		};
+
+		const vk::Result resetFencesResult = m_Device->LogicalDevice.resetFences(1, &m_InFlightFences[currentFrameIndex]);
+		WI_CORE_ASSERT(resetFencesResult == vk::Result::eSuccess, "Failed to wait fences in Present");
+
+		vk::Result result = m_Device->GetGraphicsQueue().submit(1, &submitInfo, m_InFlightFences[currentFrameIndex]);
+		if (result != vk::Result::eSuccess)
+			WI_CORE_ERROR("Submit failed");
+
+		const vk::PresentInfoKHR presentInfo {
+			.sType = vk::StructureType::ePresentInfoKHR,
+			.waitSemaphoreCount = 1,
+			.pWaitSemaphores = &m_RenderFinishedSemaphores[currentFrameIndex],
+			.swapchainCount = 1,
+			.pSwapchains = &m_Swapchain,
+			.pImageIndices = &m_CurrentImageIndex,
+			.pResults = nullptr
+		};
+
+		result = m_Device->GetPresentQueue().presentKHR(&presentInfo);
+		if (result != vk::Result::eSuccess)
+			WI_CORE_ERROR("Present failed");
+	}
+
+	void VulkanSwapchain::BeginFrame()
+	{
+		m_CurrentImageIndex = AcquireNextImage();
+	}
+
+	uint32_t VulkanSwapchain::AcquireNextImage() const
+	{
+		const uint32_t currentFrameIndex = Renderer::GetCurrentFrameIndex();
+
+		const vk::Result waitForFencesResult = m_Device->LogicalDevice.waitForFences(1, &m_InFlightFences[currentFrameIndex], VK_TRUE, UINT64_MAX);
+		WI_CORE_ASSERT(waitForFencesResult == vk::Result::eSuccess, "Failed to wait fences in AcquireNextIMage");
+
+		const auto acquireResult = m_Device->LogicalDevice.acquireNextImageKHR(m_Swapchain, UINT64_MAX, m_ImagesAvailableSemaphores[currentFrameIndex]);
+		if (acquireResult.result == vk::Result::eSuccess)
+			return acquireResult.value;
+
+		WI_CORE_ERROR("Failed to acquire image");
+
+		return 0;
+	}
+
 	VulkanSwapchainCapabilities VulkanSwapchain::GetCapabilities(const vk::PhysicalDevice& device) const
 	{
 		VulkanSwapchainCapabilities capabilities;
@@ -70,7 +131,7 @@ namespace Wi
 
 	void VulkanSwapchain::Create()
 	{
-		const auto extent = ChooseSwapExtent(m_SurfaceCapabilities);
+		m_Extent = ChooseSwapExtent(m_SurfaceCapabilities);
 		const auto imageCount = std::clamp(m_SurfaceCapabilities.minImageCount + 1, m_SurfaceCapabilities.minImageCount, m_SurfaceCapabilities.maxImageCount);
 
 		vk::SwapchainCreateInfoKHR swapchainCreateInfo {
@@ -79,7 +140,7 @@ namespace Wi
 			.minImageCount = imageCount,
 			.imageFormat = m_SurfaceFormat.format,
 			.imageColorSpace = m_SurfaceFormat.colorSpace,
-			.imageExtent = extent,
+			.imageExtent = m_Extent,
 			.imageArrayLayers = 1,
 			.imageUsage = vk::ImageUsageFlagBits::eColorAttachment,
 			.preTransform = m_SurfaceCapabilities.currentTransform,
@@ -111,6 +172,7 @@ namespace Wi
 		m_Images = m_Device->LogicalDevice.getSwapchainImagesKHR(m_Swapchain);
 		m_ImageViews.resize(m_Images.size());
 
+		int index = 0;
 		for (const auto& image : m_Images)
 		{
 			vk::ImageViewCreateInfo imageViewCreateInfo {
@@ -136,10 +198,10 @@ namespace Wi
 			};
 
 			const auto view = m_Device->LogicalDevice.createImageView(imageViewCreateInfo);
-			m_ImageViews.push_back(view);
+			m_ImageViews[index++] = view;
 		}
 
-		constexpr vk::AttachmentDescription attachmentDescription {
+		const vk::AttachmentDescription attachmentDescription {
 			.format = m_SurfaceFormat.format,
 			.loadOp = vk::AttachmentLoadOp::eClear,
 			.storeOp = vk::AttachmentStoreOp::eStore,
@@ -159,12 +221,23 @@ namespace Wi
 			.pColorAttachments = &colorAttachmentReference
 		};
 
+		constexpr vk::SubpassDependency dependency {
+			.srcSubpass = VK_SUBPASS_EXTERNAL,
+			.dstSubpass = 0,
+			.srcStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput,
+			.dstStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput,
+			.srcAccessMask = vk::AccessFlagBits::eNone,
+			.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite,
+		};
+
 		vk::RenderPassCreateInfo renderPassCreateInfo {
 			.sType = vk::StructureType::eRenderPassCreateInfo,
 			.attachmentCount = 1,
 			.pAttachments = &attachmentDescription,
 			.subpassCount = 1,
-			.pSubpasses = &subpass
+			.pSubpasses = &subpass,
+			.dependencyCount = 1,
+			.pDependencies = &dependency
 		};
 
 		m_VkRenderPass = m_Device->LogicalDevice.createRenderPass(renderPassCreateInfo);
@@ -194,6 +267,7 @@ namespace Wi
 
 		m_VkCommandPool = m_Device->LogicalDevice.createCommandPool(commandPoolCreateInfo);
 
+		m_CommandBuffers.resize(m_Framebuffers.size());
 		const vk::CommandBufferAllocateInfo bufferAllocationInfo {
 			.sType = vk::StructureType::eCommandBufferAllocateInfo,
 			.commandPool = m_VkCommandPool,
@@ -202,6 +276,26 @@ namespace Wi
 		};
 
 		m_CommandBuffers = m_Device->LogicalDevice.allocateCommandBuffers(bufferAllocationInfo);
+
+		vk::SemaphoreCreateInfo semaphoreCreateInfo {
+			.sType = vk::StructureType::eSemaphoreCreateInfo
+		};
+
+		vk::FenceCreateInfo fenceCreateInfo {
+			.sType = vk::StructureType::eFenceCreateInfo,
+			.flags = vk::FenceCreateFlagBits::eSignaled
+		};
+
+		m_ImagesAvailableSemaphores.resize(Renderer::MAX_FRAMES_IN_FLIGHT);
+		m_RenderFinishedSemaphores.resize(Renderer::MAX_FRAMES_IN_FLIGHT);
+		m_InFlightFences.resize(Renderer::MAX_FRAMES_IN_FLIGHT);
+
+		for (int i = 0; i < Renderer::MAX_FRAMES_IN_FLIGHT; ++i)
+		{
+			m_ImagesAvailableSemaphores[i] = m_Device->LogicalDevice.createSemaphore(semaphoreCreateInfo);
+			m_RenderFinishedSemaphores[i] = m_Device->LogicalDevice.createSemaphore(semaphoreCreateInfo);
+			m_InFlightFences[i] = m_Device->LogicalDevice.createFence(fenceCreateInfo);
+		}
 	}
 
 	void VulkanSwapchain::Destroy()
@@ -213,6 +307,17 @@ namespace Wi
 	void VulkanSwapchain::DestroySwapchain()
 	{
 		m_Device->LogicalDevice.waitIdle();
+
+		for (int i = 0; i < Renderer::MAX_FRAMES_IN_FLIGHT; ++i)
+		{
+			m_Device->LogicalDevice.destroySemaphore(m_RenderFinishedSemaphores[i]);
+			m_Device->LogicalDevice.destroySemaphore(m_ImagesAvailableSemaphores[i]);
+			m_Device->LogicalDevice.destroyFence(m_InFlightFences[i]);
+		}
+
+		m_ImagesAvailableSemaphores.clear();
+		m_RenderFinishedSemaphores.clear();
+		m_InFlightFences.clear();
 
 		for (const auto& view : m_ImageViews)
 			m_Device->LogicalDevice.destroyImageView(view);

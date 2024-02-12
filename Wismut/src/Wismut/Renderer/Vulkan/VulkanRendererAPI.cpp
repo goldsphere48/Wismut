@@ -138,7 +138,6 @@ namespace Wi
 	std::shared_ptr<GraphicsPipeline> VulkanRendererAPI::CreateGraphicsPipeline(const PipelineSpecification& specification) const
 	{
 		const auto vkShader = static_cast<VulkanShader*>(specification.Shader);
-		const auto vkRenderPass = static_cast<VulkanRenderPass*>(specification.RenderPass);
 
 		const auto vertexFormat = CreateVulkanVertexFormat(specification.VertexFormat);
 
@@ -239,7 +238,7 @@ namespace Wi
 			.pColorBlendState = &blendingStateCreateInfo,
 			.pDynamicState = &dynamicStateCreateInfo,
 			.layout = vkShader->PipelineLayout,
-			.renderPass = vkRenderPass->VkRenderPass,
+			.renderPass = m_Context->GetSwapchain()->GetVkRenderPass(),
 			.subpass = 0,
 			.basePipelineHandle = nullptr,
 			.basePipelineIndex = -1
@@ -256,6 +255,7 @@ namespace Wi
 
 	void VulkanRendererAPI::DestroyGraphicsPipeline(const std::shared_ptr<GraphicsPipeline>& pipeline) const
 	{
+		m_Device.waitIdle();
 		const auto vkPipeline = static_cast<VulkanGraphicsPipeline*>(pipeline.get())->VkPipeline;
 		m_Device.destroyPipeline(vkPipeline);
 	}
@@ -283,12 +283,23 @@ namespace Wi
 			.pColorAttachments = &colorAttachmentReference
 		};
 
-		vk::RenderPassCreateInfo renderPassCreateInfo {
+		constexpr vk::SubpassDependency dependency {
+			.srcSubpass = VK_SUBPASS_EXTERNAL,
+			.dstSubpass = 0,
+			.srcStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput,
+			.dstStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput,
+			.srcAccessMask = vk::AccessFlagBits::eNone,
+			.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite,
+		};
+
+		const vk::RenderPassCreateInfo renderPassCreateInfo {
 			.sType = vk::StructureType::eRenderPassCreateInfo,
 			.attachmentCount = 1,
 			.pAttachments = &colorAttachment,
 			.subpassCount = 1,
-			.pSubpasses = &subpass
+			.pSubpasses = &subpass,
+			.dependencyCount = 1,
+			.pDependencies = &dependency
 		};
 
 		std::shared_ptr<VulkanRenderPass> renderPass = std::make_shared<VulkanRenderPass>();
@@ -302,6 +313,7 @@ namespace Wi
 
 	void VulkanRendererAPI::DestroyRenderPass(const std::shared_ptr<RenderPass>& renderPass) const
 	{
+		m_Device.waitIdle();
 		const auto vkRenderPass = static_cast<VulkanRenderPass*>(renderPass.get());
 		m_Device.destroyRenderPass(vkRenderPass->VkRenderPass);
 	}
@@ -309,18 +321,18 @@ namespace Wi
 	VulkanRendererAPI::VulkanVertexFormat VulkanRendererAPI::CreateVulkanVertexFormat(const VertexFormat& format) const
 	{
 		VulkanVertexFormat vertexFormat;
-		vertexFormat.BindingDescriptions.resize(format.size());
+		vertexFormat.BindingDescriptions.resize(1);
 		vertexFormat.Attributes.resize(format.size());
+
+		vertexFormat.BindingDescriptions[0] = vk::VertexInputBindingDescription{
+			.binding = 0,
+			.stride = format[0].stride,
+			.inputRate = ConvertToVkInputRate(format[0].Rate)
+		};
 
 		uint32_t i = 0;
 		for (const auto& vertexInfo : format)
 		{
-			const vk::VertexInputBindingDescription bindingDescription {
-				.binding = 0,
-				.stride = vertexInfo.stride,
-				.inputRate = ConvertToVkInputRate(vertexInfo.Rate)
-			};
-
 			const vk::VertexInputAttributeDescription attributeDescription{
 				.location = vertexInfo.location,
 				.binding = 0,
@@ -328,7 +340,6 @@ namespace Wi
 				.offset = vertexInfo.offset
 			};
 
-			vertexFormat.BindingDescriptions[i] = bindingDescription;
 			vertexFormat.Attributes[i] = attributeDescription;
 
 			i++;
@@ -337,11 +348,11 @@ namespace Wi
 		return vertexFormat;
 	}
 
-	std::shared_ptr<Buffer> VulkanRendererAPI::CreateBuffer(uint32_t size, BufferUsageFlagBits bufferUsage) const
+	std::shared_ptr<Buffer> VulkanRendererAPI::CreateBuffer(std::vector<Vertex> vertices, BufferUsageFlagBits bufferUsage) const
 	{
 		const vk::BufferCreateInfo bufferCreateInfo {
 			.sType = vk::StructureType::eBufferCreateInfo,
-			.size = size,
+			.size = vertices.size() * sizeof(Vertex),
 			.usage = ConvertToVkBufferUsage(bufferUsage),
 			.sharingMode = vk::SharingMode::eExclusive,
 		};
@@ -369,15 +380,104 @@ namespace Wi
 		std::shared_ptr<VulkanBuffer> buffer = std::make_shared<VulkanBuffer>();
 		buffer->VkBuffer = vkBuffer;
 		buffer->VkDeviceMemory= vkDeviceMemory;
+		buffer->Size = bufferCreateInfo.size;
+
+		const vk::Result result = m_Device.mapMemory(vkDeviceMemory, 0, bufferCreateInfo.size, static_cast<vk::MemoryMapFlags>(0), &buffer->Data);
+		WI_CORE_ASSERT(result == vk::Result::eSuccess, "Failed to load data to device memory");
+		memcpy(buffer->Data, vertices.data(), bufferCreateInfo.size);
+		m_Device.unmapMemory(vkDeviceMemory);
 
 		return buffer;
 	}
 
-
 	void VulkanRendererAPI::DestroyBuffer(const std::shared_ptr<Buffer>& buffer) const
 	{
+		m_Device.waitIdle();
 		const auto vkBuffer = static_cast<VulkanBuffer*>(buffer.get());
 		m_Device.destroyBuffer(vkBuffer->VkBuffer);
 		m_Device.freeMemory(vkBuffer->VkDeviceMemory);
+	}
+
+	void VulkanRendererAPI::BeginRenderPass() const
+	{
+		const vk::Framebuffer framebuffer = m_Context->GetCurrentFrameBuffer();
+		const vk::CommandBuffer commandBuffer = m_Context->GetCurrentCommandBuffer();
+
+		vk::ClearColorValue value = {};
+		value.setFloat32({ 0.2f, 0.2f, 0.2f, 0.2f });
+		vk::ClearValue clearColor = { .color = value };
+
+		const vk::RenderPassBeginInfo renderPassBeginInfo {
+			.sType = vk::StructureType::eRenderPassBeginInfo,
+			.renderPass = m_Context->GetSwapchain()->GetVkRenderPass(),
+			.framebuffer = framebuffer,
+			.renderArea = {
+				.offset = {0, 0},
+				.extent = m_Context->GetSwapchain()->GetExtent()
+			},
+			.clearValueCount = 1,
+			.pClearValues = &clearColor
+		};
+
+		const auto scissor = vk::Rect2D{
+			.offset = {
+				.x = 0,
+				.y = 0
+			},
+			.extent = m_Context->GetSwapchain()->GetExtent(),
+		};
+
+		const float width = static_cast<float>(m_Context->GetSwapchain()->GetWidth());
+		const float height = static_cast<float>(m_Context->GetSwapchain()->GetHeight());
+
+		const auto viewport = vk::Viewport{
+			.width = width,
+			.height = height,
+			.minDepth = 0,
+			.maxDepth = 1
+		};
+
+		commandBuffer.setScissor(0, 1, &scissor);
+		commandBuffer.setViewport(0, 1, &viewport);
+
+		commandBuffer.beginRenderPass(renderPassBeginInfo, vk::SubpassContents::eInline);
+	}
+
+	void VulkanRendererAPI::EndRenderPass() const
+	{
+		const vk::CommandBuffer commandBuffer = m_Context->GetCurrentCommandBuffer();
+		commandBuffer.endRenderPass();
+	}
+
+	void VulkanRendererAPI::BeginFrame() const
+	{
+		m_Context->GetSwapchain()->BeginFrame();
+
+		const vk::CommandBuffer commandBuffer = m_Context->GetCurrentCommandBuffer();
+		constexpr vk::CommandBufferBeginInfo commandBufferBeginInfo {
+			.sType = vk::StructureType::eCommandBufferBeginInfo,
+			.pInheritanceInfo = nullptr
+		};
+
+		commandBuffer.begin(commandBufferBeginInfo);
+	}
+
+	void VulkanRendererAPI::EndFrame() const
+	{
+		const vk::CommandBuffer commandBuffer = m_Context->GetCurrentCommandBuffer();
+		commandBuffer.end();
+		m_Context->GetSwapchain()->Present();
+	}
+
+	void VulkanRendererAPI::RenderGeometry(const std::shared_ptr<GraphicsPipeline>& pipeline, const std::shared_ptr<Buffer>& buffer) const
+	{
+		const vk::Pipeline vkPipeline = static_cast<VulkanGraphicsPipeline*>(pipeline.get())->VkPipeline;
+		const VulkanBuffer* vkBuffer = static_cast<VulkanBuffer*>(buffer.get());
+		const vk::CommandBuffer commandBuffer = m_Context->GetCurrentCommandBuffer();
+		constexpr vk::DeviceSize offsets = { 0 };
+
+		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, vkPipeline);
+		commandBuffer.bindVertexBuffers(0, 1, &vkBuffer->VkBuffer, &offsets);
+		commandBuffer.draw(vkBuffer->Size, 1, 0, 0);
 	}
 }

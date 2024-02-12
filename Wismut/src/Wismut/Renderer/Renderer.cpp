@@ -3,6 +3,7 @@
 
 #include "RendererContext.h"
 #include "Vulkan/VulkanContext.h"
+#include "Wismut/Core/Application.h"
 
 namespace Wi
 {
@@ -21,21 +22,18 @@ namespace Wi
 
 		s_Library.Load("Resources/Shaders/Base.shadercfg");
 
-		RenderPassSpecification renderPassSpecification = {
-
-		};
-
-		const auto renderPass = s_RenderAPI->CreateRenderPass(renderPassSpecification);
-
-		constexpr Vertex vertices[] = {
+		const std::vector<Vertex> vertices = {
 			{
-				.Position = {0.0f, -0.5f }
+				.Position = {0.0f, -0.5f },
+				.Color = {1.0f, 0.0f, 0.0f }
 			},
 			{
-				.Position = {0.5f, 0.5f }
+				.Position = {0.5f, 0.5f },
+				.Color = {0.0f, 1.0f, 0.0f }
 			},
 			{
-				.Position = {-0.5f, 0.5f }
+				.Position = {-0.5f, 0.5f },
+				.Color = {0.0f, 0.0f, 1.0f }
 			},
 		};
 
@@ -44,30 +42,61 @@ namespace Wi
 				.location = 0,
 				.offset = offsetof(Vertex, Position),
 				.stride = sizeof(Vertex),
-				.Format = DataFormat::Float,
+				.Format = DataFormat::Vec2,
 				.Rate = VertexInputRate::Vertex,
-			}
+			},
+			VertexAttribute {
+				.location = 1,
+				.offset = offsetof(Vertex, Color),
+				.stride = sizeof(Vertex),
+				.Format = DataFormat::Vec3,
+				.Rate = VertexInputRate::Vertex,
+			},
 		};
 
 		const PipelineSpecification pipelineSpecification = {
 			.Shader = s_Library.Get("Base").get(),
-			.RenderPass = renderPass.get(),
 			.VertexFormat = format
 		};
 
-		const auto pipeline = s_RenderAPI->CreateGraphicsPipeline(pipelineSpecification);
-
-		const auto buffer = s_RenderAPI->CreateBuffer(sizeof(vertices), BufferUsageFlagBits::Vertex);
-		s_RenderAPI->DestroyBuffer(buffer);
-
-		s_RenderAPI->DestroyGraphicsPipeline(pipeline);
-		s_RenderAPI->DestroyRenderPass(renderPass);
+		m_Pipeline = s_RenderAPI->CreateGraphicsPipeline(pipelineSpecification);
+		m_Buffer = s_RenderAPI->CreateBuffer(vertices, BufferUsageFlagBits::Vertex);
 	}
 
 	void Renderer::Shutdown()
 	{
+		s_RenderAPI->DestroyBuffer(m_Buffer);
+		s_RenderAPI->DestroyGraphicsPipeline(m_Pipeline);
+
 		s_Library.Destroy();
 		s_RendererContext->Destroy();
 		delete s_RendererContext;
+	}
+
+	void Renderer::Begin()
+	{
+		s_RenderAPI->BeginFrame();
+		s_RenderAPI->BeginRenderPass();
+	}
+
+	void Renderer::End()
+	{
+		s_RenderAPI->EndRenderPass();
+		s_RenderAPI->EndFrame();
+	}
+
+	void Renderer::OnWindowResize(int width, int height)
+	{
+		s_RendererContext->OnWindowResize(width, height);
+	}
+
+	void Renderer::DrawTest()
+	{
+		s_RenderAPI->RenderGeometry(m_Pipeline, m_Buffer);
+	}
+
+	uint32_t Renderer::GetCurrentFrameIndex()
+	{
+		return Application::Get()->GetCurrentFrameIndex();
 	}
 }

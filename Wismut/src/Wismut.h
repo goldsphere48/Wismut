@@ -9,3 +9,4 @@
 #include <Wismut/Core/Events/WindowEvents.h>
 #include <Wismut/Core/Events/MouseEvents.h>
 #include <Wismut/Core/Events/KeyEvent.h>
+#include <Wismut/Renderer/Renderer.h>

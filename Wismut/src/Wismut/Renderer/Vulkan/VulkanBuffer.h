@@ -9,5 +9,7 @@ namespace Wi
 	{
 		vk::Buffer VkBuffer;
 		vk::DeviceMemory VkDeviceMemory;
+		uint32_t Size;
+		void* Data;
 	};	
 }

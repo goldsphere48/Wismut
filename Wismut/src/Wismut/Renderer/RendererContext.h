@@ -13,6 +13,7 @@ namespace Wi
 		virtual void Destroy() = 0;
 
 		virtual RendererAPI* GetApi() const = 0;
+		virtual void OnWindowResize(int width, int height) = 0;
 	};
 }
 

@@ -10,6 +10,11 @@ public:
 	{
 		WI_INFO("Layer attached")
 	}
+
+	void Update() override
+	{
+		Wi::Renderer::DrawTest();
+	}
 };
 
 class MyApplication : public Wi::Application

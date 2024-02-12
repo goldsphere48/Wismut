@@ -16,6 +16,7 @@ namespace Wi
 		const vk::Queue& GetGraphicsQueue() const { return m_GraphicsQueue; }
 		const vk::Queue& GetComputeQueue() const { return m_ComputeQueue; }
 		const vk::Queue& GetTransferQueue() const { return m_TransferQueue; }
+		const vk::Queue& GetPresentQueue() const { return m_PresentQueue; }
 
 		std::shared_ptr<VulkanPhysicalDevice> PhysicalDevice;
 		vk::Device LogicalDevice;

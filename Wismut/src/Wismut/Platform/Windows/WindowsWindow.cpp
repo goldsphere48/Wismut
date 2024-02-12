@@ -44,6 +44,8 @@ namespace Wi
 			data->Width = width;
 			data->Height = height;
 			data->EventCallback(e);
+
+			Renderer::OnWindowResize(width, height);
 		});
 
 		glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
