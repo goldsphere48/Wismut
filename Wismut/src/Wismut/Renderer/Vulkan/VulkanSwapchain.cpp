@@ -24,8 +24,7 @@ namespace Wi
 	static vk::Extent2D ChooseSwapExtent(vk::SurfaceCapabilitiesKHR capabilities)
 	{
 		auto [width, height] = VulkanPlatform::GetFramebufferSize();
-		vk::Extent2D extent =
-		{
+		vk::Extent2D extent = {
 			width,
 			height
 		};
@@ -74,8 +73,7 @@ namespace Wi
 		const auto extent = ChooseSwapExtent(m_SurfaceCapabilities);
 		const auto imageCount = std::clamp(m_SurfaceCapabilities.minImageCount + 1, m_SurfaceCapabilities.minImageCount, m_SurfaceCapabilities.maxImageCount);
 
-		vk::SwapchainCreateInfoKHR swapchainCreateInfo =
-		{
+		vk::SwapchainCreateInfoKHR swapchainCreateInfo {
 			.sType = vk::StructureType::eSwapchainCreateInfoKHR,
 			.surface = m_Surface,
 			.minImageCount = imageCount,
@@ -115,8 +113,7 @@ namespace Wi
 
 		for (const auto& image : m_Images)
 		{
-			vk::ImageViewCreateInfo imageViewCreateInfo =
-			{
+			vk::ImageViewCreateInfo imageViewCreateInfo {
 				.sType = vk::StructureType::eImageViewCreateInfo,
 				.image = image,
 				.viewType = vk::ImageViewType::e2D,
@@ -141,6 +138,70 @@ namespace Wi
 			const auto view = m_Device->LogicalDevice.createImageView(imageViewCreateInfo);
 			m_ImageViews.push_back(view);
 		}
+
+		constexpr vk::AttachmentDescription attachmentDescription {
+			.format = m_SurfaceFormat.format,
+			.loadOp = vk::AttachmentLoadOp::eClear,
+			.storeOp = vk::AttachmentStoreOp::eStore,
+			.stencilLoadOp = vk::AttachmentLoadOp::eDontCare,
+			.stencilStoreOp = vk::AttachmentStoreOp::eDontCare,
+			.initialLayout = vk::ImageLayout::eUndefined,
+			.finalLayout = vk::ImageLayout::ePresentSrcKHR
+		};
+
+		vk::AttachmentReference colorAttachmentReference {
+			.attachment = 0,
+			.layout = vk::ImageLayout::eColorAttachmentOptimal
+		};
+
+		vk::SubpassDescription subpass {
+			.colorAttachmentCount = 1,
+			.pColorAttachments = &colorAttachmentReference
+		};
+
+		vk::RenderPassCreateInfo renderPassCreateInfo {
+			.sType = vk::StructureType::eRenderPassCreateInfo,
+			.attachmentCount = 1,
+			.pAttachments = &attachmentDescription,
+			.subpassCount = 1,
+			.pSubpasses = &subpass
+		};
+
+		m_VkRenderPass = m_Device->LogicalDevice.createRenderPass(renderPassCreateInfo);
+
+		m_Framebuffers.resize(m_ImageViews.size());
+		for (uint32_t i = 0; i < m_ImageViews.size(); ++i)
+		{
+			const vk::FramebufferCreateInfo framebufferCreateInfo {
+				.sType = vk::StructureType::eFramebufferCreateInfo,
+				.renderPass = m_VkRenderPass,
+				.attachmentCount = 1,
+				.pAttachments = &m_ImageViews[i],
+				.width = m_SurfaceCapabilities.currentExtent.width,
+				.height = m_SurfaceCapabilities.currentExtent.height,
+				.layers = 1
+			};
+
+			const auto vkFramebuffer = m_Device->LogicalDevice.createFramebuffer(framebufferCreateInfo);
+			m_Framebuffers[i] = vkFramebuffer;
+		}
+
+		const vk::CommandPoolCreateInfo commandPoolCreateInfo {
+			.sType = vk::StructureType::eCommandPoolCreateInfo,
+			.flags = vk::CommandPoolCreateFlagBits::eTransient | vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
+			.queueFamilyIndex = m_Device->PhysicalDevice->QueueFamilyIndices.Graphics.value(),
+		};
+
+		m_VkCommandPool = m_Device->LogicalDevice.createCommandPool(commandPoolCreateInfo);
+
+		const vk::CommandBufferAllocateInfo bufferAllocationInfo {
+			.sType = vk::StructureType::eCommandBufferAllocateInfo,
+			.commandPool = m_VkCommandPool,
+			.level = vk::CommandBufferLevel::ePrimary,
+			.commandBufferCount = static_cast<uint32_t>(m_CommandBuffers.size()),
+		};
+
+		m_CommandBuffers = m_Device->LogicalDevice.allocateCommandBuffers(bufferAllocationInfo);
 	}
 
 	void VulkanSwapchain::Destroy()
@@ -158,6 +219,15 @@ namespace Wi
 
 		m_ImageViews.clear();
 		m_Images.clear();
+
+		m_Device->LogicalDevice.destroyRenderPass(m_VkRenderPass);
+		for (const auto& framebuffer : m_Framebuffers)
+		{
+			m_Device->LogicalDevice.destroyFramebuffer(framebuffer);
+		}
+		m_Framebuffers.clear();
+
+		m_Device->LogicalDevice.destroyCommandPool(m_VkCommandPool);
 
 		m_Device->LogicalDevice.destroySwapchainKHR(m_Swapchain);
 	}

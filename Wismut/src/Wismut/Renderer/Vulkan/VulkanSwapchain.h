@@ -2,6 +2,7 @@
 #include <vulkan/vulkan.hpp>
 
 #include "VulkanDevice.h"
+#include "VulkanRenderPass.h"
 
 namespace Wi
 {
@@ -44,7 +45,12 @@ namespace Wi
 		vk::SurfaceFormatKHR m_SurfaceFormat;
 		vk::PresentModeKHR m_PresentMode;
 		vk::SwapchainKHR m_Swapchain;
+		vk::RenderPass m_VkRenderPass;
+		vk::CommandPool m_VkCommandPool;
+		
 		std::vector<vk::ImageView> m_ImageViews;
 		std::vector<vk::Image> m_Images;
+		std::vector<vk::Framebuffer> m_Framebuffers;
+		std::vector<vk::CommandBuffer> m_CommandBuffers;
 	};
 }
