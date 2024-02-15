@@ -41,7 +41,7 @@ namespace Wi
 		};
 
 		vk::DeviceQueueCreateInfo presentQueueCreateInfo;
-		ZeroVulkanStruct<vk::DeviceQueueCreateInfo>(presentQueueCreateInfo, vk::StructureType::eDeviceQueueCreateInfo);
+		VulkanUtils::ZeroVulkanStruct<vk::DeviceQueueCreateInfo>(presentQueueCreateInfo, vk::StructureType::eDeviceQueueCreateInfo);
 
 		if (physicalDevice->QueueFamilyIndices.Graphics != physicalDevice->QueueFamilyIndices.Present)
 		{

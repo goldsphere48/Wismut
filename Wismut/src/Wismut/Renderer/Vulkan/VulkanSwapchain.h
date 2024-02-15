@@ -2,7 +2,6 @@
 #include <vulkan/vulkan.hpp>
 
 #include "VulkanDevice.h"
-#include "VulkanRenderPass.h"
 
 namespace Wi
 {
