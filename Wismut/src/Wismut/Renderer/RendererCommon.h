@@ -19,14 +19,23 @@ namespace Wi
 
 	struct VertexAttribute
 	{
+		uint32_t binding = 0;
 		uint32_t location = 0;
 		uint32_t offset = 0;
-		uint32_t stride = 0;
 		DataFormat Format = DataFormat::Float;
+	};
+
+	struct VertexDescription
+	{
+		uint32_t stride = 0;
 		VertexInputRate Rate = VertexInputRate::Vertex;
 	};
 
-	using VertexFormat = std::vector<VertexAttribute>;
+	struct VertexFormat
+	{
+		std::vector<VertexDescription> Descriptions;
+		std::vector<VertexAttribute> Attributes;
+	};
 
 	struct Vertex
 	{

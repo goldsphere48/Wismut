@@ -260,28 +260,29 @@ namespace Wi
 	VulkanRendererAPI::VulkanVertexFormat VulkanRendererAPI::CreateVulkanVertexFormat(const VertexFormat& format) const
 	{
 		VulkanVertexFormat vertexFormat;
-		vertexFormat.BindingDescriptions.resize(1);
-		vertexFormat.Attributes.resize(format.size());
+		vertexFormat.BindingDescriptions.resize(format.Descriptions.size());
+		vertexFormat.Attributes.resize(format.Attributes.size());
 
-		vertexFormat.BindingDescriptions[0] = vk::VertexInputBindingDescription{
-			.binding = 0,
-			.stride = format[0].stride,
-			.inputRate = VulkanUtils::ConvertToVkInputRate(format[0].Rate)
-		};
-
-		uint32_t i = 0;
-		for (const auto& vertexInfo : format)
+		for (uint32_t i = 0; i < format.Descriptions.size(); ++i)
 		{
+			vertexFormat.BindingDescriptions[i] = vk::VertexInputBindingDescription{
+				.binding = i,
+				.stride = format.Descriptions[i].stride,
+				.inputRate = VulkanUtils::ConvertToVkInputRate(format.Descriptions[i].Rate)
+			};
+		}
+
+		for (uint32_t i = 0; i < format.Attributes.size(); ++i)
+		{
+			const VertexAttribute& attribute = format.Attributes[i];
 			const vk::VertexInputAttributeDescription attributeDescription{
-				.location = vertexInfo.location,
-				.binding = 0,
-				.format = VulkanUtils::ConvertDataFormatToVkFormat(vertexInfo.Format),
-				.offset = vertexInfo.offset
+				.location = attribute.location,
+				.binding = attribute.binding,
+				.format = VulkanUtils::ConvertDataFormatToVkFormat(attribute.Format),
+				.offset = attribute.offset
 			};
 
 			vertexFormat.Attributes[i] = attributeDescription;
-
-			i++;
 		}
 
 		return vertexFormat;

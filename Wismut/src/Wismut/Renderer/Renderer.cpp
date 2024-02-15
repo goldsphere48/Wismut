@@ -41,19 +41,25 @@ namespace Wi
 		};
 
 		const VertexFormat format = {
-			VertexAttribute {
-				.location = 0,
-				.offset = offsetof(Vertex, Position),
+			.Descriptions = {
+				VertexDescription {
 				.stride = sizeof(Vertex),
-				.Format = DataFormat::Vec2,
 				.Rate = VertexInputRate::Vertex,
+				}
 			},
-			VertexAttribute {
-				.location = 1,
-				.offset = offsetof(Vertex, Color),
-				.stride = sizeof(Vertex),
-				.Format = DataFormat::Vec3,
-				.Rate = VertexInputRate::Vertex,
+			.Attributes = {
+				VertexAttribute {
+					.binding = 0,
+					.location = 0,
+					.offset = offsetof(Vertex, Position),
+					.Format = DataFormat::Vec2,
+				},
+				VertexAttribute {
+					.binding = 0,
+					.location = 1,
+					.offset = offsetof(Vertex, Color),
+					.Format = DataFormat::Vec3,
+				}
 			},
 		};
 
