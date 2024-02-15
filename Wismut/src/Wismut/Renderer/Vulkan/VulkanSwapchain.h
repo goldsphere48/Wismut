@@ -19,6 +19,20 @@ namespace Wi
 
 	class VulkanSwapchain
 	{
+		struct VulkanSyncHandlers
+		{
+			vk::Semaphore AvailableSemaphore;
+			vk::Semaphore RenderFinishedSemaphore;
+			vk::Fence WaitFence;
+		};
+
+		struct VulkanSwapchainResource
+		{
+			vk::ImageView ImageView;
+			vk::Image Image;
+			vk::Framebuffer Framebuffer;
+		};
+
 	public:
 		VulkanSwapchain(const vk::Instance& instance);
 
@@ -37,9 +51,9 @@ namespace Wi
 		vk::Extent2D GetExtent() const { return m_Extent; }
 		const vk::RenderPass& GetVkRenderPass() const { return m_VkRenderPass; }
 		VulkanSwapchainCapabilities GetCapabilities(const vk::PhysicalDevice& device) const;
-		const vk::Framebuffer& GetCurrentFramebuffer() const { return m_Framebuffers[m_CurrentImageIndex]; }
+		const vk::Framebuffer& GetCurrentFramebuffer() const { return m_SwapchainResources[m_CurrentImageIndex].Framebuffer; }
 		const vk::CommandBuffer& GetCurrentCommandBuffer() const { return m_CommandBuffers[m_CurrentImageIndex]; }
-		uint32_t GetImagesCount() const { return m_Framebuffers.size(); };
+		uint32_t GetImagesCount() const { return static_cast<uint32_t>(m_SwapchainResources.size()); }
 
 	private:
 		void Create();
@@ -60,12 +74,8 @@ namespace Wi
 		vk::RenderPass m_VkRenderPass;
 		vk::CommandPool m_VkCommandPool;
 		
-		std::vector<vk::ImageView> m_ImageViews;
-		std::vector<vk::Image> m_Images;
-		std::vector<vk::Framebuffer> m_Framebuffers;
+		std::vector<VulkanSwapchainResource> m_SwapchainResources;
+		std::vector<VulkanSyncHandlers> m_SyncHandlers;
 		std::vector<vk::CommandBuffer> m_CommandBuffers;
-		std::vector<vk::Semaphore> m_ImagesAvailableSemaphores;
-		std::vector<vk::Semaphore> m_RenderFinishedSemaphores;
-		std::vector<vk::Fence> m_InFlightFences;
 	};
 }

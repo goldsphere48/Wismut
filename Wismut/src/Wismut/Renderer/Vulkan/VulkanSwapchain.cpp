@@ -57,25 +57,25 @@ namespace Wi
 		const vk::SubmitInfo submitInfo {
 			.sType = vk::StructureType::eSubmitInfo,
 			.waitSemaphoreCount = 1,
-			.pWaitSemaphores = &m_ImagesAvailableSemaphores[currentFrameIndex],
+			.pWaitSemaphores = &m_SyncHandlers[currentFrameIndex].AvailableSemaphore,
 			.pWaitDstStageMask = waitStages,
 			.commandBufferCount = 1,
-			.pCommandBuffers = &m_CommandBuffers[m_CurrentImageIndex],
+			.pCommandBuffers = &m_CommandBuffers[currentFrameIndex],
 			.signalSemaphoreCount = 1,
-			.pSignalSemaphores = &m_RenderFinishedSemaphores[currentFrameIndex]
+			.pSignalSemaphores = &m_SyncHandlers[currentFrameIndex].RenderFinishedSemaphore
 		};
 
-		const vk::Result resetFencesResult = m_Device->LogicalDevice.resetFences(1, &m_InFlightFences[currentFrameIndex]);
+		const vk::Result resetFencesResult = m_Device->LogicalDevice.resetFences(1, &m_SyncHandlers[currentFrameIndex].WaitFence);
 		WI_CORE_ASSERT(resetFencesResult == vk::Result::eSuccess, "Failed to wait fences in Present");
 
-		vk::Result result = m_Device->GetGraphicsQueue().submit(1, &submitInfo, m_InFlightFences[currentFrameIndex]);
+		vk::Result result = m_Device->GetGraphicsQueue().submit(1, &submitInfo, m_SyncHandlers[currentFrameIndex].WaitFence);
 		if (result != vk::Result::eSuccess)
 			WI_CORE_ERROR("Submit failed");
 
 		const vk::PresentInfoKHR presentInfo {
 			.sType = vk::StructureType::ePresentInfoKHR,
 			.waitSemaphoreCount = 1,
-			.pWaitSemaphores = &m_RenderFinishedSemaphores[currentFrameIndex],
+			.pWaitSemaphores = &m_SyncHandlers[currentFrameIndex].RenderFinishedSemaphore,
 			.swapchainCount = 1,
 			.pSwapchains = &m_Swapchain,
 			.pImageIndices = &m_CurrentImageIndex,
@@ -96,10 +96,10 @@ namespace Wi
 	{
 		const uint32_t currentFrameIndex = Renderer::GetCurrentFrameIndex();
 
-		const vk::Result waitForFencesResult = m_Device->LogicalDevice.waitForFences(1, &m_InFlightFences[currentFrameIndex], VK_TRUE, UINT64_MAX);
+		const vk::Result waitForFencesResult = m_Device->LogicalDevice.waitForFences(1, &m_SyncHandlers[currentFrameIndex].WaitFence, VK_TRUE, UINT64_MAX);
 		WI_CORE_ASSERT(waitForFencesResult == vk::Result::eSuccess, "Failed to wait fences in AcquireNextIMage");
 
-		const auto acquireResult = m_Device->LogicalDevice.acquireNextImageKHR(m_Swapchain, UINT64_MAX, m_ImagesAvailableSemaphores[currentFrameIndex]);
+		const auto acquireResult = m_Device->LogicalDevice.acquireNextImageKHR(m_Swapchain, UINT64_MAX, m_SyncHandlers[currentFrameIndex].AvailableSemaphore);
 		if (acquireResult.result == vk::Result::eSuccess)
 			return acquireResult.value;
 
@@ -169,15 +169,14 @@ namespace Wi
 
 		m_Device->LogicalDevice.waitIdle();
 
-		m_Images = m_Device->LogicalDevice.getSwapchainImagesKHR(m_Swapchain);
-		m_ImageViews.resize(m_Images.size());
+		const auto images = m_Device->LogicalDevice.getSwapchainImagesKHR(m_Swapchain);
+		m_SwapchainResources.resize(images.size());
 
-		int index = 0;
-		for (const auto& image : m_Images)
+		for (uint32_t i = 0; i < images.size(); ++i)
 		{
 			vk::ImageViewCreateInfo imageViewCreateInfo {
 				.sType = vk::StructureType::eImageViewCreateInfo,
-				.image = image,
+				.image = images[i],
 				.viewType = vk::ImageViewType::e2D,
 				.format = m_SurfaceFormat.format,
 				.components =
@@ -198,7 +197,8 @@ namespace Wi
 			};
 
 			const auto view = m_Device->LogicalDevice.createImageView(imageViewCreateInfo);
-			m_ImageViews[index++] = view;
+			m_SwapchainResources[i].Image = images[i];
+			m_SwapchainResources[i].ImageView = view;
 		}
 
 		const vk::AttachmentDescription attachmentDescription {
@@ -242,21 +242,20 @@ namespace Wi
 
 		m_VkRenderPass = m_Device->LogicalDevice.createRenderPass(renderPassCreateInfo);
 
-		m_Framebuffers.resize(m_ImageViews.size());
-		for (uint32_t i = 0; i < m_ImageViews.size(); ++i)
+		for (auto& m_SwapchainResource : m_SwapchainResources)
 		{
 			const vk::FramebufferCreateInfo framebufferCreateInfo {
 				.sType = vk::StructureType::eFramebufferCreateInfo,
 				.renderPass = m_VkRenderPass,
 				.attachmentCount = 1,
-				.pAttachments = &m_ImageViews[i],
+				.pAttachments = &m_SwapchainResource.ImageView,
 				.width = m_SurfaceCapabilities.currentExtent.width,
 				.height = m_SurfaceCapabilities.currentExtent.height,
 				.layers = 1
 			};
 
 			const auto vkFramebuffer = m_Device->LogicalDevice.createFramebuffer(framebufferCreateInfo);
-			m_Framebuffers[i] = vkFramebuffer;
+			m_SwapchainResource.Framebuffer = vkFramebuffer;
 		}
 
 		const vk::CommandPoolCreateInfo commandPoolCreateInfo {
@@ -267,12 +266,11 @@ namespace Wi
 
 		m_VkCommandPool = m_Device->LogicalDevice.createCommandPool(commandPoolCreateInfo);
 
-		m_CommandBuffers.resize(m_Framebuffers.size());
 		const vk::CommandBufferAllocateInfo bufferAllocationInfo {
 			.sType = vk::StructureType::eCommandBufferAllocateInfo,
 			.commandPool = m_VkCommandPool,
 			.level = vk::CommandBufferLevel::ePrimary,
-			.commandBufferCount = static_cast<uint32_t>(m_CommandBuffers.size()),
+			.commandBufferCount = static_cast<uint32_t>(m_SwapchainResources.size()),
 		};
 
 		m_CommandBuffers = m_Device->LogicalDevice.allocateCommandBuffers(bufferAllocationInfo);
@@ -288,15 +286,13 @@ namespace Wi
 
 		uint32_t maxFramesInFlight = Renderer::GetConfig().MaxFramesInFlight;
 
-		m_ImagesAvailableSemaphores.resize(maxFramesInFlight);
-		m_RenderFinishedSemaphores.resize(maxFramesInFlight);
-		m_InFlightFences.resize(maxFramesInFlight);
+		m_SyncHandlers.resize(maxFramesInFlight);
 
 		for (uint32_t i = 0; i < maxFramesInFlight; ++i)
 		{
-			m_ImagesAvailableSemaphores[i] = m_Device->LogicalDevice.createSemaphore(semaphoreCreateInfo);
-			m_RenderFinishedSemaphores[i] = m_Device->LogicalDevice.createSemaphore(semaphoreCreateInfo);
-			m_InFlightFences[i] = m_Device->LogicalDevice.createFence(fenceCreateInfo);
+			m_SyncHandlers[i].AvailableSemaphore = m_Device->LogicalDevice.createSemaphore(semaphoreCreateInfo);
+			m_SyncHandlers[i].RenderFinishedSemaphore = m_Device->LogicalDevice.createSemaphore(semaphoreCreateInfo);
+			m_SyncHandlers[i].WaitFence = m_Device->LogicalDevice.createFence(fenceCreateInfo);
 		}
 	}
 
@@ -312,30 +308,23 @@ namespace Wi
 
 		for (int i = 0; i < Renderer::GetConfig().MaxFramesInFlight; ++i)
 		{
-			m_Device->LogicalDevice.destroySemaphore(m_RenderFinishedSemaphores[i]);
-			m_Device->LogicalDevice.destroySemaphore(m_ImagesAvailableSemaphores[i]);
-			m_Device->LogicalDevice.destroyFence(m_InFlightFences[i]);
+			m_Device->LogicalDevice.destroySemaphore(m_SyncHandlers[i].RenderFinishedSemaphore);
+			m_Device->LogicalDevice.destroySemaphore(m_SyncHandlers[i].AvailableSemaphore);
+			m_Device->LogicalDevice.destroyFence(m_SyncHandlers[i].WaitFence);
 		}
 
-		m_ImagesAvailableSemaphores.clear();
-		m_RenderFinishedSemaphores.clear();
-		m_InFlightFences.clear();
+		m_SyncHandlers.clear();
 
-		for (const auto& view : m_ImageViews)
-			m_Device->LogicalDevice.destroyImageView(view);
-
-		m_ImageViews.clear();
-		m_Images.clear();
-
-		m_Device->LogicalDevice.destroyRenderPass(m_VkRenderPass);
-		for (const auto& framebuffer : m_Framebuffers)
+		for (const auto& resource : m_SwapchainResources) 
 		{
-			m_Device->LogicalDevice.destroyFramebuffer(framebuffer);
+			m_Device->LogicalDevice.destroyImageView(resource.ImageView);
+			m_Device->LogicalDevice.destroyFramebuffer(resource.Framebuffer);
 		}
-		m_Framebuffers.clear();
+		m_SwapchainResources.clear();
 
+		m_Device->LogicalDevice.freeCommandBuffers(m_VkCommandPool, m_CommandBuffers.size(), m_CommandBuffers.data());
 		m_Device->LogicalDevice.destroyCommandPool(m_VkCommandPool);
-
+		m_Device->LogicalDevice.destroyRenderPass(m_VkRenderPass);
 		m_Device->LogicalDevice.destroySwapchainKHR(m_Swapchain);
 	}
 
