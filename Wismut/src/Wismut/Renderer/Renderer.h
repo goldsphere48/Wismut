@@ -1,4 +1,5 @@
 #pragma once
+#include "RendererConfig.h"
 #include "RendererAPI.h"
 #include "RendererContext.h"
 #include "ShaderLibrary.h"
@@ -8,7 +9,7 @@ namespace Wi
 	class Renderer
 	{
 	public:
-		static void Initialize();
+		static void Initialize(const RendererConfig& config);
 		static void Shutdown();
 
 		static void Begin();
@@ -19,16 +20,15 @@ namespace Wi
 
 		static const RendererContext* GetContext() { return s_RendererContext; }
 		static const RendererAPI* GetApi() { return s_RenderAPI; }
+		static const RendererConfig& GetConfig() { return s_RendererConfig; }
 		static uint32_t GetCurrentFrameIndex();
-
-	public:
-		inline static constexpr uint32_t MAX_FRAMES_IN_FLIGHT = 2;
 
 	private:
 		inline static std::shared_ptr<GraphicsPipeline> m_Pipeline;
 		inline static std::shared_ptr<Buffer> m_Buffer;
 
 		inline static ShaderLibrary s_Library;
+		inline static RendererConfig s_RendererConfig;
 		inline static const RendererAPI* s_RenderAPI = nullptr;
 		inline static RendererContext* s_RendererContext = nullptr;
 	};

@@ -7,8 +7,8 @@ namespace Wi
 	{
 	public:
 		std::string Title;
-		int Width;
-		int Height;
+		uint32_t Width;
+		uint32_t Height;
 		EventCallback EventCallback;
 	};
 

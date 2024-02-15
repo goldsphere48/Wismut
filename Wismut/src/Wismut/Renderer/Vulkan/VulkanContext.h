@@ -16,6 +16,7 @@ namespace Wi
 		void Destroy() override;
 
 		void OnWindowResize(int width, int height) override;
+		uint32_t GetAvailableImagesCount() const override { return m_Swapchain->GetImagesCount(); }
 
 		const std::shared_ptr<VulkanDevice>& GetDevice() const { return m_Device; }
 		const std::shared_ptr<VulkanSwapchain>& GetSwapchain() const { return m_Swapchain; }
@@ -26,7 +27,7 @@ namespace Wi
 	private:
 		static bool s_ValidationEnabled;
 
-		VulkanRendererAPI* m_RendererApi;
+		VulkanRendererAPI* m_RendererApi = nullptr;
 		vk::Instance m_VkInstance;
 		vk::DispatchLoaderDynamic m_DynamicLoader;
 		vk::DebugUtilsMessengerEXT m_DebugMessenger;

@@ -3,6 +3,7 @@
 
 #include "VulkanUtils.h"
 #include "VulkanPlatform.h"
+#include "Wismut/Renderer/Renderer.h"
 
 namespace Wi
 {

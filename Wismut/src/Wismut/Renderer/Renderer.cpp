@@ -12,12 +12,15 @@ namespace Wi
 		return new VulkanContext();
 	}
 	
-	void Renderer::Initialize()
+	void Renderer::Initialize(const RendererConfig& config)
 	{
+		s_RendererConfig = config;
 		WI_CORE_INFO("Initializing renderer...")
 
 		s_RendererContext = CreateRenderModule();
 		s_RendererContext->Initialize();
+		s_RendererConfig.MaxFramesInFlight = std::min(s_RendererConfig.MaxFramesInFlight, s_RendererContext->GetAvailableImagesCount());
+
 		s_RenderAPI = s_RendererContext->GetApi();
 
 		s_Library.Load("Resources/Shaders/Base.shadercfg");

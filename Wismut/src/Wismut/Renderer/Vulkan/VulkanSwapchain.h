@@ -39,6 +39,7 @@ namespace Wi
 		VulkanSwapchainCapabilities GetCapabilities(const vk::PhysicalDevice& device) const;
 		const vk::Framebuffer& GetCurrentFramebuffer() const { return m_Framebuffers[m_CurrentImageIndex]; }
 		const vk::CommandBuffer& GetCurrentCommandBuffer() const { return m_CommandBuffers[m_CurrentImageIndex]; }
+		uint32_t GetImagesCount() const { return m_Framebuffers.size(); };
 
 	private:
 		void Create();

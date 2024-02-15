@@ -7,7 +7,7 @@
 
 namespace Wi
 {
-	Application::Application()
+	Application::Application(const ApplicationConfig& config) : m_ApplicationConfig(config)
 	{
 		Logger::Initialize();
 
@@ -21,15 +21,15 @@ namespace Wi
 
 		const auto windowSpecification = WindowSpecification
 		{
-			.Title = "Wismut App",
-			.Width = 1280,
-			.Height = 720,
+			.Title = config.ApplicationName,
+			.Width = config.WindowWidth,
+			.Height = config.WindowHeight,
 			.EventCallback = [this](Event& e) { return this->OnEvent(e); }
 		};
 
 		m_Window = Window::Create(windowSpecification);
 
-		Renderer::Initialize();
+		Renderer::Initialize(m_ApplicationConfig.RendererConfig);
 	}
 
 	void Application::Run()
@@ -45,7 +45,7 @@ namespace Wi
 
 			Renderer::End();
 
-			m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % Renderer::MAX_FRAMES_IN_FLIGHT;
+			m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % Renderer::GetConfig().MaxFramesInFlight;
 
 			Input::ClearReleasedKeys();
 		}

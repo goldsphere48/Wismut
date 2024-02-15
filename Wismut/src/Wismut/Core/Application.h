@@ -1,4 +1,5 @@
 #pragma once
+#include "ApplicationConfig.h"
 #include "LayerStack.h"
 #include "Window.h"
 #include "Events/Event.h"
@@ -9,7 +10,7 @@ namespace Wi
 	class Application
 	{
 	public:
-		Application();
+		Application(const ApplicationConfig& config);
 		virtual ~Application() = default;
 
 		void Run();
@@ -30,6 +31,7 @@ namespace Wi
 
 	private:
 		inline static Application* s_Instance;
+		ApplicationConfig m_ApplicationConfig;
 		uint32_t m_CurrentFrameIndex = 0;
 		LayerStack m_LayerStack;
 		std::shared_ptr<Window> m_Window;

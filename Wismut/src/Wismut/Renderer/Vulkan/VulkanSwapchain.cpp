@@ -286,11 +286,13 @@ namespace Wi
 			.flags = vk::FenceCreateFlagBits::eSignaled
 		};
 
-		m_ImagesAvailableSemaphores.resize(Renderer::MAX_FRAMES_IN_FLIGHT);
-		m_RenderFinishedSemaphores.resize(Renderer::MAX_FRAMES_IN_FLIGHT);
-		m_InFlightFences.resize(Renderer::MAX_FRAMES_IN_FLIGHT);
+		uint32_t maxFramesInFlight = Renderer::GetConfig().MaxFramesInFlight;
 
-		for (int i = 0; i < Renderer::MAX_FRAMES_IN_FLIGHT; ++i)
+		m_ImagesAvailableSemaphores.resize(maxFramesInFlight);
+		m_RenderFinishedSemaphores.resize(maxFramesInFlight);
+		m_InFlightFences.resize(maxFramesInFlight);
+
+		for (uint32_t i = 0; i < maxFramesInFlight; ++i)
 		{
 			m_ImagesAvailableSemaphores[i] = m_Device->LogicalDevice.createSemaphore(semaphoreCreateInfo);
 			m_RenderFinishedSemaphores[i] = m_Device->LogicalDevice.createSemaphore(semaphoreCreateInfo);
@@ -308,7 +310,7 @@ namespace Wi
 	{
 		m_Device->LogicalDevice.waitIdle();
 
-		for (int i = 0; i < Renderer::MAX_FRAMES_IN_FLIGHT; ++i)
+		for (int i = 0; i < Renderer::GetConfig().MaxFramesInFlight; ++i)
 		{
 			m_Device->LogicalDevice.destroySemaphore(m_RenderFinishedSemaphores[i]);
 			m_Device->LogicalDevice.destroySemaphore(m_ImagesAvailableSemaphores[i]);

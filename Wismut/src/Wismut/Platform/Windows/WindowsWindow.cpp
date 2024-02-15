@@ -19,12 +19,15 @@ namespace Wi
 
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-		m_Window = glfwCreateWindow(specification.Width, specification.Height, specification.Title.c_str(), nullptr, nullptr);
+		const int width = static_cast<int>(specification.Width);
+		const int height = static_cast<int>(specification.Height);
+
+		m_Window = glfwCreateWindow(width, height, specification.Title.c_str(), nullptr, nullptr);
 
 		m_Data = WindowData
 		{
-			.Width = specification.Width,
-			.Height = specification.Height,
+			.Width = width,
+			.Height = height,
 			.EventCallback = specification.EventCallback
 		};
 
