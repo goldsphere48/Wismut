@@ -22,12 +22,12 @@ namespace Wi
 
 		static Application* Get() { return s_Instance; }
 		uint32_t GetCurrentFrameIndex() const { return m_CurrentFrameIndex; }
-		bool OnResizeEvent(const WindowResizeEvent& event);
 
 	private:
 		void ProcessEvents() const;
 		bool OnEvent(Event& event);
 		bool OnCloseEvent(WindowCloseEvent& event);
+		bool OnResizeEvent(const WindowResizeEvent& event);
 		void OnShutdown();
 
 	private:
@@ -37,5 +37,6 @@ namespace Wi
 		LayerStack m_LayerStack;
 		std::shared_ptr<Window> m_Window;
 		bool m_Running = true;
+		bool m_Minimized = false;
 	};
 }

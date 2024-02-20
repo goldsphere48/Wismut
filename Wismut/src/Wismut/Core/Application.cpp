@@ -38,12 +38,15 @@ namespace Wi
 		{
 			ProcessEvents();
 
-			Renderer::Begin();
+			if (!m_Minimized) 
+			{
+				Renderer::Begin();
 
-			for (const auto layer : m_LayerStack)
-				layer->Update();
+				for (const auto layer : m_LayerStack)
+					layer->Update();
 
-			Renderer::End();
+				Renderer::End();
+			}
 
 			m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % Renderer::GetConfig().MaxFramesInFlight;
 
@@ -81,6 +84,14 @@ namespace Wi
 
 	bool Application::OnResizeEvent(const WindowResizeEvent& event)
 	{
+		if (event.GetWidth() == 0 || event.GetHeight() == 0)
+		{
+			m_Minimized = true;
+			return true;
+		}
+
+		m_Minimized = false;
+		
 		Renderer::OnWindowResize(event.GetWidth(), event.GetHeight());
 		return true;
 	}
