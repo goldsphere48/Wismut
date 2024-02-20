@@ -68,6 +68,7 @@ namespace Wi
 
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<WindowCloseEvent>([this](WindowCloseEvent& e) { return this->OnCloseEvent(e); });
+		dispatcher.Dispatch<WindowResizeEvent>([this](WindowResizeEvent& e) { return this->OnResizeEvent(e); });
 
 		return true;
 	}
@@ -75,6 +76,12 @@ namespace Wi
 	bool Application::OnCloseEvent(WindowCloseEvent& event)
 	{
 		m_Running = false;
+		return true;
+	}
+
+	bool Application::OnResizeEvent(const WindowResizeEvent& event)
+	{
+		Renderer::OnWindowResize(event.GetWidth(), event.GetHeight());
 		return true;
 	}
 

@@ -22,6 +22,7 @@ namespace Wi
 
 		static Application* Get() { return s_Instance; }
 		uint32_t GetCurrentFrameIndex() const { return m_CurrentFrameIndex; }
+		bool OnResizeEvent(const WindowResizeEvent& event);
 
 	private:
 		void ProcessEvents() const;

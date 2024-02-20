@@ -396,6 +396,7 @@ namespace Wi
 		const vk::CommandBuffer commandBuffer = m_Context->GetCurrentCommandBuffer();
 		constexpr vk::CommandBufferBeginInfo commandBufferBeginInfo {
 			.sType = vk::StructureType::eCommandBufferBeginInfo,
+			.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit,
 			.pInheritanceInfo = nullptr
 		};
 

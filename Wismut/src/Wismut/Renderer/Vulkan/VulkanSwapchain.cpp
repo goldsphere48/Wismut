@@ -1,6 +1,7 @@
 #include "wipch.h"
 #include "VulkanSwapchain.h"
 
+#include "VulkanUtils.h"
 #include "Windows/WindowsVulkanPlatform.h"
 #include "Wismut/Renderer/Renderer.h"
 
@@ -52,30 +53,28 @@ namespace Wi
 	{
 		vk::PipelineStageFlags waitStages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
 
-		const uint32_t currentFrameIndex = Renderer::GetCurrentFrameIndex();
-
 		const vk::SubmitInfo submitInfo {
 			.sType = vk::StructureType::eSubmitInfo,
 			.waitSemaphoreCount = 1,
-			.pWaitSemaphores = &m_SyncHandlers[currentFrameIndex].AvailableSemaphore,
+			.pWaitSemaphores = &m_SyncHandlers[m_CurrentBufferIndex].AvailableSemaphore,
 			.pWaitDstStageMask = waitStages,
 			.commandBufferCount = 1,
-			.pCommandBuffers = &m_CommandBuffers[currentFrameIndex],
+			.pCommandBuffers = &m_CommandBuffers[m_CurrentBufferIndex],
 			.signalSemaphoreCount = 1,
-			.pSignalSemaphores = &m_SyncHandlers[currentFrameIndex].RenderFinishedSemaphore
+			.pSignalSemaphores = &m_SyncHandlers[m_CurrentBufferIndex].RenderFinishedSemaphore
 		};
 
-		const vk::Result resetFencesResult = m_Device->LogicalDevice.resetFences(1, &m_SyncHandlers[currentFrameIndex].WaitFence);
-		WI_CORE_ASSERT(resetFencesResult == vk::Result::eSuccess, "Failed to wait fences in Present");
+		const vk::Result resetFencesResult = m_Device->LogicalDevice.resetFences(1, &m_SyncHandlers[m_CurrentBufferIndex].WaitFence);
+		VK_CHECK_RESULT(resetFencesResult, "Failed to wait fences in Present");
 
-		vk::Result result = m_Device->GetGraphicsQueue().submit(1, &submitInfo, m_SyncHandlers[currentFrameIndex].WaitFence);
+		vk::Result result = m_Device->GetGraphicsQueue().submit(1, &submitInfo, m_SyncHandlers[m_CurrentBufferIndex].WaitFence);
 		if (result != vk::Result::eSuccess)
 			WI_CORE_ERROR("Submit failed");
 
 		const vk::PresentInfoKHR presentInfo {
 			.sType = vk::StructureType::ePresentInfoKHR,
 			.waitSemaphoreCount = 1,
-			.pWaitSemaphores = &m_SyncHandlers[currentFrameIndex].RenderFinishedSemaphore,
+			.pWaitSemaphores = &m_SyncHandlers[m_CurrentBufferIndex].RenderFinishedSemaphore,
 			.swapchainCount = 1,
 			.pSwapchains = &m_Swapchain,
 			.pImageIndices = &m_CurrentImageIndex,
@@ -83,29 +82,36 @@ namespace Wi
 		};
 
 		result = m_Device->GetPresentQueue().presentKHR(&presentInfo);
-		if (result != vk::Result::eSuccess)
+
+		if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR) 
+		{
+			WI_CORE_INFO("Swapchain is out of date and should be recreated");
+		} else if (result != vk::Result::eSuccess) 
+		{
 			WI_CORE_ERROR("Present failed");
+		}
+
+		m_CurrentBufferIndex = (m_CurrentBufferIndex + 1) % Renderer::GetConfig().MaxFramesInFlight;
+
+		const vk::Result waitForFencesResult = m_Device->LogicalDevice.waitForFences(1, &m_SyncHandlers[m_CurrentBufferIndex].WaitFence, VK_TRUE, UINT64_MAX);
+		VK_CHECK_RESULT(waitForFencesResult, "Failed to wait fences in AcquireNextImage");
 	}
 
 	void VulkanSwapchain::BeginFrame()
 	{
 		m_CurrentImageIndex = AcquireNextImage();
+		m_CommandBuffers[m_CurrentBufferIndex].reset();
 	}
 
 	uint32_t VulkanSwapchain::AcquireNextImage() const
 	{
-		const uint32_t currentFrameIndex = Renderer::GetCurrentFrameIndex();
+		const vk::Result waitForFencesResult = m_Device->LogicalDevice.waitForFences(1, &m_SyncHandlers[m_CurrentBufferIndex].WaitFence, VK_TRUE, UINT64_MAX);
+		VK_CHECK_RESULT(waitForFencesResult, "Failed to wait fences in AcquireNextImage");
 
-		const vk::Result waitForFencesResult = m_Device->LogicalDevice.waitForFences(1, &m_SyncHandlers[currentFrameIndex].WaitFence, VK_TRUE, UINT64_MAX);
-		WI_CORE_ASSERT(waitForFencesResult == vk::Result::eSuccess, "Failed to wait fences in AcquireNextIMage");
+		const auto acquireResult = m_Device->LogicalDevice.acquireNextImageKHR(m_Swapchain, UINT64_MAX, m_SyncHandlers[m_CurrentBufferIndex].AvailableSemaphore);
+		VK_CHECK_RESULT(acquireResult.result, "Faield when acquire next image");
 
-		const auto acquireResult = m_Device->LogicalDevice.acquireNextImageKHR(m_Swapchain, UINT64_MAX, m_SyncHandlers[currentFrameIndex].AvailableSemaphore);
-		if (acquireResult.result == vk::Result::eSuccess)
-			return acquireResult.value;
-
-		WI_CORE_ERROR("Failed to acquire image");
-
-		return 0;
+		return acquireResult.value;
 	}
 
 	VulkanSwapchainCapabilities VulkanSwapchain::GetCapabilities(const vk::PhysicalDevice& device) const
@@ -120,19 +126,25 @@ namespace Wi
 	void VulkanSwapchain::Initialize(const std::shared_ptr<VulkanDevice>& device)
 	{
 		m_Device = device;
+		Create();
+	}
+
+	void VulkanSwapchain::Create()
+	{
+		m_Device->LogicalDevice.waitIdle();
 
 		const auto capabilities = GetCapabilities(m_Device->PhysicalDevice->Device);
 		m_SurfaceFormat = ChooseFormat(capabilities.Formats);
 		m_PresentMode = ChoosePresentMode(capabilities.PresentModes);
 		m_SurfaceCapabilities = capabilities.SurfaceCapabilities;
 
-		Create();
-	}
-
-	void VulkanSwapchain::Create()
-	{
 		m_Extent = ChooseSwapExtent(m_SurfaceCapabilities);
+		m_Width = m_Extent.width;
+		m_Height = m_Extent.height;
+
 		const auto imageCount = std::clamp(m_SurfaceCapabilities.minImageCount + 1, m_SurfaceCapabilities.minImageCount, m_SurfaceCapabilities.maxImageCount);
+
+		const auto oldSwapchain = m_Swapchain;
 
 		vk::SwapchainCreateInfoKHR swapchainCreateInfo {
 			.sType = vk::StructureType::eSwapchainCreateInfoKHR,
@@ -146,7 +158,8 @@ namespace Wi
 			.preTransform = m_SurfaceCapabilities.currentTransform,
 			.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque,
 			.presentMode = m_PresentMode,
-			.clipped = VK_TRUE
+			.clipped = VK_TRUE,
+			.oldSwapchain = oldSwapchain
 		};
 
 		const auto indices = m_Device->PhysicalDevice->QueueFamilyIndices;
@@ -166,6 +179,9 @@ namespace Wi
 		}
 
 		m_Swapchain = m_Device->LogicalDevice.createSwapchainKHR(swapchainCreateInfo);
+
+		if (oldSwapchain)
+			m_Device->LogicalDevice.destroySwapchainKHR(oldSwapchain);
 
 		m_Device->LogicalDevice.waitIdle();
 
@@ -249,8 +265,8 @@ namespace Wi
 				.renderPass = m_VkRenderPass,
 				.attachmentCount = 1,
 				.pAttachments = &m_SwapchainResource.ImageView,
-				.width = m_SurfaceCapabilities.currentExtent.width,
-				.height = m_SurfaceCapabilities.currentExtent.height,
+				.width = m_Width,
+				.height = m_Height,
 				.layers = 1
 			};
 
@@ -294,11 +310,14 @@ namespace Wi
 			m_SyncHandlers[i].RenderFinishedSemaphore = m_Device->LogicalDevice.createSemaphore(semaphoreCreateInfo);
 			m_SyncHandlers[i].WaitFence = m_Device->LogicalDevice.createFence(fenceCreateInfo);
 		}
+
+		m_Device->LogicalDevice.waitIdle();
 	}
 
 	void VulkanSwapchain::Destroy()
 	{
 		DestroySwapchain();
+		m_Device->LogicalDevice.destroySwapchainKHR(m_Swapchain);
 		m_Instance.destroySurfaceKHR(m_Surface);
 	}
 
@@ -325,12 +344,20 @@ namespace Wi
 		m_Device->LogicalDevice.freeCommandBuffers(m_VkCommandPool, m_CommandBuffers.size(), m_CommandBuffers.data());
 		m_Device->LogicalDevice.destroyCommandPool(m_VkCommandPool);
 		m_Device->LogicalDevice.destroyRenderPass(m_VkRenderPass);
-		m_Device->LogicalDevice.destroySwapchainKHR(m_Swapchain);
+
+		m_Device->LogicalDevice.waitIdle();
 	}
 
 	void VulkanSwapchain::RecreateSwapchain()
 	{
-		DestroySwapchain();
+		WI_CORE_INFO("Recreating swapchain...");
+		if (m_Swapchain) {
+			DestroySwapchain();
+		}
 		Create();
+		WI_CORE_INFO("New size: {0} {1}", m_Width, m_Height);
+		if (m_RecreateCallback) {
+			m_RecreateCallback(m_Width, m_Height);
+		}
 	}
 }

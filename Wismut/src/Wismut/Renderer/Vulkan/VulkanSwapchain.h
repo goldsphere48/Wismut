@@ -19,6 +19,8 @@ namespace Wi
 
 	class VulkanSwapchain
 	{
+		using RecreateCallback = std::function<void(uint32_t, uint32_t)>;
+
 		struct VulkanSyncHandlers
 		{
 			vk::Semaphore AvailableSemaphore;
@@ -37,6 +39,7 @@ namespace Wi
 		VulkanSwapchain(const vk::Instance& instance);
 
 		void Initialize(const std::shared_ptr<VulkanDevice>& device);
+		void SetRecreateCallback(const RecreateCallback& callback) { m_RecreateCallback = callback; }
 
 		void Destroy();
 		void RecreateSwapchain();
@@ -52,7 +55,7 @@ namespace Wi
 		const vk::RenderPass& GetVkRenderPass() const { return m_VkRenderPass; }
 		VulkanSwapchainCapabilities GetCapabilities(const vk::PhysicalDevice& device) const;
 		const vk::Framebuffer& GetCurrentFramebuffer() const { return m_SwapchainResources[m_CurrentImageIndex].Framebuffer; }
-		const vk::CommandBuffer& GetCurrentCommandBuffer() const { return m_CommandBuffers[m_CurrentImageIndex]; }
+		const vk::CommandBuffer& GetCurrentCommandBuffer() const { return m_CommandBuffers[m_CurrentBufferIndex]; }
 		uint32_t GetImagesCount() const { return static_cast<uint32_t>(m_SwapchainResources.size()); }
 
 	private:
@@ -62,6 +65,10 @@ namespace Wi
 
 	private:
 		uint32_t m_CurrentImageIndex = 0;
+		uint32_t m_CurrentBufferIndex = 0;
+		uint32_t m_Width = 0;
+		uint32_t m_Height = 0;
+		RecreateCallback m_RecreateCallback = nullptr;
 
 		std::shared_ptr<VulkanDevice> m_Device;
 		const vk::Instance& m_Instance;
