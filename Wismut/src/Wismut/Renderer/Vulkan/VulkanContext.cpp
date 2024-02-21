@@ -58,9 +58,9 @@ namespace Wi
 				bool allExtensionsSupported = true;
 				if (device->Properties.deviceType == requiredDeviceType)
 				{
-					for (const auto& requiredExtension : deviceRequirements.RequiredExtensions)
+					for (const std::string& requiredExtension : deviceRequirements.RequiredExtensions)
 					{
-						const auto found = device->IsSupportExtension(requiredExtension);
+						const bool found = device->IsSupportExtension(requiredExtension);
 
 						if (!found)
 							allExtensionsSupported = false;
@@ -90,7 +90,7 @@ namespace Wi
 			.apiVersion = VK_API_VERSION_1_3,
 		};
 
-		auto extensions = VulkanPlatform::GetExtensions();
+		std::vector<const char*> extensions = VulkanPlatform::GetExtensions();
 
 		const vk::DebugUtilsMessengerCreateInfoEXT debugMessengerCreateInfo{
 			.sType = vk::StructureType::eDebugUtilsMessengerCreateInfoEXT,
@@ -132,7 +132,7 @@ namespace Wi
 
 		if (s_ValidationEnabled) 
 		{
-			const auto result = m_VkInstance.createDebugUtilsMessengerEXT(&debugMessengerCreateInfo, nullptr, &m_DebugMessenger, m_DynamicLoader);
+			const vk::Result result = m_VkInstance.createDebugUtilsMessengerEXT(&debugMessengerCreateInfo, nullptr, &m_DebugMessenger, m_DynamicLoader);
 			VK_CHECK_RESULT(result, "Failed to create debug messenger")
 		}
 

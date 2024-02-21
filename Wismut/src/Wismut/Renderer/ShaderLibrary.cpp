@@ -30,7 +30,7 @@ namespace Wi
 		if (in)
 		{
 			in.seekg(0, std::ios::end);
-			auto fileSize = in.tellg();
+			std::streampos fileSize = in.tellg();
 			const int skippedChars = SkipBOM(in);
 
 			fileSize -= skippedChars - 1;
@@ -58,7 +58,7 @@ namespace Wi
 
 	void ShaderLibrary::Destroy()
 	{
-		for (auto shader : m_Shaders | std::views::values)
+		for (const std::shared_ptr<Shader>& shader : m_Shaders | std::views::values)
 			Renderer::GetApi()->DestroyShaderProgram(shader);
 		
 		m_Shaders.clear();
@@ -82,8 +82,8 @@ namespace Wi
 	ShaderConfig ShaderLoader::ParseConfig(const std::filesystem::path& cfg)
 	{
 		ShaderConfig config;
-		const auto source = ReadUTF8FileWithoutBOM(cfg);
-		const auto result = toml::parse(source);
+		const std::string source = ReadUTF8FileWithoutBOM(cfg);
+		const toml::parse_result result = toml::parse(source);
 
 		WI_CORE_ASSERT(result, "Faield to open shader config {0}. Error: {1}", cfg.generic_string(), result.error().description());
 		

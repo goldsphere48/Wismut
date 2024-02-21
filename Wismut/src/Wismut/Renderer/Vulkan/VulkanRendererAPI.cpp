@@ -68,7 +68,7 @@ namespace Wi
 	void VulkanRendererAPI::DestroyShaderProgram(const std::shared_ptr<Shader>& shader) const
 	{
 		const VulkanShader* vkShader = static_cast<VulkanShader*>(shader.get());
-		for (const auto& stages : vkShader->VkStagesCreateInfo)
+		for (const vk::PipelineShaderStageCreateInfo& stages : vkShader->VkStagesCreateInfo)
 			m_Device.destroyShaderModule(stages.module);
 
 		m_Device.destroyPipelineLayout(vkShader->PipelineLayout);
@@ -77,8 +77,7 @@ namespace Wi
 	std::shared_ptr<GraphicsPipeline> VulkanRendererAPI::CreateGraphicsPipeline(const PipelineSpecification& specification) const
 	{
 		const auto vkShader = static_cast<VulkanShader*>(specification.Shader);
-
-		const auto vertexFormat = CreateVulkanVertexFormat(specification.VertexFormat);
+		const VulkanVertexFormat vertexFormat = CreateVulkanVertexFormat(specification.VertexFormat);
 
 		vk::PipelineVertexInputStateCreateInfo vertexInputCreateInfo {
 			.sType = vk::StructureType::ePipelineVertexInputStateCreateInfo,
@@ -183,11 +182,11 @@ namespace Wi
 			.basePipelineIndex = -1
 		};
 
-		const auto result = m_Device.createGraphicsPipeline(nullptr, pipelineCreateInfo);
-		WI_CORE_ASSERT(result.result == vk::Result::eSuccess, "Failed to create vulkan graphics pipelie");
+		const vk::ResultValue<vk::Pipeline> pipelineResult = m_Device.createGraphicsPipeline(nullptr, pipelineCreateInfo);
+		VK_CHECK_RESULT(pipelineResult.result, "Failed to create vulkan graphics pipelie");
 
 		std::shared_ptr<VulkanGraphicsPipeline> pipeline = std::make_shared<VulkanGraphicsPipeline>();
-		pipeline->VkPipeline = result.value;
+		pipeline->VkPipeline = pipelineResult.value;
 
 		return pipeline;
 	}
@@ -195,7 +194,7 @@ namespace Wi
 	void VulkanRendererAPI::DestroyGraphicsPipeline(const std::shared_ptr<GraphicsPipeline>& pipeline) const
 	{
 		m_Device.waitIdle();
-		const auto vkPipeline = static_cast<VulkanGraphicsPipeline*>(pipeline.get())->VkPipeline;
+		const vk::Pipeline vkPipeline = static_cast<VulkanGraphicsPipeline*>(pipeline.get())->VkPipeline;
 		m_Device.destroyPipeline(vkPipeline);
 	}
 
@@ -303,7 +302,7 @@ namespace Wi
 
 		const vk::MemoryRequirements memoryRequirements = m_Device.getBufferMemoryRequirements(vkBuffer);
 		const auto memoryFlags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
-		const auto memoryTypeIndex = m_Context->GetDevice()->PhysicalDevice->GetSuitableMemoryTypeIndex(memoryRequirements.memoryTypeBits, memoryFlags);
+		const uint32_t memoryTypeIndex = m_Context->GetDevice()->PhysicalDevice->GetSuitableMemoryTypeIndex(memoryRequirements.memoryTypeBits, memoryFlags);
 
 		const vk::MemoryAllocateInfo allocationInfo {
 			.sType = vk::StructureType::eMemoryAllocateInfo,
@@ -323,7 +322,7 @@ namespace Wi
 		buffer->Size = bufferCreateInfo.size;
 
 		const vk::Result result = m_Device.mapMemory(vkDeviceMemory, 0, bufferCreateInfo.size, static_cast<vk::MemoryMapFlags>(0), &buffer->Data);
-		WI_CORE_ASSERT(result == vk::Result::eSuccess, "Failed to load data to device memory");
+		VK_CHECK_RESULT(result, "Failed to load data to device memory");
 		memcpy(buffer->Data, vertices.data(), bufferCreateInfo.size);
 		m_Device.unmapMemory(vkDeviceMemory);
 

@@ -5,7 +5,7 @@ namespace Wi
 {
 	void LayerStack::Destroy()
 	{
-		for (const auto& layer : m_Stack)
+		for (Layer* const layer : m_Stack)
 			layer->OnDetach();
 
 		m_Stack.clear();

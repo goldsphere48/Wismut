@@ -42,7 +42,7 @@ namespace Wi
 			{
 				Renderer::Begin();
 
-				for (const auto layer : m_LayerStack)
+				for (Layer* const layer : m_LayerStack)
 					layer->Update();
 
 				Renderer::End();
@@ -66,7 +66,7 @@ namespace Wi
 
 	bool Application::OnEvent(Event& event)
 	{
-		for (const auto layer : m_LayerStack)
+		for (Layer* const layer : m_LayerStack)
 			layer->OnEvent(event);
 
 		EventDispatcher dispatcher(event);

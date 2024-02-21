@@ -27,13 +27,13 @@ namespace Wi
 		VulkanQueueFamilyIndices indices;
 
 		uint32_t index = 0;
-		for (auto family : FamilyProperties)
+		for (vk::QueueFamilyProperties family : FamilyProperties)
 		{
 			if (
 				(family.queueFlags & vk::QueueFlagBits::eTransfer) &&
 				(family.queueFlags & vk::QueueFlagBits::eCompute) == static_cast<vk::QueueFlagBits>(0) &&
 				(family.queueFlags & vk::QueueFlagBits::eGraphics) == static_cast<vk::QueueFlagBits>(0)
-				)
+			)
 			{
 				indices.Transfer = index;
 				break;
@@ -43,7 +43,7 @@ namespace Wi
 		}
 
 		index = 0;
-		for (auto family : FamilyProperties)
+		for (vk::QueueFamilyProperties family : FamilyProperties)
 		{
 			if (
 				family.queueFlags & vk::QueueFlagBits::eCompute &&
@@ -57,7 +57,7 @@ namespace Wi
 		}
 
 		index = 0;
-		for (auto family : FamilyProperties)
+		for (vk::QueueFamilyProperties family : FamilyProperties)
 		{
 			const bool presentationSupported = Device.getSurfaceSupportKHR(index, surface);
 			if (family.queueFlags & vk::QueueFlagBits::eGraphics)
@@ -75,7 +75,7 @@ namespace Wi
 		index = 0;
 		if (!indices.Transfer.has_value())
 		{
-			for (auto family : FamilyProperties)
+			for (vk::QueueFamilyProperties family : FamilyProperties)
 			{
 				if (family.queueFlags & vk::QueueFlagBits::eTransfer)
 				{
@@ -89,7 +89,7 @@ namespace Wi
 		index = 0;
 		if (!indices.Compute.has_value())
 		{
-			for (auto family : FamilyProperties)
+			for (vk::QueueFamilyProperties family : FamilyProperties)
 			{
 				if (family.queueFlags & vk::QueueFlagBits::eCompute)
 				{

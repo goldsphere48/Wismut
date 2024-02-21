@@ -106,14 +106,14 @@ namespace Wi
 
 	void Input::UpdateKeyState(KeyCode key, KeyState newKeyState)
 	{
-		auto& data = s_KeyData[key];
+		KeyData& data = s_KeyData[key];
 		data.OldState = data.CurrentState;
 		data.CurrentState = newKeyState;
 	}
 
 	void Input::UpdateButtonState(MouseButton button, KeyState newKeyState)
 	{
-		auto& data = s_MouseData[button];
+		KeyData& data = s_MouseData[button];
 		data.OldState = data.CurrentState;
 		data.CurrentState = newKeyState;
 	}
@@ -141,7 +141,7 @@ namespace Wi
 
 	void Input::TransitionPressedKeys()
 	{
-		for (auto& data : s_KeyData | std::views::values)
+		for (KeyData& data : s_KeyData | std::views::values)
 		{
 			if (data.CurrentState == KeyState::Pressed)
 				data.CurrentState = KeyState::Held;
@@ -150,7 +150,7 @@ namespace Wi
 
 	void Input::TransitionPressedButtons()
 	{
-		for (auto& data : s_MouseData | std::views::values)
+		for (KeyData& data : s_MouseData | std::views::values)
 		{
 			if (data.CurrentState == KeyState::Pressed)
 				data.CurrentState = KeyState::Held;

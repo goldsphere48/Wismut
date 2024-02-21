@@ -9,14 +9,16 @@ namespace Wi
 {
 	static vk::SurfaceFormatKHR ChooseFormat(const std::vector<vk::SurfaceFormatKHR>& formats)
 	{
-		for (const auto format : formats)
+		for (const vk::SurfaceFormatKHR format : formats)
 			if (format.format == vk::Format::eB8G8R8A8Srgb && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
 				return format;
+
+		return formats.at(0);
 	}
 
 	static vk::PresentModeKHR ChoosePresentMode(const std::vector<vk::PresentModeKHR>& modes)
 	{
-		for (const auto mode : modes)
+		for (const vk::PresentModeKHR mode : modes)
 			if (mode == vk::PresentModeKHR::eMailbox)
 				return mode;
 
@@ -108,7 +110,7 @@ namespace Wi
 		const vk::Result waitForFencesResult = m_Device->LogicalDevice.waitForFences(1, &m_SyncHandlers[m_CurrentBufferIndex].WaitFence, VK_TRUE, UINT64_MAX);
 		VK_CHECK_RESULT(waitForFencesResult, "Failed to wait fences in AcquireNextImage");
 
-		const auto acquireResult = m_Device->LogicalDevice.acquireNextImageKHR(m_Swapchain, UINT64_MAX, m_SyncHandlers[m_CurrentBufferIndex].AvailableSemaphore);
+		const vk::ResultValue<uint32_t> acquireResult = m_Device->LogicalDevice.acquireNextImageKHR(m_Swapchain, UINT64_MAX, m_SyncHandlers[m_CurrentBufferIndex].AvailableSemaphore);
 		VK_CHECK_RESULT(acquireResult.result, "Faield when acquire next image");
 
 		return acquireResult.value;
@@ -133,7 +135,7 @@ namespace Wi
 	{
 		m_Device->LogicalDevice.waitIdle();
 
-		const auto capabilities = GetCapabilities(m_Device->PhysicalDevice->Device);
+		const VulkanSwapchainCapabilities capabilities = GetCapabilities(m_Device->PhysicalDevice->Device);
 		m_SurfaceFormat = ChooseFormat(capabilities.Formats);
 		m_PresentMode = ChoosePresentMode(capabilities.PresentModes);
 		m_SurfaceCapabilities = capabilities.SurfaceCapabilities;
@@ -142,9 +144,9 @@ namespace Wi
 		m_Width = m_Extent.width;
 		m_Height = m_Extent.height;
 
-		const auto imageCount = std::clamp(m_SurfaceCapabilities.minImageCount + 1, m_SurfaceCapabilities.minImageCount, m_SurfaceCapabilities.maxImageCount);
+		const uint32_t imageCount = std::clamp(m_SurfaceCapabilities.minImageCount + 1, m_SurfaceCapabilities.minImageCount, m_SurfaceCapabilities.maxImageCount);
 
-		const auto oldSwapchain = m_Swapchain;
+		const vk::SwapchainKHR oldSwapchain = m_Swapchain;
 
 		vk::SwapchainCreateInfoKHR swapchainCreateInfo {
 			.sType = vk::StructureType::eSwapchainCreateInfoKHR,
@@ -162,7 +164,7 @@ namespace Wi
 			.oldSwapchain = oldSwapchain
 		};
 
-		const auto indices = m_Device->PhysicalDevice->QueueFamilyIndices;
+		const VulkanQueueFamilyIndices indices = m_Device->PhysicalDevice->QueueFamilyIndices;
 
 		const uint32_t queueFamilyIndices[] = { indices.Graphics.value(), indices.Present.value() };
 
@@ -185,7 +187,7 @@ namespace Wi
 
 		m_Device->LogicalDevice.waitIdle();
 
-		const auto images = m_Device->LogicalDevice.getSwapchainImagesKHR(m_Swapchain);
+		const std::vector<vk::Image> images = m_Device->LogicalDevice.getSwapchainImagesKHR(m_Swapchain);
 		m_SwapchainResources.resize(images.size());
 
 		for (uint32_t i = 0; i < images.size(); ++i)
@@ -212,7 +214,7 @@ namespace Wi
 				}
 			};
 
-			const auto view = m_Device->LogicalDevice.createImageView(imageViewCreateInfo);
+			const vk::ImageView view = m_Device->LogicalDevice.createImageView(imageViewCreateInfo);
 			m_SwapchainResources[i].Image = images[i];
 			m_SwapchainResources[i].ImageView = view;
 		}
@@ -258,7 +260,7 @@ namespace Wi
 
 		m_VkRenderPass = m_Device->LogicalDevice.createRenderPass(renderPassCreateInfo);
 
-		for (auto& m_SwapchainResource : m_SwapchainResources)
+		for (VulkanSwapchainResource& m_SwapchainResource : m_SwapchainResources)
 		{
 			const vk::FramebufferCreateInfo framebufferCreateInfo {
 				.sType = vk::StructureType::eFramebufferCreateInfo,
@@ -270,7 +272,7 @@ namespace Wi
 				.layers = 1
 			};
 
-			const auto vkFramebuffer = m_Device->LogicalDevice.createFramebuffer(framebufferCreateInfo);
+			const vk::Framebuffer vkFramebuffer = m_Device->LogicalDevice.createFramebuffer(framebufferCreateInfo);
 			m_SwapchainResource.Framebuffer = vkFramebuffer;
 		}
 
@@ -334,7 +336,7 @@ namespace Wi
 
 		m_SyncHandlers.clear();
 
-		for (const auto& resource : m_SwapchainResources) 
+		for (const VulkanSwapchainResource& resource : m_SwapchainResources) 
 		{
 			m_Device->LogicalDevice.destroyImageView(resource.ImageView);
 			m_Device->LogicalDevice.destroyFramebuffer(resource.Framebuffer);

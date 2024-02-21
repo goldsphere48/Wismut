@@ -14,7 +14,7 @@ namespace Wi
 {
 	WindowsWindow::WindowsWindow(const WindowSpecification& specification)
 	{
-		const auto result = glfwInit();
+		const int result = glfwInit();
 		WI_CORE_ASSERT(result, "Failed to initialize glfw");
 
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -35,14 +35,14 @@ namespace Wi
 
 		glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
 		{
-			const auto* data = static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+			const WindowData* const data = static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 			WindowCloseEvent e;
 			data->EventCallback(e);
 		});
 
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
 		{
-			auto* data = static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+			WindowData* const data = static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 			WindowResizeEvent e(width, height);
 			data->Width = width;
 			data->Height = height;
@@ -51,7 +51,7 @@ namespace Wi
 
 		glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
 		{
-			const auto* data = static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+			const WindowData* const data = static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
 			switch (action)
 			{
@@ -81,14 +81,14 @@ namespace Wi
 
 		glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double x, double y)
 		{
-			const auto* data = static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+			const WindowData* const data = static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 			MouseMovedEvent e(x, y);
 			data->EventCallback(e);
 		});
 
 		glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int mods)
 		{
-			const auto* data = static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+			const WindowData* const data = static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
 			switch (action)
 			{
@@ -118,14 +118,14 @@ namespace Wi
 
 		glfwSetScrollCallback(m_Window, [](GLFWwindow* window, double xOffset, double yOffset)
 		{
-			const auto* data = static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+			const WindowData* const data = static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 			MouseScrolledEvent e(static_cast<float>(xOffset), static_cast<float>(yOffset));
 			data->EventCallback(e);
 		});
 
 		glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double x, double y)
 		{
-			const auto* data = static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+			const WindowData* const data = static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 			MouseMovedEvent e(static_cast<float>(x), static_cast<float>(y));
 			data->EventCallback(e);
 			Input::UpdateMousePosition(x, y);
