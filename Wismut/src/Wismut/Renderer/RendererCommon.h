@@ -61,6 +61,32 @@ namespace Wi
 	{
 		glm::vec2 Position;
 		glm::vec3 Color;
+
+		static VertexFormat CreateFormat()
+		{
+			return {
+				.Descriptions = {
+					VertexDescription {
+					.stride = sizeof(Vertex),
+					.Rate = VertexInputRate::Vertex,
+					}
+				},
+				.Attributes = {
+					VertexAttribute {
+						.binding = 0,
+						.location = 0,
+						.offset = offsetof(Vertex, Position),
+						.Format = DataFormat::Vec2,
+					},
+					VertexAttribute {
+						.binding = 0,
+						.location = 1,
+						.offset = offsetof(Vertex, Color),
+						.Format = DataFormat::Vec3,
+					}
+				},
+			};
+		}
 	};
 
 	enum class BufferUsageFlagBits

@@ -40,32 +40,9 @@ namespace Wi
 			},
 		};
 
-		const VertexFormat format = {
-			.Descriptions = {
-				VertexDescription {
-				.stride = sizeof(Vertex),
-				.Rate = VertexInputRate::Vertex,
-				}
-			},
-			.Attributes = {
-				VertexAttribute {
-					.binding = 0,
-					.location = 0,
-					.offset = offsetof(Vertex, Position),
-					.Format = DataFormat::Vec2,
-				},
-				VertexAttribute {
-					.binding = 0,
-					.location = 1,
-					.offset = offsetof(Vertex, Color),
-					.Format = DataFormat::Vec3,
-				}
-			},
-		};
-
 		const PipelineSpecification pipelineSpecification = {
 			.Shader = s_Library.Get("Base").get(),
-			.VertexFormat = format
+			.VertexFormat = Vertex::CreateFormat()
 		};
 
 		m_Pipeline = CreateGraphicsPipeline(pipelineSpecification);
