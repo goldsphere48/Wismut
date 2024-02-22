@@ -40,12 +40,12 @@ namespace Wi
 
 			if (!m_Minimized) 
 			{
-				Renderer::Begin();
+				Renderer::BeginFrame();
 
 				for (Layer* const layer : m_LayerStack)
 					layer->Update();
 
-				Renderer::End();
+				Renderer::EndFrame();
 			}
 
 			m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % Renderer::GetConfig().MaxFramesInFlight;

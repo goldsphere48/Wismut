@@ -1,9 +1,7 @@
 #pragma once
 #include <vulkan/vulkan.hpp>
 
-#include "Wismut/Renderer/Buffer.h"
 #include "Wismut/Renderer/RendererCommon.h"
-#include "Wismut/Renderer/Shader.h"
 
 #define VK_CHECK_RESULT(result, msg) WI_CORE_ASSERT(result == vk::Result::eSuccess, msg)
 

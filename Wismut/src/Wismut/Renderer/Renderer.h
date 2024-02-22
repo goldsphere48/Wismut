@@ -11,11 +11,17 @@ namespace Wi
 	public:
 		static void Initialize(const RendererConfig& config);
 		static void Shutdown();
-
-		static void Begin();
-		static void End();
 		static void OnWindowResize(int width, int height);
 
+		static std::shared_ptr<Buffer> CreateVertexBuffer(const std::vector<Vertex>& data);
+		static std::shared_ptr<GraphicsPipeline> CreateGraphicsPipeline(const PipelineSpecification& specification);
+		static std::shared_ptr<RenderPass> CreateRenderPass(const RenderPassSpecification& specification);
+		static std::shared_ptr<Shader> CreateShaderProgram(const ShaderConfig& config);
+
+		static void DestroyShaderProgram(const std::shared_ptr<Shader>& shader);
+
+		static void BeginFrame();
+		static void EndFrame();
 		static void DrawTest();
 
 		static const RendererContext* GetContext() { return s_RendererContext; }

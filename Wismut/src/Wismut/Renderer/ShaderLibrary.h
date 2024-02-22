@@ -1,7 +1,7 @@
 #pragma once
 #include <ThirdParty/Toml/Toml.h>
 
-#include "Shader.h"
+#include "RendererCommon.h"
 
 namespace Wi
 {

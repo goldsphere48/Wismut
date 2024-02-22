@@ -1,5 +1,5 @@
 #pragma once
-#include "Wismut/Renderer/Shader.h"
+#include "Wismut/Renderer/RendererCommon.h"
 
 namespace Wi
 {

@@ -3,11 +3,7 @@
 
 #include <magic_enum/magic_enum.hpp>
 
-#include "VulkanBuffer.h"
 #include "VulkanContext.h"
-#include "VulkanPipeline.h"
-#include "VulkanRenderPass.h"
-#include "VulkanShader.h"
 #include "VulkanShaderCompiler.h"
 #include "VulkanUtils.h"
 
@@ -21,11 +17,11 @@ namespace Wi
 		
 	}
 
-	std::shared_ptr<Shader> VulkanRendererAPI::CreateShaderProgram(const ShaderConfig& config) const
+	ShaderHandler* VulkanRendererAPI::CreateShaderProgram(const ShaderConfig& config) const
 	{
 		WI_CORE_INFO("Creating shader {0} ...", config.Name);
 		VulkanShaderCompiler compiler(config.Language);
-		std::shared_ptr<VulkanShader> shader = std::make_shared<VulkanShader>();
+		VulkanShader* shader = new VulkanShader;
 
 		for (const ShaderStageConfig& stageConfig : config.Stages)
 		{
@@ -65,18 +61,21 @@ namespace Wi
 		return shader;
 	}
 
-	void VulkanRendererAPI::DestroyShaderProgram(const std::shared_ptr<Shader>& shader) const
+	void VulkanRendererAPI::DestroyShaderProgram(ShaderHandler* shader) const
 	{
-		const VulkanShader* vkShader = static_cast<VulkanShader*>(shader.get());
+		const VulkanShader* vkShader = shader->AsStatic<VulkanShader>();
 		for (const vk::PipelineShaderStageCreateInfo& stages : vkShader->VkStagesCreateInfo)
 			m_Device.destroyShaderModule(stages.module);
 
 		m_Device.destroyPipelineLayout(vkShader->PipelineLayout);
+
+		delete shader;
+		shader = nullptr;
 	}
 
-	std::shared_ptr<GraphicsPipeline> VulkanRendererAPI::CreateGraphicsPipeline(const PipelineSpecification& specification) const
+	PipelineHandler* VulkanRendererAPI::CreateGraphicsPipeline(const PipelineSpecification& specification) const
 	{
-		const auto vkShader = static_cast<VulkanShader*>(specification.Shader);
+		const auto vkShader = static_cast<VulkanShader*>(specification.Shader->Handler);
 		const VulkanVertexFormat vertexFormat = CreateVulkanVertexFormat(specification.VertexFormat);
 
 		vk::PipelineVertexInputStateCreateInfo vertexInputCreateInfo {
@@ -185,20 +184,23 @@ namespace Wi
 		const vk::ResultValue<vk::Pipeline> pipelineResult = m_Device.createGraphicsPipeline(nullptr, pipelineCreateInfo);
 		VK_CHECK_RESULT(pipelineResult.result, "Failed to create vulkan graphics pipelie");
 
-		std::shared_ptr<VulkanGraphicsPipeline> pipeline = std::make_shared<VulkanGraphicsPipeline>();
+		VulkanGraphicsPipeline* pipeline = new VulkanGraphicsPipeline();
 		pipeline->VkPipeline = pipelineResult.value;
 
 		return pipeline;
 	}
 
-	void VulkanRendererAPI::DestroyGraphicsPipeline(const std::shared_ptr<GraphicsPipeline>& pipeline) const
+	void VulkanRendererAPI::DestroyGraphicsPipeline(PipelineHandler* pipeline) const
 	{
 		m_Device.waitIdle();
-		const vk::Pipeline vkPipeline = static_cast<VulkanGraphicsPipeline*>(pipeline.get())->VkPipeline;
+		const vk::Pipeline vkPipeline = pipeline->AsStatic<VulkanGraphicsPipeline>()->VkPipeline;
 		m_Device.destroyPipeline(vkPipeline);
+
+		delete pipeline;
+		pipeline = nullptr;
 	}
 
-	std::shared_ptr<RenderPass> VulkanRendererAPI::CreateRenderPass(const RenderPassSpecification& specification) const
+	RenderPassHandler* VulkanRendererAPI::CreateRenderPass(const RenderPassSpecification& specification) const
 	{
 		vk::AttachmentDescription colorAttachment {
 			.format = m_Context->GetSwapchain()->GetImageFormat(),
@@ -240,7 +242,7 @@ namespace Wi
 			.pDependencies = &dependency
 		};
 
-		std::shared_ptr<VulkanRenderPass> renderPass = std::make_shared<VulkanRenderPass>();
+		VulkanRenderPass* renderPass = new VulkanRenderPass;
 
 		WI_CORE_ASSERT(renderPass, "Failed to create render pass")
 
@@ -249,11 +251,14 @@ namespace Wi
 		return renderPass;
 	}
 
-	void VulkanRendererAPI::DestroyRenderPass(const std::shared_ptr<RenderPass>& renderPass) const
+	void VulkanRendererAPI::DestroyRenderPass(RenderPassHandler* renderPass) const
 	{
 		m_Device.waitIdle();
-		const auto vkRenderPass = static_cast<VulkanRenderPass*>(renderPass.get());
+		const auto vkRenderPass = renderPass->AsStatic<VulkanRenderPass>();
 		m_Device.destroyRenderPass(vkRenderPass->VkRenderPass);
+
+		delete renderPass;
+		renderPass = nullptr;
 	}
 
 	VulkanRendererAPI::VulkanVertexFormat VulkanRendererAPI::CreateVulkanVertexFormat(const VertexFormat& format) const
@@ -287,11 +292,11 @@ namespace Wi
 		return vertexFormat;
 	}
 
-	std::shared_ptr<Buffer> VulkanRendererAPI::CreateBuffer(std::vector<Vertex> vertices, BufferUsageFlagBits bufferUsage) const
+	BufferHandler* VulkanRendererAPI::CreateBuffer(uint32_t size, BufferUsageFlagBits bufferUsage) const
 	{
 		const vk::BufferCreateInfo bufferCreateInfo {
 			.sType = vk::StructureType::eBufferCreateInfo,
-			.size = vertices.size() * sizeof(Vertex),
+			.size = size,
 			.usage = VulkanUtils::ConvertToVkBufferUsage(bufferUsage),
 			.sharingMode = vk::SharingMode::eExclusive,
 		};
@@ -316,25 +321,36 @@ namespace Wi
 
 		m_Device.bindBufferMemory(vkBuffer, vkDeviceMemory, 0);
 
-		std::shared_ptr<VulkanBuffer> buffer = std::make_shared<VulkanBuffer>();
+		VulkanBuffer* buffer = new VulkanBuffer;
 		buffer->VkBuffer = vkBuffer;
-		buffer->VkDeviceMemory= vkDeviceMemory;
-		buffer->Size = bufferCreateInfo.size;
-
-		const vk::Result result = m_Device.mapMemory(vkDeviceMemory, 0, bufferCreateInfo.size, static_cast<vk::MemoryMapFlags>(0), &buffer->Data);
-		VK_CHECK_RESULT(result, "Failed to load data to device memory");
-		memcpy(buffer->Data, vertices.data(), bufferCreateInfo.size);
-		m_Device.unmapMemory(vkDeviceMemory);
-
+		buffer->VkDeviceMemory = vkDeviceMemory;
 		return buffer;
 	}
 
-	void VulkanRendererAPI::DestroyBuffer(const std::shared_ptr<Buffer>& buffer) const
+	uint8_t* VulkanRendererAPI::MapBuffer(BufferHandler* handler, size_t size) const
+	{
+		const vk::DeviceMemory memory = handler->AsStatic<VulkanBuffer>()->VkDeviceMemory;
+		void* ptr = nullptr;
+		const vk::Result result = m_Device.mapMemory(memory, 0, size, static_cast<vk::MemoryMapFlags>(0), &ptr);
+		VK_CHECK_RESULT(result, "Failed to load data to device memory");
+		return static_cast<uint8_t*>(ptr);
+	}
+
+	void VulkanRendererAPI::UnmapBuffer(BufferHandler* handler) const
+	{
+		const vk::DeviceMemory memory = handler->AsStatic<VulkanBuffer>()->VkDeviceMemory;
+		m_Device.unmapMemory(memory);
+	}
+
+	void VulkanRendererAPI::DestroyBuffer(BufferHandler* buffer) const
 	{
 		m_Device.waitIdle();
-		const auto vkBuffer = static_cast<VulkanBuffer*>(buffer.get());
+		const auto vkBuffer = buffer->AsStatic<VulkanBuffer>();
 		m_Device.destroyBuffer(vkBuffer->VkBuffer);
 		m_Device.freeMemory(vkBuffer->VkDeviceMemory);
+
+		delete buffer;
+		buffer = nullptr;
 	}
 
 	void VulkanRendererAPI::BeginRenderPass() const
@@ -411,13 +427,13 @@ namespace Wi
 
 	void VulkanRendererAPI::RenderGeometry(const std::shared_ptr<GraphicsPipeline>& pipeline, const std::shared_ptr<Buffer>& buffer) const
 	{
-		const vk::Pipeline vkPipeline = static_cast<VulkanGraphicsPipeline*>(pipeline.get())->VkPipeline;
-		const VulkanBuffer* vkBuffer = static_cast<VulkanBuffer*>(buffer.get());
+		const vk::Pipeline vkPipeline = pipeline->Handler->AsStatic<VulkanGraphicsPipeline>()->VkPipeline;
+		const VulkanBuffer* vkBuffer = buffer->Handler->AsStatic<VulkanBuffer>();
 		const vk::CommandBuffer commandBuffer = m_Context->GetCurrentCommandBuffer();
 		constexpr vk::DeviceSize offsets = { 0 };
 
 		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, vkPipeline);
 		commandBuffer.bindVertexBuffers(0, 1, &vkBuffer->VkBuffer, &offsets);
-		commandBuffer.draw(vkBuffer->Size, 1, 0, 0);
+		commandBuffer.draw(buffer->Size, 1, 0, 0);
 	}
 }

@@ -53,13 +53,13 @@ namespace Wi
 			return;
 		}
 
-		m_Shaders[config.Name] = Renderer::GetApi()->CreateShaderProgram(config);
+		m_Shaders[config.Name] = Renderer::CreateShaderProgram(config);
 	}
 
 	void ShaderLibrary::Destroy()
 	{
 		for (const std::shared_ptr<Shader>& shader : m_Shaders | std::views::values)
-			Renderer::GetApi()->DestroyShaderProgram(shader);
+			Renderer::DestroyShaderProgram(shader);
 		
 		m_Shaders.clear();
 	}
