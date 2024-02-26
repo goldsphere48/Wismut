@@ -276,17 +276,9 @@ namespace Wi
 			m_SwapchainResource.Framebuffer = vkFramebuffer;
 		}
 
-		const vk::CommandPoolCreateInfo commandPoolCreateInfo {
-			.sType = vk::StructureType::eCommandPoolCreateInfo,
-			.flags = vk::CommandPoolCreateFlagBits::eTransient | vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
-			.queueFamilyIndex = m_Device->PhysicalDevice->QueueFamilyIndices.Graphics.value(),
-		};
-
-		m_VkCommandPool = m_Device->LogicalDevice.createCommandPool(commandPoolCreateInfo);
-
 		const vk::CommandBufferAllocateInfo bufferAllocationInfo {
 			.sType = vk::StructureType::eCommandBufferAllocateInfo,
-			.commandPool = m_VkCommandPool,
+			.commandPool = m_Device->CommandPool,
 			.level = vk::CommandBufferLevel::ePrimary,
 			.commandBufferCount = static_cast<uint32_t>(m_SwapchainResources.size()),
 		};
@@ -343,8 +335,7 @@ namespace Wi
 		}
 		m_SwapchainResources.clear();
 
-		m_Device->LogicalDevice.freeCommandBuffers(m_VkCommandPool, m_CommandBuffers.size(), m_CommandBuffers.data());
-		m_Device->LogicalDevice.destroyCommandPool(m_VkCommandPool);
+		m_Device->LogicalDevice.freeCommandBuffers(m_Device->CommandPool, m_CommandBuffers.size(), m_CommandBuffers.data());
 		m_Device->LogicalDevice.destroyRenderPass(m_VkRenderPass);
 
 		m_Device->LogicalDevice.waitIdle();

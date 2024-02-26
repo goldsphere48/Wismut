@@ -79,10 +79,19 @@ namespace Wi
 		m_TransferQueue = LogicalDevice.getQueue(physicalDevice->QueueFamilyIndices.Transfer.value(), 0);
 		m_ComputeQueue = LogicalDevice.getQueue(physicalDevice->QueueFamilyIndices.Compute.value(), 0);
 		m_PresentQueue = LogicalDevice.getQueue(physicalDevice->QueueFamilyIndices.Present.value(), 0);
+
+		const vk::CommandPoolCreateInfo commandPoolCreateInfo {
+			.sType = vk::StructureType::eCommandPoolCreateInfo,
+			.flags = vk::CommandPoolCreateFlagBits::eTransient | vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
+			.queueFamilyIndex = PhysicalDevice->QueueFamilyIndices.Graphics.value(),
+		};
+
+		CommandPool = LogicalDevice.createCommandPool(commandPoolCreateInfo);
 	}
 
 	void VulkanDevice::Destroy() const
 	{
+		LogicalDevice.destroyCommandPool(CommandPool);
 		LogicalDevice.destroy();
 	}
 }

@@ -103,7 +103,7 @@ namespace Wi
 		return indices;
 	}
 
-	uint32_t VulkanPhysicalDevice::GetSuitableMemoryTypeIndex(uint32_t memoryTypeBits, vk::MemoryPropertyFlags properties) const
+	uint32_t VulkanPhysicalDevice::FindMemoryIndex(uint32_t memoryTypeBits, vk::MemoryPropertyFlags properties) const
 	{
 		for (uint32_t i = 0; i < MemoryProperties.memoryTypeCount; ++i)
 		{

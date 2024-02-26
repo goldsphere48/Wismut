@@ -9,6 +9,54 @@
 
 namespace Wi
 {
+	VulkanRendererAPI::ScopedCommandBuffer::ScopedCommandBuffer(VulkanDevice* device) : m_Device(device)
+	{
+		const vk::CommandBufferAllocateInfo allocateInfo {
+			.sType = vk::StructureType::eCommandBufferAllocateInfo,
+			.commandPool = m_Device->CommandPool,
+			.level = vk::CommandBufferLevel::ePrimary,
+			.commandBufferCount = 1,
+		};
+
+		const auto buffers = m_Device->LogicalDevice.allocateCommandBuffers(allocateInfo);
+		VkCommandBuffer = buffers[0];
+
+		const vk::CommandBufferBeginInfo beginInfo {
+			.sType = vk::StructureType::eCommandBufferBeginInfo,
+			.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit,
+		};
+
+		const vk::FenceCreateInfo fenceInfo {
+			.sType = vk::StructureType::eFenceCreateInfo,
+			.flags = vk::FenceCreateFlagBits::eSignaled
+		};
+
+		m_Fence = m_Device->LogicalDevice.createFence(fenceInfo);
+
+		VkCommandBuffer.begin(beginInfo);
+	}
+
+	VulkanRendererAPI::ScopedCommandBuffer::~ScopedCommandBuffer()
+	{
+		VkCommandBuffer.end();
+
+		const vk::SubmitInfo submitInfo {
+			.sType = vk::StructureType::eSubmitInfo,
+			.commandBufferCount = 1,
+			.pCommandBuffers = &VkCommandBuffer,
+		};
+
+		m_Device->LogicalDevice.resetFences(m_Fence);
+		m_Device->GetGraphicsQueue().submit(submitInfo, m_Fence);
+		const vk::Result result = m_Device->LogicalDevice.waitForFences(m_Fence, VK_TRUE, UINT64_MAX);
+		VK_CHECK_RESULT(result, "Failed to wait fances");
+
+		m_Device->LogicalDevice.freeCommandBuffers(m_Device->CommandPool, VkCommandBuffer);
+		m_Device->LogicalDevice.destroyFence(m_Fence);
+		m_Device = nullptr;
+		VkCommandBuffer = nullptr;
+	}
+
 	VulkanRendererAPI::VulkanRendererAPI(VulkanContext* context) :
 		RendererAPI(RendererAPIType::Vulkan),
 		m_Context(context),
@@ -292,12 +340,37 @@ namespace Wi
 		return vertexFormat;
 	}
 
-	BufferHandler* VulkanRendererAPI::CreateBuffer(uint32_t size, BufferUsageFlagBits bufferUsage) const
+	BufferHandler* VulkanRendererAPI::CreateBuffer(uint32_t size, BufferType bufferType) const
 	{
+		VulkanBuffer* handler = new VulkanBuffer;
+
+		switch (bufferType)
+		{
+			case BufferType::Vertex:
+				handler->Usage = vk::BufferUsageFlagBits::eVertexBuffer |
+					vk::BufferUsageFlagBits::eTransferSrc |
+					vk::BufferUsageFlagBits::eTransferDst;
+
+				handler->MemoryProperties = vk::MemoryPropertyFlagBits::eDeviceLocal;
+				break;
+			case BufferType::Index:
+				handler->Usage = vk::BufferUsageFlagBits::eIndexBuffer |
+					vk::BufferUsageFlagBits::eTransferSrc |
+					vk::BufferUsageFlagBits::eTransferDst;
+
+				handler->MemoryProperties = vk::MemoryPropertyFlagBits::eDeviceLocal;
+				break;
+			case BufferType::Staging:
+				handler->Usage = vk::BufferUsageFlagBits::eTransferSrc;
+				handler->MemoryProperties = vk::MemoryPropertyFlagBits::eHostVisible | 
+					vk::MemoryPropertyFlagBits::eHostCoherent;
+				break;
+		}
+
 		const vk::BufferCreateInfo bufferCreateInfo {
 			.sType = vk::StructureType::eBufferCreateInfo,
 			.size = size,
-			.usage = VulkanUtils::ConvertToVkBufferUsage(bufferUsage),
+			.usage = handler->Usage,
 			.sharingMode = vk::SharingMode::eExclusive,
 		};
 
@@ -306,8 +379,7 @@ namespace Wi
 		WI_CORE_ASSERT(vkBuffer, "Failed to create buffer");
 
 		const vk::MemoryRequirements memoryRequirements = m_Device.getBufferMemoryRequirements(vkBuffer);
-		const auto memoryFlags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
-		const uint32_t memoryTypeIndex = m_Context->GetDevice()->PhysicalDevice->GetSuitableMemoryTypeIndex(memoryRequirements.memoryTypeBits, memoryFlags);
+		const uint32_t memoryTypeIndex = m_Context->GetDevice()->PhysicalDevice->FindMemoryIndex(memoryRequirements.memoryTypeBits, handler->MemoryProperties);
 
 		const vk::MemoryAllocateInfo allocationInfo {
 			.sType = vk::StructureType::eMemoryAllocateInfo,
@@ -321,10 +393,24 @@ namespace Wi
 
 		m_Device.bindBufferMemory(vkBuffer, vkDeviceMemory, 0);
 
-		VulkanBuffer* buffer = new VulkanBuffer;
-		buffer->VkBuffer = vkBuffer;
-		buffer->VkDeviceMemory = vkDeviceMemory;
-		return buffer;
+		handler->VkBuffer = vkBuffer;
+		handler->VkDeviceMemory = vkDeviceMemory;
+		return handler;
+	}
+
+	void VulkanRendererAPI::CopyBuffer(BufferHandler* src, BufferHandler* dst, uint32_t size) const
+	{
+		const auto scopedCommandBuffer = ScopedCommandBuffer(m_Context->GetDevice().get());
+		const vk::Buffer srcBuffer = src->AsStatic<VulkanBuffer>()->VkBuffer;
+		const vk::Buffer dstBuffer = dst->AsStatic<VulkanBuffer>()->VkBuffer;
+
+		const vk::BufferCopy bufferCopy {
+			.srcOffset = 0,
+			.dstOffset = 0,
+			.size = size
+		};
+
+		scopedCommandBuffer.VkCommandBuffer.copyBuffer(srcBuffer, dstBuffer, 1, &bufferCopy);
 	}
 
 	uint8_t* VulkanRendererAPI::MapBuffer(BufferHandler* handler, size_t size) const
@@ -425,15 +511,32 @@ namespace Wi
 		m_Context->GetSwapchain()->Present();
 	}
 
-	void VulkanRendererAPI::RenderGeometry(const std::shared_ptr<GraphicsPipeline>& pipeline, const std::shared_ptr<Buffer>& buffer) const
+	void VulkanRendererAPI::BindPipeline(const std::shared_ptr<GraphicsPipeline>& pipeline) const
 	{
 		const vk::Pipeline vkPipeline = pipeline->Handler->AsStatic<VulkanGraphicsPipeline>()->VkPipeline;
-		const VulkanBuffer* vkBuffer = buffer->Handler->AsStatic<VulkanBuffer>();
 		const vk::CommandBuffer commandBuffer = m_Context->GetCurrentCommandBuffer();
-		constexpr vk::DeviceSize offsets = { 0 };
-
 		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, vkPipeline);
+	}
+
+	void VulkanRendererAPI::BindVertexBuffer(const std::shared_ptr<Buffer>& buffer) const
+	{
+		const vk::CommandBuffer commandBuffer = m_Context->GetCurrentCommandBuffer();
+		const VulkanBuffer* vkBuffer = buffer->Handler->AsStatic<VulkanBuffer>();
+		constexpr vk::DeviceSize offsets = { 0 };
 		commandBuffer.bindVertexBuffers(0, 1, &vkBuffer->VkBuffer, &offsets);
-		commandBuffer.draw(buffer->Size, 1, 0, 0);
+	}
+
+	void VulkanRendererAPI::BindIndexBuffer(const std::shared_ptr<IndexBuffer>& buffer) const
+	{
+		const vk::CommandBuffer commandBuffer = m_Context->GetCurrentCommandBuffer();
+		const VulkanBuffer* vkBuffer = buffer->Handler->AsStatic<VulkanBuffer>();
+		constexpr vk::DeviceSize offsets = { 0 };
+		commandBuffer.bindIndexBuffer(vkBuffer->VkBuffer, offsets, vk::IndexType::eUint32);
+	}
+
+	void VulkanRendererAPI::DrawIndexed(uint32_t count) const
+	{
+		const vk::CommandBuffer commandBuffer = m_Context->GetCurrentCommandBuffer();
+		commandBuffer.drawIndexed(count, 1, 0, 0, 0);
 	}
 }

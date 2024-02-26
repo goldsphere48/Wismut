@@ -27,17 +27,25 @@ namespace Wi
 
 		const std::vector<Vertex> vertices = {
 			{
-				.Position = {0.0f, -0.5f },
+				.Position = {-0.5f, -0.5f },
 				.Color = {1.0f, 0.0f, 0.0f }
 			},
 			{
-				.Position = {0.5f, 0.5f },
+				.Position = {0.5f, -0.5f },
 				.Color = {0.0f, 1.0f, 0.0f }
+			},
+			{
+				.Position = {0.5f, 0.5f },
+				.Color = {0.0f, 0.0f, 1.0f }
 			},
 			{
 				.Position = {-0.5f, 0.5f },
 				.Color = {0.0f, 0.0f, 1.0f }
 			},
+		};
+
+		const std::vector<uint32_t> indicies = {
+			0, 1, 2, 2, 3, 0
 		};
 
 		const PipelineSpecification pipelineSpecification = {
@@ -47,6 +55,7 @@ namespace Wi
 
 		m_Pipeline = CreateGraphicsPipeline(pipelineSpecification);
 		m_Buffer = CreateVertexBuffer(vertices);
+		m_IndexBuffer = CreateIndexBuffer(indicies);
 	}
 
 	void Renderer::BeginFrame()
@@ -70,11 +79,33 @@ namespace Wi
 	{
 		const std::shared_ptr<Buffer> buffer = std::make_shared<Buffer>();
 		buffer->Size = data.size() * sizeof(Vertex);
-		buffer->Handler = s_RenderAPI->CreateBuffer(buffer->Size, BufferUsageFlagBits::Vertex);
+		buffer->Handler = s_RenderAPI->CreateBuffer(buffer->Size, BufferType::Vertex);
 
-		uint8_t* pData = s_RenderAPI->MapBuffer(buffer->Handler, buffer->Size);
+		BufferHandler* stagingBuffer = s_RenderAPI->CreateBuffer(buffer->Size, BufferType::Staging);
+		uint8_t* pData = s_RenderAPI->MapBuffer(stagingBuffer, buffer->Size);
 		memcpy(pData, data.data(), buffer->Size);
-		s_RenderAPI->UnmapBuffer(buffer->Handler);
+		s_RenderAPI->UnmapBuffer(stagingBuffer);
+
+		s_RenderAPI->CopyBuffer(stagingBuffer, buffer->Handler, buffer->Size);
+		s_RenderAPI->DestroyBuffer(stagingBuffer);
+
+		return buffer;
+	}
+
+	std::shared_ptr<IndexBuffer> Renderer::CreateIndexBuffer(const std::vector<uint32_t>& data)
+	{
+		const std::shared_ptr<IndexBuffer> buffer = std::make_shared<IndexBuffer>();
+		buffer->Size = data.size() * sizeof(Vertex);
+		buffer->Count = static_cast<uint32_t>(data.size());
+		buffer->Handler = s_RenderAPI->CreateBuffer(buffer->Size, BufferType::Index);
+
+		BufferHandler* stagingBuffer = s_RenderAPI->CreateBuffer(buffer->Size, BufferType::Staging);
+		uint8_t* pData = s_RenderAPI->MapBuffer(stagingBuffer, buffer->Size);
+		memcpy(pData, data.data(), buffer->Size);
+		s_RenderAPI->UnmapBuffer(stagingBuffer);
+
+		s_RenderAPI->CopyBuffer(stagingBuffer, buffer->Handler, buffer->Size);
+		s_RenderAPI->DestroyBuffer(stagingBuffer);
 
 		return buffer;
 	}
@@ -107,7 +138,10 @@ namespace Wi
 
 	void Renderer::DrawTest()
 	{
-		s_RenderAPI->RenderGeometry(m_Pipeline, m_Buffer);
+		s_RenderAPI->BindPipeline(m_Pipeline);
+		s_RenderAPI->BindVertexBuffer(m_Buffer);
+		s_RenderAPI->BindIndexBuffer(m_IndexBuffer);
+		s_RenderAPI->DrawIndexed(m_IndexBuffer->Count);
 	}
 
 	uint32_t Renderer::GetCurrentFrameIndex()
@@ -118,6 +152,7 @@ namespace Wi
 	void Renderer::Shutdown()
 	{
 		s_RenderAPI->DestroyBuffer(m_Buffer->Handler);
+		s_RenderAPI->DestroyBuffer(m_IndexBuffer->Handler);
 		s_RenderAPI->DestroyGraphicsPipeline(m_Pipeline->Handler);
 
 		s_Library.Destroy();

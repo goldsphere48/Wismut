@@ -52,11 +52,11 @@ namespace Wi::VulkanUtils
 		return static_cast<vk::Format>(0);
 	}
 
-	vk::BufferUsageFlagBits ConvertToVkBufferUsage(BufferUsageFlagBits usage)
+	vk::BufferUsageFlagBits ConvertToVkBufferUsage(BufferType usage)
 	{
 		switch (usage)
 		{
-		case BufferUsageFlagBits::Vertex:
+		case BufferType::Vertex:
 			return vk::BufferUsageFlagBits::eVertexBuffer;
 		}
 

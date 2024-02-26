@@ -79,7 +79,6 @@ namespace Wi
 		vk::Extent2D m_Extent;
 		vk::SwapchainKHR m_Swapchain;
 		vk::RenderPass m_VkRenderPass;
-		vk::CommandPool m_VkCommandPool;
 		
 		std::vector<VulkanSwapchainResource> m_SwapchainResources;
 		std::vector<VulkanSyncHandlers> m_SyncHandlers;

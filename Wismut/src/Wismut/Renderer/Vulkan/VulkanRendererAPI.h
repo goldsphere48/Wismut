@@ -8,7 +8,6 @@ namespace Wi
 
 	class VulkanRendererAPI : public RendererAPI
 	{
-	private:
 		struct VulkanVertexFormat
 		{
 			std::vector<vk::VertexInputBindingDescription> BindingDescriptions;
@@ -19,6 +18,8 @@ namespace Wi
 		{
 			vk::Buffer VkBuffer;
 			vk::DeviceMemory VkDeviceMemory;
+			vk::BufferUsageFlags Usage;
+			vk::MemoryPropertyFlags MemoryProperties;
 		};
 
 		struct VulkanGraphicsPipeline : PipelineHandler
@@ -37,14 +38,27 @@ namespace Wi
 			vk::PipelineLayout PipelineLayout;
 		};
 
+		class ScopedCommandBuffer
+		{
+		public:
+			ScopedCommandBuffer(VulkanDevice* device);
+			~ScopedCommandBuffer();
+			vk::CommandBuffer VkCommandBuffer;
+
+		private:
+			VulkanDevice* m_Device;
+			vk::Fence m_Fence;
+		};
+
 	public:
 		VulkanRendererAPI(VulkanContext* context);
 
 		ShaderHandler* CreateShaderProgram(const ShaderConfig& config) const override;
 		PipelineHandler* CreateGraphicsPipeline(const PipelineSpecification& specification) const override;
 		RenderPassHandler* CreateRenderPass(const RenderPassSpecification& specification) const override;
-		BufferHandler* CreateBuffer(uint32_t size, BufferUsageFlagBits bufferUsage) const override;
+		BufferHandler* CreateBuffer(uint32_t size, BufferType bufferType) const override;
 
+		void CopyBuffer(BufferHandler* src, BufferHandler* dst, uint32_t size) const override;
 		uint8_t* MapBuffer(BufferHandler* handler, size_t size) const override;
 		void UnmapBuffer(BufferHandler* handler) const override;
 
@@ -59,7 +73,10 @@ namespace Wi
 		void BeginFrame() const override;
 		void EndFrame() const override;
 
-		void RenderGeometry(const std::shared_ptr<GraphicsPipeline>& pipeline, const std::shared_ptr<Buffer>& buffer) const override;
+		void BindPipeline(const std::shared_ptr<GraphicsPipeline>& pipeline) const override;
+		void BindVertexBuffer(const std::shared_ptr<Buffer>& buffer) const override;
+		void BindIndexBuffer(const std::shared_ptr<IndexBuffer>& buffer) const override;
+		void DrawIndexed(uint32_t count) const override;
 
 	private:
 		VulkanVertexFormat CreateVulkanVertexFormat(const VertexFormat& format) const;

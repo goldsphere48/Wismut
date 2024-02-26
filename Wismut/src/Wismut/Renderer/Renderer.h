@@ -14,6 +14,7 @@ namespace Wi
 		static void OnWindowResize(int width, int height);
 
 		static std::shared_ptr<Buffer> CreateVertexBuffer(const std::vector<Vertex>& data);
+		static std::shared_ptr<IndexBuffer> CreateIndexBuffer(const std::vector<uint32_t>& data);
 		static std::shared_ptr<GraphicsPipeline> CreateGraphicsPipeline(const PipelineSpecification& specification);
 		static std::shared_ptr<RenderPass> CreateRenderPass(const RenderPassSpecification& specification);
 		static std::shared_ptr<Shader> CreateShaderProgram(const ShaderConfig& config);
@@ -32,6 +33,7 @@ namespace Wi
 	private:
 		inline static std::shared_ptr<GraphicsPipeline> m_Pipeline;
 		inline static std::shared_ptr<Buffer> m_Buffer;
+		inline static std::shared_ptr<IndexBuffer> m_IndexBuffer;
 
 		inline static ShaderLibrary s_Library;
 		inline static RendererConfig s_RendererConfig;

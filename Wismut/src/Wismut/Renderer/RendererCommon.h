@@ -89,15 +89,22 @@ namespace Wi
 		}
 	};
 
-	enum class BufferUsageFlagBits
+	enum class BufferType
 	{
-		Vertex
+		Vertex,
+		Index,
+		Staging
 	};
 
 	struct Buffer
 	{
 		uint32_t Size;
 		BufferHandler* Handler;
+	};
+
+	struct IndexBuffer : Buffer
+	{
+		uint32_t Count;
 	};
 
 	struct RenderPassSpecification

@@ -20,6 +20,7 @@ namespace Wi
 
 		std::shared_ptr<VulkanPhysicalDevice> PhysicalDevice;
 		vk::Device LogicalDevice;
+		vk::CommandPool CommandPool;
 
 	private:
 		vk::Queue m_GraphicsQueue;
