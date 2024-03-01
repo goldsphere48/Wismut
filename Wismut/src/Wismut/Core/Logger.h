@@ -28,3 +28,5 @@ namespace Wi
 #define WI_WARN(message, ...) ::Wi::Logger::GetClientLogger()->warn(message, __VA_ARGS__);
 #define WI_ERROR(message, ...) ::Wi::Logger::GetClientLogger()->error(message, __VA_ARGS__);
 #define WI_CRITICAL(message, ...) ::Wi::Logger::GetClientLogger()->critical(message, __VA_ARGS__);
+
+#define WI_CORE_LOG_PROPERTY(property) ::Wi::Logger::GetEngineLogger()->info(#property ": {0}", property);

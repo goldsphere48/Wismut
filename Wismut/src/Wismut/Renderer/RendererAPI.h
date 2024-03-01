@@ -16,7 +16,7 @@ namespace Wi
 		RendererAPI(RendererAPIType renderAPIType) { s_CurrentAPIType = renderAPIType; }
 		static RendererAPIType Current();
 
-		virtual ShaderHandler* CreateShaderProgram(const ShaderConfig& config) const = 0;
+		virtual ShaderHandler* CreateShaderFromBinary(const ShaderBinary& binary, ShaderDescription& outDescription) const = 0;
 		virtual PipelineHandler* CreateGraphicsPipeline(const PipelineSpecification& specification) const = 0;
 		virtual RenderPassHandler* CreateRenderPass(const RenderPassSpecification& specification) const = 0;
 		virtual BufferHandler* CreateBuffer(uint32_t size, BufferType bufferUsage) const = 0;

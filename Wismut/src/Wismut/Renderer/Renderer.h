@@ -15,9 +15,10 @@ namespace Wi
 
 		static std::shared_ptr<Buffer> CreateVertexBuffer(const std::vector<Vertex>& data);
 		static std::shared_ptr<IndexBuffer> CreateIndexBuffer(const std::vector<uint32_t>& data);
+		static std::shared_ptr<Buffer> CreateUniformBuffer(const std::vector<uint32_t>& data);
 		static std::shared_ptr<GraphicsPipeline> CreateGraphicsPipeline(const PipelineSpecification& specification);
 		static std::shared_ptr<RenderPass> CreateRenderPass(const RenderPassSpecification& specification);
-		static std::shared_ptr<Shader> CreateShaderProgram(const ShaderConfig& config);
+		static std::shared_ptr<Shader> CreateShaderProgram(const ShaderBinary& binary);
 
 		static void DestroyShaderProgram(const std::shared_ptr<Shader>& shader);
 

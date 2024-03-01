@@ -10,7 +10,15 @@ namespace Wi
 		MemoryProperties = device.getMemoryProperties();
 		FamilyProperties = device.getQueueFamilyProperties();
 		DeviceSupportedExtensions = device.enumerateDeviceExtensionProperties();
-
+		WI_CORE_INFO("Device limits:")
+		WI_CORE_LOG_PROPERTY(Properties.limits.maxDescriptorSetInputAttachments);
+		WI_CORE_LOG_PROPERTY(Properties.limits.maxDescriptorSetSampledImages);
+		WI_CORE_LOG_PROPERTY(Properties.limits.maxDescriptorSetSamplers);
+		WI_CORE_LOG_PROPERTY(Properties.limits.maxDescriptorSetStorageBuffers);
+		WI_CORE_LOG_PROPERTY(Properties.limits.maxDescriptorSetStorageBuffersDynamic);
+		WI_CORE_LOG_PROPERTY(Properties.limits.maxDescriptorSetStorageImages);
+		WI_CORE_LOG_PROPERTY(Properties.limits.maxDescriptorSetUniformBuffers);
+		WI_CORE_LOG_PROPERTY(Properties.limits.maxDescriptorSetUniformBuffersDynamic);
 	}
 
 	bool VulkanPhysicalDevice::IsSupportExtension(const std::string& extension) const

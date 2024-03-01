@@ -6,7 +6,7 @@
 
 namespace Wi
 {
-	shaderc_shader_kind ToShaderCGLSLStage(ShaderStage stage)
+	static shaderc_shader_kind ToShaderCGLSLStage(ShaderStage stage)
 	{
 		switch (stage)
 		{
@@ -19,14 +19,38 @@ namespace Wi
 		return static_cast<shaderc_shader_kind>(0);
 	}
 
-	VulkanShaderCompiler::VulkanShaderCompiler(ShaderLanguage sourceLanguage) : m_ShaderLanguage(sourceLanguage)
+	ShaderBinary VulkanShaderCompiler::Compile(const ShaderConfig& config) const
 	{
+		ShaderBinary binaries;
+		for (const auto& stageConfig : config.Stages)
+		{
+			SpirvShaderBinary* binary = new SpirvShaderBinary(CompileToSpv(stageConfig, config.Language));
+			binaries[stageConfig.Stage] = binary;
+		}
+
+		return binaries;
 	}
 
-	std::vector<uint32_t> VulkanShaderCompiler::CompileToSpv(const ShaderStageConfig& config)
+	std::vector<uint32_t> VulkanShaderCompiler::CompileToSpv(const ShaderStageConfig& config, ShaderLanguage sourceLanguage) const
 	{
-		shaderc::Compiler compiler;
-		shaderc::CompileOptions options;
+		switch (sourceLanguage)
+		{
+			case ShaderLanguage::GLSL:
+				return CompileGLSLToSpv(config);
+			case ShaderLanguage::None:
+				WI_CORE_ASSERT(false, "Shader language is not declared");
+			default:
+				WI_CORE_ASSERT(false, "{0} language is not supported", magic_enum::enum_name(sourceLanguage));
+
+		}
+
+		throw std::exception("Unknown shader language");
+	}
+
+	std::vector<uint32_t> VulkanShaderCompiler::CompileGLSLToSpv(const ShaderStageConfig& config) const
+	{
+		const shaderc::Compiler compiler;
+		const shaderc::CompileOptions options;
 
 		WI_CORE_INFO("Compiling shader {0} stage {1} ...", config.SourceFilePath, magic_enum::enum_name(config.Stage));
 

@@ -5,6 +5,7 @@
 #include <magic_enum/magic_enum.hpp>
 
 #include "Renderer.h"
+#include "Vulkan/VulkanShaderCompiler.h"
 
 
 namespace Wi
@@ -53,7 +54,14 @@ namespace Wi
 			return;
 		}
 
-		m_Shaders[config.Name] = Renderer::CreateShaderProgram(config);
+		const ShaderCompiler* compiler = GetCompiler();
+		const ShaderBinary binaries = compiler->Compile(config);
+		delete compiler;
+
+		m_Shaders[config.Name] = Renderer::CreateShaderProgram(binaries);
+
+		for (const auto& binary : binaries | std::views::values)
+			delete binary;
 	}
 
 	void ShaderLibrary::Destroy()
@@ -62,6 +70,21 @@ namespace Wi
 			Renderer::DestroyShaderProgram(shader);
 		
 		m_Shaders.clear();
+	}
+
+	ShaderCompiler* ShaderLibrary::GetCompiler() const
+	{
+		switch (Renderer::GetConfig().RenderAPIType)
+		{
+			case RendererAPIType::Vulkan:
+				return new VulkanShaderCompiler;
+			case RendererAPIType::None:
+				WI_CORE_ASSERT(false, "Render API unspecified");
+		}
+
+		WI_CORE_ASSERT(false, "Unsupported render api");
+
+		return nullptr;
 	}
 
 	static std::string MakeRelativeToCfg(const std::filesystem::path& cfgPath, const std::filesystem::path& shaderPath)

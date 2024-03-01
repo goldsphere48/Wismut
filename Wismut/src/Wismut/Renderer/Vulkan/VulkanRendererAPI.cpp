@@ -65,20 +65,15 @@ namespace Wi
 		
 	}
 
-	ShaderHandler* VulkanRendererAPI::CreateShaderProgram(const ShaderConfig& config) const
+	ShaderHandler* VulkanRendererAPI::CreateShaderFromBinary(const ShaderBinary& binary, ShaderDescription& outDescription) const
 	{
-		WI_CORE_INFO("Creating shader {0} ...", config.Name);
-		VulkanShaderCompiler compiler(config.Language);
 		VulkanShader* shader = new VulkanShader;
-
-		for (const ShaderStageConfig& stageConfig : config.Stages)
+		for (auto[stage, code] : binary)
 		{
-			WI_CORE_INFO("Creating shader module {0} stage {1}", stageConfig.SourceFilePath, magic_enum::enum_name(stageConfig.Stage))
-			const std::vector<uint32_t> code = compiler.CompileToSpv(stageConfig);
-			vk::ShaderModuleCreateInfo moduleCreateInfo {
+			vk::ShaderModuleCreateInfo moduleCreateInfo{
 				.sType = vk::StructureType::eShaderModuleCreateInfo,
-				.codeSize = code.size() * sizeof(uint32_t),
-				.pCode = code.data(),
+				.codeSize = code->GetSize(),
+				.pCode = code->GetData<uint32_t>(),
 			};
 
 			vk::ShaderModule vkModule = m_Device.createShaderModule(moduleCreateInfo);
@@ -86,12 +81,16 @@ namespace Wi
 
 			vk::PipelineShaderStageCreateInfo stageCreateInfo {
 				.sType = vk::StructureType::ePipelineShaderStageCreateInfo,
-				.stage = VulkanUtils::ConvertToVkShaderStage(stageConfig.Stage),
+				.stage = VulkanUtils::ConvertToVkShaderStage(stage),
 				.module = vkModule,
 				.pName = "main"
 			};
 
 			shader->VkStagesCreateInfo.push_back(stageCreateInfo);
+
+			SpirvShaderBinary* vulkanShaderBinary = static_cast<SpirvShaderBinary*>(code);
+			const ShaderStageDescription description = ReflectSpirv(vulkanShaderBinary->GetData<uint32_t>(), vulkanShaderBinary->GetCount());
+			outDescription[stage] = description;
 		}
 
 		const vk::PipelineLayoutCreateInfo pipelineLayoutCreateInfo {
@@ -103,8 +102,6 @@ namespace Wi
 		};
 
 		shader->PipelineLayout = m_Device.createPipelineLayout(pipelineLayoutCreateInfo);
-
-		WI_CORE_INFO("Shader created {0}", config.Name);
 
 		return shader;
 	}
@@ -340,6 +337,21 @@ namespace Wi
 		return vertexFormat;
 	}
 
+	ShaderStageDescription VulkanRendererAPI::ReflectSpirv(const uint32_t* spirv, size_t count) const
+	{
+		ShaderStageDescription data;
+		const spirv_cross::Compiler compiler(spirv, count);
+		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
+		for (const auto& uniformBuffer : resources.uniform_buffers)
+		{
+			ShaderUniform uniform;
+			uniform.Type = UniformType::UniformBuffer;
+			uniform.Binding = compiler.get_decoration(uniformBuffer.id, spv::DecorationBinding);
+			data.Uniforms[uniform.Binding] = uniform;
+		}
+		return data;
+	}
+
 	BufferHandler* VulkanRendererAPI::CreateBuffer(uint32_t size, BufferType bufferType) const
 	{
 		VulkanBuffer* handler = new VulkanBuffer;
@@ -363,6 +375,11 @@ namespace Wi
 			case BufferType::Staging:
 				handler->Usage = vk::BufferUsageFlagBits::eTransferSrc;
 				handler->MemoryProperties = vk::MemoryPropertyFlagBits::eHostVisible | 
+					vk::MemoryPropertyFlagBits::eHostCoherent;
+				break;
+			case BufferType::Uniform:
+				handler->Usage = vk::BufferUsageFlagBits::eUniformBuffer;
+				handler->MemoryProperties = vk::MemoryPropertyFlagBits::eHostVisible |
 					vk::MemoryPropertyFlagBits::eHostCoherent;
 				break;
 		}

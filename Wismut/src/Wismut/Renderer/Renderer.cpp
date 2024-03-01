@@ -7,9 +7,19 @@
 
 namespace Wi
 {
-	static RendererContext* CreateRenderModule()
+	static RendererContext* CreateRenderModule(RendererAPIType renderAPIType)
 	{
-		return new VulkanContext();
+		switch (renderAPIType)
+		{
+			case RendererAPIType::Vulkan:
+				return new VulkanContext();
+			case RendererAPIType::None:
+				WI_CORE_ASSERT(false, "Render API unspecified");
+		}
+
+		WI_CORE_ASSERT(false, "Unsupported renderer api");
+
+		return nullptr;
 	}
 	
 	void Renderer::Initialize(const RendererConfig& config)
@@ -17,7 +27,7 @@ namespace Wi
 		s_RendererConfig = config;
 		WI_CORE_INFO("Initializing renderer...")
 
-		s_RendererContext = CreateRenderModule();
+		s_RendererContext = CreateRenderModule(config.RenderAPIType);
 		s_RendererContext->Initialize();
 		s_RendererConfig.MaxFramesInFlight = std::min(s_RendererConfig.MaxFramesInFlight, s_RendererContext->GetAvailableImagesCount());
 
@@ -110,6 +120,19 @@ namespace Wi
 		return buffer;
 	}
 
+	std::shared_ptr<Buffer> Renderer::CreateUniformBuffer(const std::vector<uint32_t>& data)
+	{
+		const std::shared_ptr<Buffer> buffer = std::make_shared<Buffer>();
+		buffer->Size = data.size() * sizeof(Vertex);
+		buffer->Handler = s_RenderAPI->CreateBuffer(buffer->Size, BufferType::Uniform);
+
+		uint8_t* pData = s_RenderAPI->MapBuffer(buffer->Handler, buffer->Size);
+		memcpy(pData, data.data(), buffer->Size);
+		s_RenderAPI->UnmapBuffer(buffer->Handler);
+
+		return buffer;
+	}
+
 	std::shared_ptr<GraphicsPipeline> Renderer::CreateGraphicsPipeline(const PipelineSpecification& specification)
 	{
 		const std::shared_ptr<GraphicsPipeline> pipeline = std::make_shared<GraphicsPipeline>();
@@ -124,10 +147,12 @@ namespace Wi
 		return renderPass;
 	}
 
-	std::shared_ptr<Shader> Renderer::CreateShaderProgram(const ShaderConfig& config)
+	std::shared_ptr<Shader> Renderer::CreateShaderProgram(const ShaderBinary& binary)
 	{
+		ShaderDescription description {};
 		const std::shared_ptr<Shader> shader = std::make_shared<Shader>();
-		shader->Handler = s_RenderAPI->CreateShaderProgram(config);
+		shader->Handler = s_RenderAPI->CreateShaderFromBinary(binary, description);
+		shader->Description = description;
 		return shader;
 	}
 

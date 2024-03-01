@@ -93,7 +93,8 @@ namespace Wi
 	{
 		Vertex,
 		Index,
-		Staging
+		Staging,
+		Uniform
 	};
 
 	struct Buffer
@@ -147,9 +148,45 @@ namespace Wi
 		std::string Name;
 	};
 
+	enum class UniformType
+	{
+		UniformBuffer,
+		MAX
+	};
+
+	struct ShaderUniform
+	{
+		UniformType Type = UniformType::MAX;
+		uint32_t Binding = 0;
+	};
+
+	struct ShaderStageDescription
+	{
+		std::unordered_map<uint32_t, ShaderUniform> Uniforms;
+	};
+
+	using ShaderDescription = std::unordered_map<ShaderStage, ShaderStageDescription>;
+
+	class ShaderStageBinary
+	{
+	public:
+		virtual ~ShaderStageBinary() = default;
+
+		template<typename T>
+		__forceinline T* GetData() { return static_cast<T*>(GetDataInternal()); }
+		virtual size_t GetSize() const = 0;
+		virtual size_t GetCount() const = 0;
+
+	private:
+		virtual void* GetDataInternal() const = 0;
+	};
+
+	using ShaderBinary = std::unordered_map<ShaderStage, ShaderStageBinary*>;
+
 	struct Shader
 	{
 		ShaderHandler* Handler;
+		ShaderDescription Description;
 	};
 
 	struct PipelineSpecification

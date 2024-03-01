@@ -15,11 +15,21 @@ namespace Wi
 		static std::vector<ShaderStageConfig> ParseStages(const std::filesystem::path& cfg, const toml::table& table);
 	};
 
+	class ShaderCompiler
+	{
+	public:
+		virtual ~ShaderCompiler() = default;
+
+		virtual ShaderBinary Compile(const ShaderConfig& config) const = 0;
+	};
+
 	class ShaderLibrary
 	{
 	public:
 		void Load(const std::filesystem::path& configPath);
 		void Destroy();
+
+		ShaderCompiler* GetCompiler() const;
 
 		std::shared_ptr<Shader> Get(const std::string& name) const { return m_Shaders.at(name); }
 

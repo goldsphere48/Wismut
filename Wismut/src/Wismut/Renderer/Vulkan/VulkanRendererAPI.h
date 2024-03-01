@@ -1,4 +1,5 @@
 #pragma once
+#include <spirv_cross/spirv_cross.hpp>
 #include "VulkanDevice.h"
 #include "Wismut/Renderer/RendererAPI.h"
 
@@ -53,7 +54,7 @@ namespace Wi
 	public:
 		VulkanRendererAPI(VulkanContext* context);
 
-		ShaderHandler* CreateShaderProgram(const ShaderConfig& config) const override;
+		ShaderHandler* CreateShaderFromBinary(const ShaderBinary& binary, ShaderDescription& outDescription) const override;
 		PipelineHandler* CreateGraphicsPipeline(const PipelineSpecification& specification) const override;
 		RenderPassHandler* CreateRenderPass(const RenderPassSpecification& specification) const override;
 		BufferHandler* CreateBuffer(uint32_t size, BufferType bufferType) const override;
@@ -80,6 +81,7 @@ namespace Wi
 
 	private:
 		VulkanVertexFormat CreateVulkanVertexFormat(const VertexFormat& format) const;
+		ShaderStageDescription ReflectSpirv(const uint32_t* spirv, size_t count) const;
 
 	private:
 		VulkanContext* m_Context;
