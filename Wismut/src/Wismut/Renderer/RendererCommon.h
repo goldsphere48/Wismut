@@ -108,6 +108,11 @@ namespace Wi
 		uint32_t Count;
 	};
 
+	struct UniformBuffer : Buffer
+	{
+		void* MappedData;
+	};
+
 	struct RenderPassSpecification
 	{
 
@@ -148,7 +153,7 @@ namespace Wi
 		std::string Name;
 	};
 
-	enum class UniformType
+	enum class DescriptorType
 	{
 		UniformBuffer,
 		MAX
@@ -156,12 +161,14 @@ namespace Wi
 
 	struct ShaderUniform
 	{
-		UniformType Type = UniformType::MAX;
+		std::string Name = "";
+		DescriptorType Type = DescriptorType::MAX;
 		uint32_t Binding = 0;
 	};
 
 	struct ShaderStageDescription
 	{
+		size_t GlobalUboStride = 0;
 		std::unordered_map<uint32_t, ShaderUniform> Uniforms;
 	};
 
@@ -187,16 +194,24 @@ namespace Wi
 	{
 		ShaderHandler* Handler;
 		ShaderDescription Description;
+		std::shared_ptr<UniformBuffer> UniformBuffer;
 	};
 
 	struct PipelineSpecification
 	{
-		Shader* Shader;
+		std::shared_ptr<Shader> Shader;
 		VertexFormat VertexFormat;
 	};
 
 	struct GraphicsPipeline
 	{
 		PipelineHandler* Handler;
+		std::shared_ptr<Shader> Shader;
+	};
+
+	struct UniformBufferObject {
+		glm::mat4 model;
+		glm::mat4 view;
+		glm::mat4 proj;
 	};
 }

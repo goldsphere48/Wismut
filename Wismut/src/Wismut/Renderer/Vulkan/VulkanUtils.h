@@ -21,4 +21,6 @@ namespace Wi::VulkanUtils
 	vk::Format ConvertDataFormatToVkFormat(DataFormat format);
 
 	vk::BufferUsageFlagBits ConvertToVkBufferUsage(BufferType usage);
+
+	vk::DescriptorType ConvertToVkDescriptorType(DescriptorType type);
 }

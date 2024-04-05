@@ -4,6 +4,8 @@
 #include "RendererContext.h"
 #include "Vulkan/VulkanContext.h"
 #include "Wismut/Core/Application.h"
+#include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
 
 namespace Wi
 {
@@ -65,6 +67,7 @@ namespace Wi
 
 		m_Pipeline = CreateGraphicsPipeline(pipelineSpecification);
 		m_Buffer = CreateVertexBuffer(vertices);
+		m_UniformBuffer = CreateUniformBuffer(sizeof(UniformBufferObject));
 		m_IndexBuffer = CreateIndexBuffer(indicies);
 	}
 
@@ -82,6 +85,8 @@ namespace Wi
 
 	void Renderer::OnWindowResize(int width, int height)
 	{
+		s_Width = width;
+		s_Height = height;
 		s_RendererContext->OnWindowResize(width, height);
 	}
 
@@ -120,23 +125,33 @@ namespace Wi
 		return buffer;
 	}
 
-	std::shared_ptr<Buffer> Renderer::CreateUniformBuffer(const std::vector<uint32_t>& data)
+	std::shared_ptr<UniformBuffer> Renderer::CreateUniformBuffer(uint32_t size)
 	{
-		const std::shared_ptr<Buffer> buffer = std::make_shared<Buffer>();
-		buffer->Size = data.size() * sizeof(Vertex);
+		const std::shared_ptr<UniformBuffer> buffer = std::make_shared<UniformBuffer>();
+		buffer->Size = size * sizeof(Vertex);
 		buffer->Handler = s_RenderAPI->CreateBuffer(buffer->Size, BufferType::Uniform);
 
-		uint8_t* pData = s_RenderAPI->MapBuffer(buffer->Handler, buffer->Size);
-		memcpy(pData, data.data(), buffer->Size);
-		s_RenderAPI->UnmapBuffer(buffer->Handler);
+		buffer->MappedData = s_RenderAPI->MapBuffer(buffer->Handler, buffer->Size);
 
 		return buffer;
+	}
+
+	void Renderer::UpdateUniformBuffer(const std::shared_ptr<UniformBuffer>& buffer, const void* data)
+	{
+		memcpy(buffer->MappedData, data, buffer->Size);
+	}
+
+	void Renderer::DestroyUniformBuffer(const std::shared_ptr<UniformBuffer>& buffer)
+	{
+		s_RenderAPI->UnmapBuffer(buffer->Handler);
+		s_RenderAPI->DestroyBuffer(buffer->Handler);
 	}
 
 	std::shared_ptr<GraphicsPipeline> Renderer::CreateGraphicsPipeline(const PipelineSpecification& specification)
 	{
 		const std::shared_ptr<GraphicsPipeline> pipeline = std::make_shared<GraphicsPipeline>();
 		pipeline->Handler = s_RenderAPI->CreateGraphicsPipeline(specification);
+		pipeline->Shader = specification.Shader;
 		return pipeline;
 	}
 
@@ -149,29 +164,43 @@ namespace Wi
 
 	std::shared_ptr<Shader> Renderer::CreateShaderProgram(const ShaderBinary& binary)
 	{
-		ShaderDescription description {};
+		ShaderDescription description;
 		const std::shared_ptr<Shader> shader = std::make_shared<Shader>();
-		shader->Handler = s_RenderAPI->CreateShaderFromBinary(binary, description);
-		shader->Description = description;
+		shader->Handler = s_RenderAPI->CreateShaderFromBinary(binary, shader->Description);
+		shader->UniformBuffer = CreateUniformBuffer(sizeof(UniformBufferObject));
 		return shader;
 	}
 
 	void Renderer::DestroyShaderProgram(const std::shared_ptr<Shader>& shader)
 	{
+		DestroyUniformBuffer(shader->UniformBuffer);
 		s_RenderAPI->DestroyShaderProgram(shader->Handler);
 	}
 
 	void Renderer::DrawTest()
 	{
+		UpdateUBOTest();
 		s_RenderAPI->BindPipeline(m_Pipeline);
 		s_RenderAPI->BindVertexBuffer(m_Buffer);
 		s_RenderAPI->BindIndexBuffer(m_IndexBuffer);
+		s_RenderAPI->UpdateShaderGlobals(m_Pipeline->Shader->Handler, m_Pipeline->Shader->UniformBuffer->Handler, &s_UBO);
 		s_RenderAPI->DrawIndexed(m_IndexBuffer->Count);
 	}
 
 	uint32_t Renderer::GetCurrentFrameIndex()
 	{
 		return Application::Get()->GetCurrentFrameIndex();
+	}
+
+	void Renderer::UpdateUBOTest()
+	{
+		static auto startTime = std::chrono::high_resolution_clock::now();
+
+		auto currentTime = std::chrono::high_resolution_clock::now();
+		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+		s_UBO.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		s_UBO.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		s_UBO.proj = glm::perspective(glm::radians(45.0f), s_Width/ (float)s_Height, 0.1f, 10.0f);
 	}
 
 	void Renderer::Shutdown()

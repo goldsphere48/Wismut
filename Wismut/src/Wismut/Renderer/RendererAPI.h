@@ -29,6 +29,7 @@ namespace Wi
 		virtual void CopyBuffer(BufferHandler* src, BufferHandler* dst, uint32_t size) const = 0;
 		virtual uint8_t* MapBuffer(BufferHandler* handler, size_t size) const = 0;
 		virtual void UnmapBuffer(BufferHandler* handler) const = 0;
+		virtual void UpdateShaderGlobals(ShaderHandler* shader, BufferHandler* handler, const void* data, uint32_t range) const = 0;
 
 		virtual void BeginRenderPass() const = 0;
 		virtual void EndRenderPass() const = 0;

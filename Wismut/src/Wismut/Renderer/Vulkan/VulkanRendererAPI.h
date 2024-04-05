@@ -37,6 +37,8 @@ namespace Wi
 		{
 			std::vector<vk::PipelineShaderStageCreateInfo> VkStagesCreateInfo;
 			vk::PipelineLayout PipelineLayout;
+			vk::DescriptorSetLayout GlobalDescriptorSetLayout;
+			std::vector<vk::DescriptorSet> GlobalDescriptorSets;
 		};
 
 		class ScopedCommandBuffer
@@ -62,6 +64,7 @@ namespace Wi
 		void CopyBuffer(BufferHandler* src, BufferHandler* dst, uint32_t size) const override;
 		uint8_t* MapBuffer(BufferHandler* handler, size_t size) const override;
 		void UnmapBuffer(BufferHandler* handler) const override;
+		void UpdateShaderGlobals(ShaderHandler* shader, BufferHandler* handler, const void* data, uint32_t range) const override;
 
 		void DestroyShaderProgram(ShaderHandler* shader) const override;
 		void DestroyGraphicsPipeline(PipelineHandler* pipeline) const override;

@@ -8,3 +8,6 @@
 	#error Debug break for current environment undefined
 #endif
 
+inline uint64_t GetAligned(uint64_t operand, uint64_t granularity) {
+	return ((operand + (granularity - 1)) & ~(granularity - 1));
+}

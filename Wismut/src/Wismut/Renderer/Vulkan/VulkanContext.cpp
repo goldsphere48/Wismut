@@ -145,10 +145,13 @@ namespace Wi
 		m_RendererApi = new VulkanRendererAPI(this);
 
 		m_Swapchain->Initialize(m_Device);
+
+		m_DescriptorSetManager = VulkanDescriptorSetManager(m_Device->LogicalDevice);
 	}
 
 	void VulkanContext::Destroy()
 	{
+		m_DescriptorSetManager.Destroy();
 		m_Swapchain->Destroy();
 		delete m_RendererApi;
 		m_Device->Destroy();

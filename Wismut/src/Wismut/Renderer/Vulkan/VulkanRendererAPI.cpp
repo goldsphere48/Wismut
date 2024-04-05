@@ -6,6 +6,7 @@
 #include "VulkanContext.h"
 #include "VulkanShaderCompiler.h"
 #include "VulkanUtils.h"
+#include "Wismut/Renderer/Renderer.h"
 
 namespace Wi
 {
@@ -68,6 +69,9 @@ namespace Wi
 	ShaderHandler* VulkanRendererAPI::CreateShaderFromBinary(const ShaderBinary& binary, ShaderDescription& outDescription) const
 	{
 		VulkanShader* shader = new VulkanShader;
+
+		std::vector<vk::DescriptorSetLayoutBinding> layoutBindings;
+
 		for (auto[stage, code] : binary)
 		{
 			vk::ShaderModuleCreateInfo moduleCreateInfo{
@@ -90,18 +94,56 @@ namespace Wi
 
 			SpirvShaderBinary* vulkanShaderBinary = static_cast<SpirvShaderBinary*>(code);
 			const ShaderStageDescription description = ReflectSpirv(vulkanShaderBinary->GetData<uint32_t>(), vulkanShaderBinary->GetCount());
+
+			for (auto [binding, uniform] : description.Uniforms)
+			{
+				vk::DescriptorSetLayoutBinding layoutBinding
+				{
+					.binding = binding,
+					.descriptorType = VulkanUtils::ConvertToVkDescriptorType(uniform.Type),
+					.descriptorCount = 1,
+					.stageFlags = VulkanUtils::ConvertToVkShaderStage(stage),
+					.pImmutableSamplers = nullptr
+				};
+
+				layoutBindings.push_back(layoutBinding);
+			}
+
 			outDescription[stage] = description;
 		}
 
+		const vk::DescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo
+		{
+			.sType = vk::StructureType::eDescriptorSetLayoutCreateInfo,
+			.bindingCount = layoutBindings.size(),
+			.pBindings = layoutBindings.data()
+		};
+
+		vk::DescriptorSetLayout descriptorSetLayout = m_Device.createDescriptorSetLayout(descriptorSetLayoutCreateInfo);
+
+		const uint32_t framesCount = Renderer::GetConfig().MaxFramesInFlight;
+		std::vector<vk::DescriptorSetLayout> descriptorSetLayouts(framesCount, descriptorSetLayout);
+
 		const vk::PipelineLayoutCreateInfo pipelineLayoutCreateInfo {
 			.sType = vk::StructureType::ePipelineLayoutCreateInfo,
-			.setLayoutCount = 0,
-			.pSetLayouts = nullptr,
+			.setLayoutCount = descriptorSetLayouts.size(),
+			.pSetLayouts = descriptorSetLayouts.data(),
 			.pushConstantRangeCount = 0,
 			.pPushConstantRanges = nullptr
 		};
 
+		shader->GlobalDescriptorSetLayout = descriptorSetLayout;
 		shader->PipelineLayout = m_Device.createPipelineLayout(pipelineLayoutCreateInfo);
+
+		vk::DescriptorSetAllocateInfo setAllocateInfo
+		{
+			.sType = vk::StructureType::eDescriptorSetAllocateInfo,
+			.descriptorPool = m_Context->GetDescriptorSetManager().GetPool(),
+			.descriptorSetCount = framesCount,
+			.pSetLayouts = &descriptorSetLayout
+		};
+
+		shader->GlobalDescriptorSets = m_Device.allocateDescriptorSets(setAllocateInfo);
 
 		return shader;
 	}
@@ -112,6 +154,7 @@ namespace Wi
 		for (const vk::PipelineShaderStageCreateInfo& stages : vkShader->VkStagesCreateInfo)
 			m_Device.destroyShaderModule(stages.module);
 
+		m_Device.destroyDescriptorSetLayout(vkShader->GlobalDescriptorSetLayout);
 		m_Device.destroyPipelineLayout(vkShader->PipelineLayout);
 
 		delete shader;
@@ -342,11 +385,14 @@ namespace Wi
 		ShaderStageDescription data;
 		const spirv_cross::Compiler compiler(spirv, count);
 		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
+
 		for (const auto& uniformBuffer : resources.uniform_buffers)
 		{
 			ShaderUniform uniform;
-			uniform.Type = UniformType::UniformBuffer;
+			uniform.Type = DescriptorType::UniformBuffer;
 			uniform.Binding = compiler.get_decoration(uniformBuffer.id, spv::DecorationBinding);
+			const size_t bufferSize = compiler.get_declared_struct_size(compiler.get_type(uniformBuffer.base_type_id));
+			data.GlobalUboStride += GetAligned(bufferSize, m_Context->GetDevice()->PhysicalDevice->Properties.limits.minUniformBufferOffsetAlignment);
 			data.Uniforms[uniform.Binding] = uniform;
 		}
 		return data;
@@ -443,6 +489,38 @@ namespace Wi
 	{
 		const vk::DeviceMemory memory = handler->AsStatic<VulkanBuffer>()->VkDeviceMemory;
 		m_Device.unmapMemory(memory);
+	}
+
+	void VulkanRendererAPI::UpdateShaderGlobals(ShaderHandler* shader, BufferHandler* handler, const void* data, uint32_t range) const
+	{
+		VulkanShader* vulkanShader = shader->AsStatic<VulkanShader>();
+		VulkanBuffer* buffer = handler->AsStatic<VulkanBuffer>();
+
+		int index = 0;
+		for (auto set : vulkanShader->GlobalDescriptorSets)
+		{
+			vk::DescriptorBufferInfo bufferInfo
+			{
+				.buffer = buffer->VkBuffer,
+				.offset = 0,
+				.range = range
+			};
+
+			vk::WriteDescriptorSet descriptorSetWrite
+			{
+				.sType = vk::StructureType::eWriteDescriptorSet,
+				.dstSet = vulkanShader->GlobalDescriptorSets[index],
+				.dstBinding = ,
+				.dstArrayElement = ,
+				.descriptorCount = ,
+				.descriptorType = ,
+				.pImageInfo = ,
+				.pBufferInfo = ,
+				.pTexelBufferView = 
+			};
+
+			index++;
+		}
 	}
 
 	void VulkanRendererAPI::DestroyBuffer(BufferHandler* buffer) const
