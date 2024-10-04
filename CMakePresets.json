@@ -1,0 +1,46 @@
+{
+	"version": 6,
+	"configurePresets": [
+		{
+			"name": "windows-default",
+			"displayName": "Windows x64 Debug",
+			"binaryDir": "${sourceDir}/Engine/Intermediate/build/${presetName}",
+			"architecture": {
+				"value": "x64",
+				"strategy": "external"
+			},
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug",
+				"CMAKE_INSTALL_PREFIX": "${sourceDir}/Engine/Intermediate/install/${presetName}"
+			},
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"hostOS": [
+						"Windows"
+					]
+				}
+			}
+		},
+		{
+			"name": "ninja-windows-default-x64-debug",
+			"displayName": "Ninja Windows x64 Debug",
+			"binaryDir": "${sourceDir}/Engine/Intermediate/build/${presetName}",
+			"generator": "Ninja",
+			"architecture": {
+				"value": "x64",
+				"strategy": "external"
+			},
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug",
+				"CMAKE_INSTALL_PREFIX": "${sourceDir}/Engine/Intermediate/install/${presetName}"
+			},
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"hostOS": [
+						"Windows"
+					]
+				}
+			}
+		}
+	]
+}
