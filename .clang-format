@@ -1,0 +1,26 @@
+IndentWidth: 4
+TabWidth: 4
+UseTab: Always
+BreakBeforeBraces: Custom
+BreakInheritanceList: AfterColon
+FixNamespaceComments: false
+ColumnLimit: 0
+BraceWrapping:
+  AfterClass: true
+  AfterControlStatement: true
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: true
+  BeforeCatch: true
+  AfterCaseLabel: true
+  BeforeElse: true
+  IndentBraces: false
+IndentCaseLabels: true
+NamespaceIndentation: All
+AccessModifierOffset: -4
+AlignAfterOpenBracket: DontAlign
+AllowShortBlocksOnASingleLine: false
+AllowShortFunctionsOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+InsertNewlineAtEOF: true
+PointerAlignment: Left
