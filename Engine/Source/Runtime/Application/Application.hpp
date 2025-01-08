@@ -1,4 +1,6 @@
 #pragma once
+#include "Core/Defines.hpp"
+#include "Window.hpp"
 
 namespace Wi
 {
@@ -6,5 +8,12 @@ namespace Wi
 	{
 	public:
 		void Run();
+
+	private:
+		void Shutdown();
+
+	private:
+		bool m_IsRunning = true;
+		SharedPtr<Window> m_MainWindow;
 	};
 }

@@ -16,6 +16,7 @@ endif()
 target_compile_definitions(Runtime PUBLIC 
 	$<$<CONFIG:Debug>:WI_DEBUG>
 	$<$<CONFIG:Release>:WI_RELEASE>
+	UNICODE
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCE_FILES} ${HEADER_FILES})
