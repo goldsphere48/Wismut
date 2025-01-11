@@ -11,6 +11,7 @@ if(WIN32)
 	target_compile_definitions(Runtime PUBLIC WI_PLATFORM_WIN)
 elseif(UNIX)
 	target_compile_definitions(Runtime PUBLIC WI_PLATFORM_LINUX)
+	target_link_libraries(Runtime PRIVATE xcb)
 endif()
 
 target_compile_definitions(Runtime PUBLIC 
