@@ -12,6 +12,7 @@ namespace Wi
 		void Shutdown() override;
 		SharedPtr<IPlatformWindow> MakeWindow(const WindowDefinition& config) override;
 		void PumpMessages() override;
+		void SetEventCallback(const EventCallback& eventCallback) override;
 
 	private:
 		HINSTANCE m_Instance = nullptr;

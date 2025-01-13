@@ -15,7 +15,7 @@ namespace Wi
 			WS_EX_APPWINDOW | WS_EX_TRANSPARENT,
 			AppWindowClass,
 			title,
-			WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION,
+			WS_OVERLAPPEDWINDOW,
 			definition.PositionX,
 			definition.PositionY,
 			definition.Width,

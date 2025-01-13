@@ -1,5 +1,10 @@
 #include "Application.hpp"
 
+#include <iostream>
+
+#include "Events/KeyEvent.h"
+#include "Events/MouseEvents.h"
+#include "Events/WindowEvents.h"
 #include "Platform/Platform.hpp"
 
 namespace Wi
@@ -11,6 +16,7 @@ namespace Wi
 		{
 			return;
 		}
+		m_NativeApplication->SetEventCallback([this](Event& event) { return OnEvent(event); });
 
 		const WindowDefinition windowConfig = WindowDefinition {
 			.Title = "Wismut Engine",
@@ -28,6 +34,25 @@ namespace Wi
 		}
 
 		Shutdown();
+	}
+
+	bool Application::OnMouseScrolled(float get_z_delta)
+	{
+		std::cout << "Scroll: " << get_z_delta << "\n";
+		return true;
+	}
+
+	bool Application::OnEvent(Event& event)
+	{
+		EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<WindowCloseEvent>([this](const WindowCloseEvent&) { return this->OnWindowClose(); });
+		return true;
+	}
+
+	bool Application::OnWindowClose()
+	{
+		m_IsRunning = false;
+		return true;
 	}
 
 	void Application::Shutdown() const
