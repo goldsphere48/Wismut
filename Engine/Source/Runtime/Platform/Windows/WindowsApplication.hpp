@@ -1,17 +1,16 @@
 #pragma once
-#include <vector>
 #ifdef WI_PLATFORM_WIN
 #include "WindowsWindow.hpp"
-#include "Application/INativeApplication.hpp"
+#include "Platform/IPlatformApplication.hpp"
 
 namespace Wi
 {
-	class WindowsApplication final : public INativeApplication
+	class WindowsApplication final : public IPlatformApplication
 	{
 	public:
 		bool Startup() override;
 		void Shutdown() override;
-		SharedPtr<Window> MakeWindow(const WindowDefinition& config) override;
+		SharedPtr<IPlatformWindow> MakeWindow(const WindowDefinition& config) override;
 		void PumpMessages() override;
 
 	private:

@@ -1,6 +1,6 @@
-#include "LinuxWindow.hpp"
 #ifdef WI_PLATFORM_LINUX
 #include "LinuxApplication.hpp"
+#include "LinuxWindow.hpp"
 
 namespace Wi
 {
@@ -16,7 +16,7 @@ namespace Wi
 		return true;
 	}
 
-	SharedPtr<Window> LinuxApplication::MakeWindow(const WindowDefinition& config)
+	SharedPtr<IPlatformWindow> LinuxApplication::MakeWindow(const WindowDefinition& config)
 	{
 		return CreateSharedPtr<LinuxWindow>(config, m_Connection);
 	}

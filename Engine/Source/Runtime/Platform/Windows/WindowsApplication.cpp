@@ -37,7 +37,7 @@ namespace Wi
 		
 	}
 
-	SharedPtr<Window> WindowsApplication::MakeWindow(const WindowDefinition& config)
+	SharedPtr<IPlatformWindow> WindowsApplication::MakeWindow(const WindowDefinition& config)
 	{
 		return CreateSharedPtr<WindowsWindow>(config, m_Instance);
 	}

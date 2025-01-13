@@ -1,7 +1,7 @@
 #pragma once
-#include "INativeApplication.hpp"
 #include "Core/Defines.hpp"
-#include "Window.hpp"
+#include "Platform/IPlatformApplication.hpp"
+#include "Platform/IPlatformWindow.hpp"
 
 namespace Wi
 {
@@ -15,7 +15,7 @@ namespace Wi
 
 	private:
 		bool m_IsRunning = true;
-		SharedPtr<Window> m_MainWindow;
-		UniquePtr<INativeApplication> m_NativeApplication;
+		SharedPtr<IPlatformWindow> m_MainWindow;
+		UniquePtr<IPlatformApplication> m_NativeApplication;
 	};
 }

@@ -2,11 +2,11 @@
 #ifdef WI_PLATFORM_WIN
 
 #include <Windows.h>
-#include "Application/Window.hpp"
+#include "Platform/IPlatformWindow.hpp"
 
 namespace Wi
 {
-	class WindowsWindow : public Window
+	class WindowsWindow : public IPlatformWindow
 	{
 	public:
 		explicit WindowsWindow(const WindowDefinition& definition, HINSTANCE instance);

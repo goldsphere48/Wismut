@@ -1,5 +1,5 @@
 #pragma once
-#include "Application/INativeApplication.hpp"
+#include "IPlatformApplication.hpp"
 #include "Core/Defines.hpp"
 
 namespace Wi
@@ -7,6 +7,6 @@ namespace Wi
 	class Platform
 	{
 	public:
-		static UniquePtr<INativeApplication> CreateNativeApplication();
+		static UniquePtr<IPlatformApplication> CreateNativeApplication();
 	};
 }

@@ -1,10 +1,10 @@
 #ifdef WI_PLATFORM_WIN
-#include "Application/Windows/WindowsApplication.hpp"
 #include "Platform/Platform.hpp"
+#include "WindowsApplication.hpp"
 
 namespace Wi
 {
-	UniquePtr<INativeApplication> Platform::CreateNativeApplication()
+	UniquePtr<IPlatformApplication> Platform::CreateNativeApplication()
 	{
 		return CreateUniquePtr<WindowsApplication>();
 	}

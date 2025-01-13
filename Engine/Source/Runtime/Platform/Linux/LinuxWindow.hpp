@@ -1,11 +1,11 @@
 #pragma once
 #ifdef WI_PLATFORM_LINUX
 #include <xcb/xcb.h>
-#include "Application/Window.hpp"
+#include "Platform/IPlatformWindow.hpp"
 
 namespace Wi
 {
-	class LinuxWindow final : public Window
+	class LinuxWindow final : public IPlatformWindow
 	{
 	public:
 		explicit LinuxWindow(const WindowDefinition& definition, xcb_connection_t* connection);

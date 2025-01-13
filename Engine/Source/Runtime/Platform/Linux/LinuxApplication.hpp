@@ -1,15 +1,16 @@
 #pragma once
 #ifdef WI_PLATFORM_LINUX
 #include <xcb/xcb.h>
-#include "Application/INativeApplication.hpp"
+#include "Platform/IPlatformApplication.hpp"
+#include "Platform/IPlatformWindow.hpp"
 
 namespace Wi
 {
-	class LinuxApplication final : public INativeApplication
+	class LinuxApplication final : public IPlatformApplication
 	{
 	public:
 		bool Startup() override;
-		SharedPtr<Window> MakeWindow(const WindowDefinition& config) override;
+		SharedPtr<IPlatformWindow> MakeWindow(const WindowDefinition& config) override;
 		void PumpMessages() override;
 		void Shutdown() override;
 	private:
