@@ -4,6 +4,7 @@
 namespace Wi
 {
 	LinuxWindow::LinuxWindow(const WindowDefinition& definition, xcb_connection_t* connection)
+		: m_Connection(connection)
 	{
 		m_HWnd = xcb_generate_id(connection);
 		m_Screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
@@ -28,12 +29,9 @@ namespace Wi
 		xcb_flush(connection);
 	}
 
-	void LinuxWindow::PumpMessages()
-	{
-	}
-
 	void LinuxWindow::Destroy()
 	{
+		xcb_destroy_window(m_Connection, m_HWnd);
 	}
 }
 #endif

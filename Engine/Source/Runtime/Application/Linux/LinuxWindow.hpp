@@ -9,11 +9,10 @@ namespace Wi
 	{
 	public:
 		explicit LinuxWindow(const WindowDefinition& definition, xcb_connection_t* connection);
-
-		void PumpMessages() override;
 		void Destroy() override;
 
 	private:
+		xcb_connection_t* m_Connection;
 		xcb_window_t m_HWnd;
 		xcb_screen_t* m_Screen;
 	};

@@ -6,12 +6,13 @@ namespace Wi
 {
 	void Application::Run()
 	{
-		if (!Platform::Startup())
+		m_NativeApplication = Platform::CreateNativeApplication();
+		if (!m_NativeApplication->Startup())
 		{
 			return;
 		}
 
-		const WindowDefinition windowConfig = WindowDefinition{
+		const WindowDefinition windowConfig = WindowDefinition {
 			.Title = "Wismut Engine",
 			.PositionX = 300,
 			.PositionY = 300,
@@ -19,18 +20,19 @@ namespace Wi
 			.Height = 480
 		};
 
-		m_MainWindow = Platform::MakeWindow(windowConfig);
+		m_MainWindow = m_NativeApplication->MakeWindow(windowConfig);
 
 		while (m_IsRunning)
 		{
-			m_MainWindow->PumpMessages();
+			m_NativeApplication->PumpMessages();
 		}
 
-		Platform::Shutdown();
+		Shutdown();
 	}
 
-	void Application::Shutdown()
+	void Application::Shutdown() const
 	{
 		m_MainWindow->Destroy();
+		m_NativeApplication->Shutdown();
 	}
 }

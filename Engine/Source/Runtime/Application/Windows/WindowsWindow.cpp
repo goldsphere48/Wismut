@@ -29,16 +29,6 @@ namespace Wi
 		ShowWindow(m_Hwnd, SW_SHOW);
 	}
 
-	void WindowsWindow::PumpMessages()
-	{
-		MSG msg {};
-		while (GetMessage(&msg, m_Hwnd, 0, 0))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-	}
-
 	void WindowsWindow::Destroy()
 	{
 		if (m_Hwnd)

@@ -22,7 +22,6 @@ namespace Wi
 		Window& operator=(const Window&) = delete;
 		Window& operator=(Window&&) = delete;
 
-		virtual void PumpMessages() = 0;
 		virtual void Destroy() = 0;
 	};
 }

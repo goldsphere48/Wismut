@@ -10,8 +10,6 @@ namespace Wi
 	{
 	public:
 		explicit WindowsWindow(const WindowDefinition& definition, HINSTANCE instance);
-
-		void PumpMessages() override;
 		void Destroy() override;
 
 	public:

@@ -14,7 +14,7 @@ template<typename T>
 using UniquePtr = std::unique_ptr<T>;
 
 template<typename T, typename ...Args>
-constexpr SharedPtr<T> CreateUniquePtr(Args&& ...args)
+constexpr UniquePtr<T> CreateUniquePtr(Args&& ...args)
 {
 	return std::make_unique<T>(std::forward<Args>(args)...);
 }
