@@ -22,6 +22,8 @@ namespace Wi
 		IPlatformWindow& operator=(const IPlatformWindow&) = delete;
 		IPlatformWindow& operator=(IPlatformWindow&&) = delete;
 
+		virtual unsigned int GetWidth() = 0;
+		virtual unsigned int GetHeight() = 0;
 		virtual void Destroy() = 0;
 	};
 }

@@ -11,7 +11,7 @@ namespace Wi
 		WCHAR title[256];
 		MultiByteToWideChar(CP_UTF8, 0, definition.Title.c_str(), -1, title, 256);
 
-		m_Hwnd = CreateWindowEx(
+		m_WindowHandle = CreateWindowEx(
 			WS_EX_APPWINDOW | WS_EX_TRANSPARENT,
 			AppWindowClass,
 			title,
@@ -26,15 +26,28 @@ namespace Wi
 			nullptr
 		);
 
-		ShowWindow(m_Hwnd, SW_SHOW);
+		m_Width = definition.Width;
+		m_Height = definition.Height;
+
+		ShowWindow(m_WindowHandle, SW_SHOW);
 	}
 
 	void WindowsWindow::Destroy()
 	{
-		if (m_Hwnd)
+		if (m_WindowHandle)
 		{
-			DestroyWindow(m_Hwnd);
+			DestroyWindow(m_WindowHandle);
 		}
+	}
+
+	unsigned WindowsWindow::GetWidth()
+	{
+		return m_Width;
+	}
+
+	unsigned WindowsWindow::GetHeight()
+	{
+		return m_Height;
 	}
 }
 #endif

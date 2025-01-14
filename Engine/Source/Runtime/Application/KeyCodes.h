@@ -6,6 +6,7 @@ namespace Wi
 {
 	enum class KeyCode : uint16_t
 	{
+		Unknown = 0,
 		// From glfw3.h
 		Space = 32,
 		Apostrophe = 39, /* ' */
@@ -137,38 +138,37 @@ namespace Wi
 		RightAlt = 346,
 		RightSuper = 347,
 		Menu = 348,
-		Unknown,
 		LastKeyCode
 	};
 
-	enum class KeyState
+	enum class KeyState : std::uint8_t
 	{
-		None = -1,
+		None = 0,
 		Pressed,
 		Held,
 		Released
 	};
 
-	enum class CursorMode
+	enum class CursorMode : std::uint8_t
 	{
 		Normal = 0,
 		Hidden = 1,
 		Locked = 2
 	};
 
-	enum class MouseButton : uint16_t
+	enum class MouseButton : uint8_t
 	{
-		Invalid = -1,
-		Button0 = 0,
-		Button1 = 1,
-		Button2 = 2,
-		Button3 = 3,
-		Button4 = 4,
-		Button5 = 5,
+		Unknown = 0,
+		Button0 = 1,
+		Button1 = 2,
+		Button2 = 3,
+		Button3 = 4,
+		Button4 = 5,
+		Button5 = 6,
 		Left = Button0,
 		Right = Button1,
 		Middle = Button2,
-		LastMouseButton
+		LastMouseButton = 7,
 	};
 
 

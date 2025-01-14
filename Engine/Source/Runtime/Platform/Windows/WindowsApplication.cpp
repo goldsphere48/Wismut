@@ -8,7 +8,7 @@
 
 namespace Wi
 {
-	static KeyCode Win32KeyToKeyCode(WPARAM wParam, LPARAM lParam)
+	static KeyCode TranslateKeyCode(WPARAM wParam, LPARAM lParam)
 	{
 		bool isExtended = ((HIWORD(lParam) & KF_EXTENDED) == KF_EXTENDED);
 		int scancode = (HIWORD(lParam) & 0xFF);
@@ -182,7 +182,7 @@ namespace Wi
 			case WM_RBUTTONUP:
 			{
 				bool pressed = msg == WM_LBUTTONDOWN || msg == WM_RBUTTONDOWN || msg == WM_MBUTTONDOWN;
-				MouseButton mouseButton = MouseButton::Invalid;
+				MouseButton mouseButton = MouseButton::Unknown;
 				switch (msg)
 				{
 					case WM_LBUTTONDOWN:
@@ -230,7 +230,7 @@ namespace Wi
 			case WM_SYSKEYUP:
 			{
 				bool pressed = msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN;
-				KeyCode key = Win32KeyToKeyCode(wParam, lParam);
+				KeyCode key = TranslateKeyCode(wParam, lParam);
 				if (pressed)
 				{
 					KeyPressedEvent event(key, LOWORD(lParam) > 0);
