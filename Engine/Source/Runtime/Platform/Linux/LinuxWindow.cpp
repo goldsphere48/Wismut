@@ -1,4 +1,6 @@
 #ifdef WI_PLATFORM_LINUX
+#include <cassert>
+#include <limits>
 #include "LinuxWindow.hpp"
 #include "LinuxApplication.hpp"
 
@@ -10,7 +12,7 @@ namespace Wi
 		m_WindowHandle = xcb_generate_id(connection);
 		m_Screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
 
-		uint32_t eventMask =
+		u32 eventMask =
 			XCB_EVENT_MASK_EXPOSURE |
 			XCB_EVENT_MASK_STRUCTURE_NOTIFY |
 			XCB_EVENT_MASK_POINTER_MOTION |
@@ -19,12 +21,17 @@ namespace Wi
 			XCB_EVENT_MASK_KEY_PRESS |
 			XCB_EVENT_MASK_KEY_RELEASE;
 
-		uint32_t valueList[] = { m_Screen->black_pixel, eventMask };
+		u32 valueList[] = { m_Screen->black_pixel, eventMask };
 
-		int16_t clientX = static_cast<int16_t>(definition.PositionX);
-		int16_t clientY = static_cast<int16_t>(definition.PositionY);
-		uint16_t clientWidth = static_cast<uint16_t>(definition.Width);
-		uint16_t clientHeight = static_cast<uint16_t>(definition.Height);
+		assert(definition.PositionX <= std::numeric_limits<i16>::max());
+		assert(definition.PositionY <= std::numeric_limits<i16>::max());
+		assert(definition.Width >=0 && definition.Width <= std::numeric_limits<u16>::max());
+		assert(definition.Height >= 0 && definition.Height <= std::numeric_limits<u16>::max());
+
+		i16 clientX = static_cast<i16>(definition.PositionX);
+		i16 clientY = static_cast<i16>(definition.PositionY);
+		u16 clientWidth = static_cast<u16>(definition.Width);
+		u16 clientHeight = static_cast<u16>(definition.Height);
 
 		xcb_create_window(
 			connection,
@@ -65,12 +72,12 @@ namespace Wi
 		xcb_destroy_window(m_Connection, m_WindowHandle);
 	}
 
-	unsigned LinuxWindow::GetWidth()
+	i32 LinuxWindow::GetWidth()
 	{
 		return m_Width;
 	}
 
-	unsigned LinuxWindow::GetHeight()
+	i32 LinuxWindow::GetHeight()
 	{
 		return m_Height;
 	}

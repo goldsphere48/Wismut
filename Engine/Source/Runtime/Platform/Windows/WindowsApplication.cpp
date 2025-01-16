@@ -160,16 +160,16 @@ namespace Wi
 			}
 			case WM_SIZE:
 			{
-				int width = GET_X_LPARAM(lParam);
-				int height = GET_Y_LPARAM(lParam);
+				i32 width = GET_X_LPARAM(lParam);
+				i32 height = GET_Y_LPARAM(lParam);
 				WindowResizeEvent event(width, height);
 				GEventCallback(event);
 				break;
 			}
 			case WM_MOUSEMOVE:
 			{
-				int x = GET_X_LPARAM(lParam);
-				int y = GET_Y_LPARAM(lParam);
+				i32 x = GET_X_LPARAM(lParam);
+				i32 y = GET_Y_LPARAM(lParam);
 				MouseMovedEvent event(x, y);
 				GEventCallback(event);
 				break;
@@ -242,9 +242,8 @@ namespace Wi
 				}
 				break;
 			}
-			default:
-				return DefWindowProc(hwnd, msg, wParam, lParam);
 		}
+		return DefWindowProc(hwnd, msg, wParam, lParam);
 	}
 
 	bool WindowsApplication::Startup()

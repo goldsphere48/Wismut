@@ -1,15 +1,17 @@
 #pragma once
 #include <string>
 
+#include "Core/Defines.hpp"
+
 namespace Wi
 {
 	struct WindowDefinition
 	{
 		std::string Title;
-		int PositionX;
-		int PositionY;
-		int Width;
-		int Height;
+		i32 PositionX;
+		i32 PositionY;
+		i32 Width;
+		i32 Height;
 	};
 
 	class IPlatformWindow
@@ -22,8 +24,8 @@ namespace Wi
 		IPlatformWindow& operator=(const IPlatformWindow&) = delete;
 		IPlatformWindow& operator=(IPlatformWindow&&) = delete;
 
-		virtual unsigned int GetWidth() = 0;
-		virtual unsigned int GetHeight() = 0;
+		virtual i32 GetWidth() = 0;
+		virtual i32 GetHeight() = 0;
 		virtual void Destroy() = 0;
 	};
 }

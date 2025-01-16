@@ -40,12 +40,12 @@ namespace Wi
 		}
 	}
 
-	unsigned WindowsWindow::GetWidth()
+	i32 WindowsWindow::GetWidth()
 	{
 		return m_Width;
 	}
 
-	unsigned WindowsWindow::GetHeight()
+	i32 WindowsWindow::GetHeight()
 	{
 		return m_Height;
 	}

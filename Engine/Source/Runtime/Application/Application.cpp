@@ -36,12 +36,6 @@ namespace Wi
 		Shutdown();
 	}
 
-	bool Application::OnMouseScrolled(float get_z_delta)
-	{
-		std::cout << "Scroll: " << get_z_delta << "\n";
-		return true;
-	}
-
 	bool Application::OnEvent(Event& event)
 	{
 		EventDispatcher dispatcher(event);

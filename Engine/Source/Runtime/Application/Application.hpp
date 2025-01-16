@@ -10,7 +10,6 @@ namespace Wi
 	{
 	public:
 		void Run();
-		bool OnMouseScrolled(float get_z_delta);
 
 	protected:
 		bool OnEvent(Event& event);

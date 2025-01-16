@@ -62,7 +62,7 @@ namespace Wi
 	class MouseMovedEvent : public Event
 	{
 	public:
-		MouseMovedEvent(int mouseX, int mouseY)
+		MouseMovedEvent(i32 mouseX, i32 mouseY)
 			: m_MouseX(mouseX), m_MouseY(mouseY)
 		{
 
@@ -70,12 +70,12 @@ namespace Wi
 
 		EVENT_TYPE(MouseMoved)
 
-		int GetMouseX() const { return m_MouseX; }
-		int GetMouseY() const { return m_MouseY; }
+		i32 GetMouseX() const { return m_MouseX; }
+		i32 GetMouseY() const { return m_MouseY; }
 
 	private:
-		int m_MouseX;
-		int m_MouseY;
+		i32 m_MouseX;
+		i32 m_MouseY;
 	};
 
 	class MouseScrolledEvent : public Event
@@ -89,9 +89,9 @@ namespace Wi
 
 		EVENT_TYPE(MouseScrolled)
 
-		float GetZDelta() const { return m_zDelta; }
+		f32 GetZDelta() const { return m_zDelta; }
 
 	private:
-		float m_zDelta;
+		f32 m_zDelta;
 	};
 }
