@@ -1,3 +1,4 @@
+#include "Application/Application.hpp"
 #ifdef WI_PLATFORM_WIN
 #include "WindowsApplication.hpp"
 #include <windowsx.h>
@@ -146,16 +147,15 @@ namespace Wi
 		}
 	}
 
-	static EventCallback GEventCallback;
-
 	static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
+		Application* app = Application::InstancePtr();
 		switch (msg)
 		{
 			case WM_CLOSE:
 			{
 				WindowCloseEvent event;
-				GEventCallback(event);
+				app->OnEvent(event);
 				break;
 			}
 			case WM_SIZE:
@@ -163,7 +163,7 @@ namespace Wi
 				i32 width = GET_X_LPARAM(lParam);
 				i32 height = GET_Y_LPARAM(lParam);
 				WindowResizeEvent event(width, height);
-				GEventCallback(event);
+				app->OnEvent(event);
 				break;
 			}
 			case WM_MOUSEMOVE:
@@ -171,7 +171,7 @@ namespace Wi
 				i32 x = GET_X_LPARAM(lParam);
 				i32 y = GET_Y_LPARAM(lParam);
 				MouseMovedEvent event(x, y);
-				GEventCallback(event);
+				app->OnEvent(event);
 				break;
 			}
 			case WM_LBUTTONDOWN:
@@ -209,11 +209,11 @@ namespace Wi
 				if (pressed)
 				{
 					MouseButtonPressedEvent event(mouseButton);
-					GEventCallback(event);
+					app->OnEvent(event);
 				} else
 				{
 					MouseButtonReleasedEvent event(mouseButton);
-					GEventCallback(event);
+					app->OnEvent(event);
 				}
 				break;
 			}
@@ -221,7 +221,7 @@ namespace Wi
 			{
 				short zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
 				MouseScrolledEvent event(zDelta < 0 ? -1 : 1);
-				GEventCallback(event);
+				app->OnEvent(event);
 				break;
 			}
 			case WM_KEYDOWN:
@@ -234,14 +234,16 @@ namespace Wi
 				if (pressed)
 				{
 					KeyPressedEvent event(key, LOWORD(lParam) > 0);
-					GEventCallback(event);
+					app->OnEvent(event);
 				} else
 				{
 					KeyReleasedEvent event(key);
-					GEventCallback(event);
+					app->OnEvent(event);
 				}
 				break;
 			}
+			default:
+				break;
 		}
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 	}
@@ -268,11 +270,6 @@ namespace Wi
 		RegisterClass(&wc);
 
 		return true;
-	}
-
-	void WindowsApplication::SetEventCallback(const EventCallback& eventCallback)
-	{
-		GEventCallback = eventCallback;
 	}
 
 	void WindowsApplication::Shutdown()

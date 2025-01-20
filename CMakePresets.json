@@ -17,6 +17,24 @@
 			"vendor": { "microsoft.com/VisualStudioRemoteSettings/CMake/2.0": { "remoteSourceRootDir": "$env{HOME}/.vs/$ms{projectDirName}" } }
 		},
 		{
+			"name": "linux-debug-clang-tidy",
+			"displayName": "Linux Debug Clang Tidy",
+			"description": "Target the Windows Subsystem for Linux (WSL) or a remote Linux system.",
+			"generator": "Ninja",
+			"binaryDir": "${sourceDir}/Build/build/${presetName}",
+			"installDir": "${sourceDir}/Build/install/${presetName}",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug",
+				"CLANG_TIDY_ENABLED":  "ON"
+			},
+			"condition": {
+				"type": "equals",
+				"lhs": "${hostSystemName}",
+				"rhs": "Linux"
+			},
+			"vendor": { "microsoft.com/VisualStudioRemoteSettings/CMake/2.0": { "remoteSourceRootDir": "$env{HOME}/.vs/$ms{projectDirName}" } }
+		},
+		{
 			"name": "macos-debug",
 			"displayName": "macOS Debug",
 			"description": "Target a remote macOS system.",
@@ -49,6 +67,11 @@
 			}
 		},
 		{
+			"name": "windows-base-ninja",
+			"hidden": true,
+			"generator": "Ninja"
+		},
+		{
 			"name": "x64-debug",
 			"displayName": "x64 Debug",
 			"description": "Target Windows (64-bit) with the Visual Studio development environment. (Debug)",
@@ -57,7 +80,23 @@
 				"value": "x64",
 				"strategy": "external"
 			},
-			"cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug"
+			}
+		},
+		{
+			"name": "win-x64-debug-clang-tidy",
+			"displayName": "x64 Debug Clang Tidy",
+			"description": "With clang tidy checks",
+			"inherits": "windows-base-ninja",
+			"architecture": {
+				"value": "x64",
+				"strategy": "external"
+			},
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug",
+				"CLANG_TIDY_ENABLED": "ON"
+			}
 		},
 		{
 			"name": "x64-release",

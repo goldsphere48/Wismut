@@ -1,7 +1,6 @@
 #pragma once
 #include "IPlatformWindow.hpp"
 #include "Core/Defines.hpp"
-#include "Application/Events/Event.hpp"
 
 namespace Wi
 {
@@ -13,6 +12,5 @@ namespace Wi
 		virtual SharedPtr<IPlatformWindow> MakeWindow(const WindowDefinition& config) = 0;
 		virtual void PumpMessages() = 0;
 		virtual void Shutdown() = 0;
-		virtual void SetEventCallback(const EventCallback& eventCallback) = 0;
 	};
 }

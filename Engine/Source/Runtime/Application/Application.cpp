@@ -9,14 +9,16 @@
 
 namespace Wi
 {
+	Application* Application::s_Instance = nullptr;
+
 	void Application::Run()
 	{
+		s_Instance = this;
 		m_NativeApplication = Platform::CreateNativeApplication();
 		if (!m_NativeApplication->Startup())
 		{
 			return;
 		}
-		m_NativeApplication->SetEventCallback([this](Event& event) { return OnEvent(event); });
 
 		const WindowDefinition windowConfig = WindowDefinition {
 			.Title = "Wismut Engine",

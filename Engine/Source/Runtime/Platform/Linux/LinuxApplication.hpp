@@ -15,7 +15,6 @@ namespace Wi
 		SharedPtr<IPlatformWindow> MakeWindow(const WindowDefinition& config) override;
 		void PumpMessages() override;
 		void Shutdown() override;
-		void SetEventCallback(const EventCallback& eventCallback) override;
 
 	private:
 		static xcb_atom_t s_AtomWmDeleteWindow;

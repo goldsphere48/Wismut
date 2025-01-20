@@ -2,13 +2,14 @@
 #include <xcb/xcb.h>
 #include <xcb/xcb_keysyms.h>
 #include <cstring>
+#include "X11.hpp"
 
 #include "LinuxApplication.hpp"
 #include "LinuxWindow.hpp"
 #include "Application/Events/WindowEvents.h"
 #include "Application/Events/KeyEvent.h"
 #include "Application/Events/MouseEvents.h"
-#include "X11.hpp"
+#include "Application/Application.hpp"
 
 namespace Wi
 {
@@ -90,8 +91,6 @@ namespace Wi
 		}
 	}
 
-	static EventCallback GEventCallback;
-
 	xcb_atom_t LinuxApplication::s_AtomWmDeleteWindow = 0;
 	xcb_atom_t LinuxApplication::s_AtomWmProtocols = 0;
 
@@ -99,7 +98,7 @@ namespace Wi
 	{
 		m_Connection = xcb_connect(nullptr, nullptr);
 
-		if (!m_Connection)
+		if (m_Connection != nullptr)
 		{
 			return false;
 		}
@@ -146,18 +145,20 @@ namespace Wi
 
 	void LinuxApplication::PumpMessages()
 	{
-		xcb_generic_event_t* event;
-		while ((event = xcb_poll_for_event(m_Connection)))
+		Application* app = Application::InstancePtr();
+		xcb_generic_event_t* event = nullptr;
+		while ((event = xcb_poll_for_event(m_Connection)) != nullptr)
 		{
 			switch (event->response_type & ~0x80)
 			{
-				case XCB_EXPOSE: {
+				case XCB_EXPOSE:
+				{
 					xcb_flush(m_Connection);
 					break;
 				}
 				case XCB_CONFIGURE_NOTIFY:
 				{
-					xcb_configure_notify_event_t* cfg = reinterpret_cast<xcb_configure_notify_event_t*>(event);
+					auto* cfg = reinterpret_cast<xcb_configure_notify_event_t*>(event);
 					u16 width = cfg->width;
 					u16 height = cfg->height;
 					if (m_Windows.contains(cfg->window)) {
@@ -165,34 +166,34 @@ namespace Wi
 						if (window->GetWidth() != width || window->GetHeight() != height)
 						{
 							WindowResizeEvent e(width, height);
-							GEventCallback(e);
+							app->OnEvent(e);
 						}
 					}
 					break;
 				}
 				case XCB_CLIENT_MESSAGE:
 				{
-					xcb_client_message_event_t* msg = reinterpret_cast<xcb_client_message_event_t*>(event);
+					auto* msg = reinterpret_cast<xcb_client_message_event_t*>(event);
 					if (msg->data.data32[0] == s_AtomWmDeleteWindow)
 					{
 						WindowCloseEvent e;
-						GEventCallback(e);
+						app->OnEvent(e);
 					}
 					break;
 				}
 				case XCB_MOTION_NOTIFY:
 				{
-					xcb_motion_notify_event_t* motion = reinterpret_cast<xcb_motion_notify_event_t*>(event);
+					auto* motion = reinterpret_cast<xcb_motion_notify_event_t*>(event);
 					i16 x = motion->event_x;
 					i16 y = motion->event_y;
 					MouseMovedEvent e(x, y);
-					GEventCallback(e);
+					app->OnEvent(e);
 					break;
 				}
 				case XCB_BUTTON_PRESS:
 				case XCB_BUTTON_RELEASE:
 				{
-					xcb_button_press_event_t* bp = reinterpret_cast<xcb_button_press_event_t*>(event);
+					auto* bp = reinterpret_cast<xcb_button_press_event_t*>(event);
 					bool pressed = event->response_type == XCB_BUTTON_PRESS;
 					MouseButton btn = MouseButton::Unknown;
 					switch (bp->detail)
@@ -203,13 +204,13 @@ namespace Wi
 						case 4:
 						{
 							MouseScrolledEvent e(+1.0f);
-							GEventCallback(e);
+							app->OnEvent(e);
 							return;
 						}
 						case 5:
 						{
 							MouseScrolledEvent e(-1.0f);
-							GEventCallback(e);
+							app->OnEvent(e);
 							return;
 						}
 						default: break;
@@ -219,11 +220,11 @@ namespace Wi
 						if (pressed)
 						{
 							MouseButtonPressedEvent e(btn);
-							GEventCallback(e);
+							app->OnEvent(e);
 						} else
 						{
 							MouseButtonReleasedEvent e(btn);
-							GEventCallback(e);
+							app->OnEvent(e);
 						}
 					}
 					break;
@@ -232,7 +233,7 @@ namespace Wi
 				case XCB_KEY_RELEASE:
 				{
 					bool pressed = event->response_type == XCB_KEY_PRESS;
-					xcb_key_press_event_t* kpEvent = reinterpret_cast<xcb_key_press_event_t*>(event);
+					auto* kpEvent = reinterpret_cast<xcb_key_press_event_t*>(event);
 					xcb_keycode_t keycode = kpEvent->detail;
 					// TODO: Fix memory leak
 					static xcb_key_symbols_t* keySymbols = xcb_key_symbols_alloc(m_Connection);
@@ -243,11 +244,11 @@ namespace Wi
 						if (pressed)
 						{
 							KeyPressedEvent e(code, false);
-							GEventCallback(e);
+							app->OnEvent(e);
 						} else
 						{
 							KeyReleasedEvent e(code);
-							GEventCallback(e);
+							app->OnEvent(e);
 						}
 					}
 					break;	
@@ -263,11 +264,6 @@ namespace Wi
 	void LinuxApplication::Shutdown()
 	{
 		xcb_disconnect(m_Connection);
-	}
-
-	void LinuxApplication::SetEventCallback(const EventCallback& eventCallback)
-	{
-		GEventCallback = eventCallback;
 	}
 }
 

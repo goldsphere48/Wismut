@@ -1,0 +1,53 @@
+Checks: >
+  clang-analyzer-*,
+  bugprone-*,
+  cppcoreguidelines-*,
+  modernize-*,
+  performance-*,
+  readability-*,
+  -fuchsia-*, 
+  -google-*,
+  -llvm-*,
+  -misc-unused-parameters,
+  -hicpp-*,
+  -android-*,
+  -mpi-*,
+  -zircon-*,
+  -modernize-use-trailing-return-type,
+  -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-avoid-c-arrays,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-avoid-avoid-non-cost-global-variables,
+  -modernize-avoid-c-arrays,
+  -misc-use-anonymous-namespace,
+  -readability-magic-numbers,
+  -readability-identifier-length,
+  -cppcoreguidelines-prefer-member-initializer,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -readability-convert-member-functions-to-static,
+  -readability-uppercase-literal-suffix,
+  -readability-function-cognitive-complexity
+
+CheckOptions:
+  - key:             readability-identifier-naming.VariableCase
+    value:           camelBack
+  - key:             readability-identifier-naming.ClassCase
+    value:           CamelCase
+  - key:             readability-identifier-naming.GlobalFunctionCase
+    value:           CamelCase
+  - key:             readability-identifier-naming.GlobalVariableCase
+    value:           CamelCase
+  - key:             readability-identifier-naming.GlobalVariablePrefix
+    value:           G
+  - key:             readability-identifier-naming.GlobalConstantCase
+    value:           CamelCase
+  - key:             readability-identifier-naming.GlobalConstantPrefix
+    value:           G
+  - key:             readability-identifier-naming.FunctionCase
+    value:           camelBack
+  - key:             cppcoreguidelines-init-variables.StrictMode
+    value:           true
+  - key:             modernize-use-nullptr.NullMacros
+    value:           NULL
+
+WarningsAsErrors: '*,-readability-identifier-naming'
