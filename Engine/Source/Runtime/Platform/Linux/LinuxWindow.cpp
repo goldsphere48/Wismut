@@ -1,8 +1,8 @@
 #ifdef WI_PLATFORM_LINUX
 #include <cassert>
 #include <limits>
-#include "LinuxWindow.hpp"
-#include "LinuxApplication.hpp"
+#include "LinuxWindow.h"
+#include "LinuxApplication.h"
 
 namespace Wi
 {

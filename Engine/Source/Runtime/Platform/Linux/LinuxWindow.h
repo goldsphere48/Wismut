@@ -1,7 +1,7 @@
 #pragma once
 #ifdef WI_PLATFORM_LINUX
 #include <xcb/xcb.h>
-#include "Platform/IPlatformWindow.hpp"
+#include "Platform/IPlatformWindow.h"
 
 namespace Wi
 {

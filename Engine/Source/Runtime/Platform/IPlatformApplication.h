@@ -1,12 +1,14 @@
 #pragma once
-#include "IPlatformWindow.hpp"
-#include "Core/Defines.hpp"
+#include "Core.h"
+#include "IPlatformWindow.h"
 
 namespace Wi
 {
 	class IPlatformApplication
 	{
 	public:
+		RULE_OF_FIVE(IPlatformApplication)
+
 		virtual ~IPlatformApplication() = default;
 		virtual bool Startup() = 0;
 		virtual SharedPtr<IPlatformWindow> MakeWindow(const WindowDefinition& config) = 0;

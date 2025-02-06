@@ -1,8 +1,8 @@
-#include "Application/Application.hpp"
+#include "Application/Application.h"
 #ifdef WI_PLATFORM_WIN
-#include "WindowsApplication.hpp"
+#include "WindowsApplication.h"
 #include <windowsx.h>
-#include "Application/Events/Event.hpp"
+#include "Application/Events/Event.h"
 #include "Application/Events/WindowEvents.h"
 #include "Application/Events/MouseEvents.h"
 #include "Application/Events/KeyEvent.h"

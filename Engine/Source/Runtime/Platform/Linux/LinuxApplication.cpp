@@ -3,13 +3,13 @@
 #include <xcb/xcb_keysyms.h>
 #include <cstring>
 
-#include "LinuxApplication.hpp"
-#include "LinuxWindow.hpp"
+#include "LinuxApplication.h"
+#include "LinuxWindow.h"
 #include "Application/Events/WindowEvents.h"
 #include "Application/Events/KeyEvent.h"
 #include "Application/Events/MouseEvents.h"
-#include "Application/Application.hpp"
-#include "X11.hpp"
+#include "Application/Application.h"
+#include "X11.h"
 
 namespace Wi
 {

@@ -1,11 +1,11 @@
-#include "Application.hpp"
+#include "Application.h"
 
 #include <iostream>
 
 #include "Events/KeyEvent.h"
 #include "Events/MouseEvents.h"
 #include "Events/WindowEvents.h"
-#include "Platform/Platform.hpp"
+#include "Platform/Platform.h"
 
 namespace Wi
 {

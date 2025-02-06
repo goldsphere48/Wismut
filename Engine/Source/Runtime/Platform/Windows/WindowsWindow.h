@@ -2,7 +2,7 @@
 #ifdef WI_PLATFORM_WIN
 
 #include <Windows.h>
-#include "Platform/IPlatformWindow.hpp"
+#include "Platform/IPlatformWindow.h"
 
 namespace Wi
 {

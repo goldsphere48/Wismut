@@ -2,9 +2,9 @@
 #ifdef WI_PLATFORM_LINUX
 #include <map>
 #include <xcb/xcb.h>
-#include "LinuxWindow.hpp"
-#include "Platform/IPlatformApplication.hpp"
-#include "Platform/IPlatformWindow.hpp"
+#include "LinuxWindow.h"
+#include "Platform/IPlatformApplication.h"
+#include "Platform/IPlatformWindow.h"
 
 namespace Wi
 {

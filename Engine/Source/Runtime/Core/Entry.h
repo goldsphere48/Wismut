@@ -1,5 +1,5 @@
 #pragma once
-#include <Application/Application.hpp>
+#include <Application/Application.h>
 
 Wi::Application* CreateApplication();
 

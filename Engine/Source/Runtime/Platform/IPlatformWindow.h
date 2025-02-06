@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-#include "Core/Defines.hpp"
+#include "Core.h"
 
 namespace Wi
 {
@@ -17,12 +17,8 @@ namespace Wi
 	class IPlatformWindow
 	{
 	public:
+		RULE_OF_FIVE(IPlatformWindow)
 		virtual ~IPlatformWindow() = default;
-		IPlatformWindow() = default;
-		IPlatformWindow(const IPlatformWindow&) = delete;
-		IPlatformWindow(IPlatformWindow&&) = delete;
-		IPlatformWindow& operator=(const IPlatformWindow&) = delete;
-		IPlatformWindow& operator=(IPlatformWindow&&) = delete;
 
 		virtual i32 GetWidth() = 0;
 		virtual i32 GetHeight() = 0;

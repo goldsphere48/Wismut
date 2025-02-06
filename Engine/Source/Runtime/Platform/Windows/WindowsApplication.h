@@ -1,7 +1,7 @@
 #pragma once
 #ifdef WI_PLATFORM_WIN
-#include "WindowsWindow.hpp"
-#include "Platform/IPlatformApplication.hpp"
+#include "WindowsWindow.h"
+#include "Platform/IPlatformApplication.h"
 
 namespace Wi
 {

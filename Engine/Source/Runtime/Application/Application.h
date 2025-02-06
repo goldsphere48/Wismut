@@ -1,8 +1,8 @@
 #pragma once
-#include "Core/Defines.hpp"
-#include "Application/Events/Event.hpp"
-#include "Platform/IPlatformApplication.hpp"
-#include "Platform/IPlatformWindow.hpp"
+#include "Core.h"
+#include "Application/Events/Event.h"
+#include "Platform/IPlatformApplication.h"
+#include "Platform/IPlatformWindow.h"
 
 namespace Wi
 {

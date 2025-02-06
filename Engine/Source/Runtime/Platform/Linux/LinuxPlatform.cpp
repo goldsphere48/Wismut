@@ -1,10 +1,11 @@
 #ifdef WI_PLATFORM_LINUX
-#include "Platform/Platform.hpp"
-#include "LinuxApplication.hpp"
+#include "LinuxPlatform.h"
+#include "Platform/IPlatform.h"
+#include "LinuxApplication.h"
 
-namespace Wi
+namespace Wi::Platform
 {
-	UniquePtr<IPlatformApplication> Platform::CreateNativeApplication()
+	UniquePtr<IPlatformApplication> CreateNativeApplication()
 	{
 		return CreateUniquePtr<LinuxApplication>();
 	}

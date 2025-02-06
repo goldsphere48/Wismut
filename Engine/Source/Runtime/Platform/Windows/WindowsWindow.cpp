@@ -1,6 +1,6 @@
 #ifdef WI_PLATFORM_WIN
-#include "WindowsWindow.hpp"
-#include "Platform/Platform.hpp"
+#include "WindowsWindow.h"
+#include "Platform/Platform.h"
 #include <array>
 
 namespace Wi

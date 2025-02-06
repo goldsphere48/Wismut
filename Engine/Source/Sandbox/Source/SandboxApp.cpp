@@ -1,4 +1,4 @@
-#include <Core/Entry.hpp>
+#include <Core/Entry.h>
 
 class SandboxApp : public Wi::Application
 {

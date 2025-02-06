@@ -1,10 +1,11 @@
 #ifdef WI_PLATFORM_WIN
-#include "Platform/Platform.hpp"
-#include "WindowsApplication.hpp"
+#include "WindowsPlatform.h"
+#include "Platform/IPlatform.h"
+#include "WindowsApplication.h"
 
-namespace Wi
+namespace Wi::Platform
 {
-	UniquePtr<IPlatformApplication> Platform::CreateNativeApplication()
+	UniquePtr<IPlatformApplication> CreateNativeApplication()
 	{
 		return CreateUniquePtr<WindowsApplication>();
 	}
