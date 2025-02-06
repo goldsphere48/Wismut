@@ -1,7 +1,9 @@
 #ifdef WI_PLATFORM_LINUX
-#include <cassert>
-#include <limits>
 #include "LinuxWindow.h"
+
+#include <limits>
+
+#include "Core/Assertion.h"
 #include "LinuxApplication.h"
 
 namespace Wi
@@ -10,7 +12,10 @@ namespace Wi
 		: m_Connection(connection)
 	{
 		m_WindowHandle = xcb_generate_id(connection);
+		CORE_CHECK(m_WindowHandle)
+
 		m_Screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
+		CORE_CHECK(m_Screen)
 
 		u32 eventMask =
 			XCB_EVENT_MASK_EXPOSURE |
@@ -23,17 +28,17 @@ namespace Wi
 
 		u32 valueList[] = { m_Screen->black_pixel, eventMask };
 
-		assert(definition.PositionX <= std::numeric_limits<i16>::max());
-		assert(definition.PositionY <= std::numeric_limits<i16>::max());
-		assert(definition.Width >=0 && definition.Width <= std::numeric_limits<u16>::max());
-		assert(definition.Height >= 0 && definition.Height <= std::numeric_limits<u16>::max());
+		CORE_CHECK(definition.PositionX <= std::numeric_limits<i16>::max());
+		CORE_CHECK(definition.PositionY <= std::numeric_limits<i16>::max());
+		CORE_CHECK(definition.Width >=0 && definition.Width <= std::numeric_limits<u16>::max());
+		CORE_CHECK(definition.Height >= 0 && definition.Height <= std::numeric_limits<u16>::max());
 
 		i16 clientX = static_cast<i16>(definition.PositionX);
 		i16 clientY = static_cast<i16>(definition.PositionY);
 		u16 clientWidth = static_cast<u16>(definition.Width);
 		u16 clientHeight = static_cast<u16>(definition.Height);
 
-		xcb_create_window(
+		auto request = xcb_create_window_checked(
 			connection,
 			XCB_COPY_FROM_PARENT,
 			m_WindowHandle,
@@ -48,8 +53,10 @@ namespace Wi
 			XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK,
 			valueList
 		);
+		auto error = xcb_request_check(m_Connection, request);
+		CORE_CHECK(!error)
 
-		xcb_change_property(
+		request = xcb_change_property_checked(
 			connection,
 			XCB_PROP_MODE_REPLACE,
 			m_WindowHandle,
@@ -59,8 +66,13 @@ namespace Wi
 			1,
 			&LinuxApplication::s_AtomWmDeleteWindow
 		);
+		error = xcb_request_check(m_Connection, request);
+		CORE_CHECK(!error)
 
-		xcb_map_window(connection, m_WindowHandle);
+		request = xcb_map_window_checked(connection, m_WindowHandle);
+		error = xcb_request_check(m_Connection, request);
+		CORE_CHECK(!error)
+
 		xcb_flush(connection);
 
 		m_Width = definition.Width;

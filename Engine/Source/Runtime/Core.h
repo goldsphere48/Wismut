@@ -1,7 +1,5 @@
 #pragma once
-
-#include "Core/Memory/Memory.h"
-#include "Core/CommonDefines.h"
+#include <cstdint>
 
 using u8 = std::uint8_t;
 using u16 = std::uint16_t;
@@ -15,3 +13,6 @@ using i64 = std::int64_t;
 
 using f32 = float;
 using f64 = double;
+
+#include "Core/Memory/Memory.h"
+#include "Core/CommonDefines.h"

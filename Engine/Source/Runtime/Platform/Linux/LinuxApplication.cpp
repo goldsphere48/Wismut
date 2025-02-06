@@ -1,9 +1,11 @@
 #ifdef WI_PLATFORM_LINUX
+#include "LinuxApplication.h"
+
 #include <xcb/xcb.h>
 #include <xcb/xcb_keysyms.h>
 #include <cstring>
 
-#include "LinuxApplication.h"
+#include "Core/Assertion.h"
 #include "LinuxWindow.h"
 #include "Application/Events/WindowEvents.h"
 #include "Application/Events/KeyEvent.h"
@@ -97,11 +99,7 @@ namespace Wi
 	bool LinuxApplication::Startup()
 	{
 		m_Connection = xcb_connect(nullptr, nullptr);
-
-		if (m_Connection == nullptr)
-		{
-			return false;
-		}
+		CORE_CHECK(m_Connection);
 
 		xcb_intern_atom_cookie_t wmDeleteCookie = xcb_intern_atom(
 			m_Connection,

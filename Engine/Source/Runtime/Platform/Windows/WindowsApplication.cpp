@@ -1,7 +1,9 @@
-#include "Application/Application.h"
 #ifdef WI_PLATFORM_WIN
 #include "WindowsApplication.h"
 #include <windowsx.h>
+
+#include "Core/Assertion.h"
+#include "Application/Application.h"
 #include "Application/Events/Event.h"
 #include "Application/Events/WindowEvents.h"
 #include "Application/Events/MouseEvents.h"
@@ -267,7 +269,7 @@ namespace Wi
 			.lpszClassName = WindowsWindow::AppWindowClass
 		};
 
-		RegisterClass(&wc);
+		CORE_CHECK(RegisterClass(&wc))
 
 		return true;
 	}

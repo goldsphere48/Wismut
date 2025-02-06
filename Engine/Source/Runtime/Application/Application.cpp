@@ -1,11 +1,10 @@
 #include "Application.h"
 
-#include <iostream>
-
 #include "Events/KeyEvent.h"
 #include "Events/MouseEvents.h"
 #include "Events/WindowEvents.h"
 #include "Platform/Platform.h"
+#include "Core/Assertion.h"
 
 namespace Wi
 {
@@ -13,12 +12,12 @@ namespace Wi
 
 	void Application::Run()
 	{
+		CORE_CHECK(!s_Instance)
+
 		s_Instance = this;
 		m_NativeApplication = Platform::CreateNativeApplication();
-		if (!m_NativeApplication->Startup())
-		{
-			return;
-		}
+
+		CORE_CHECK(m_NativeApplication->Startup())
 
 		const WindowDefinition windowConfig = WindowDefinition {
 			.Title = "Wismut Engine",

@@ -1,7 +1,8 @@
 #ifdef WI_PLATFORM_WIN
 #include "WindowsWindow.h"
-#include "Platform/Platform.h"
 #include <array>
+#include "Core/Assertion.h"
+#include "Platform/Platform.h"
 
 namespace Wi
 {
@@ -28,6 +29,8 @@ namespace Wi
 			instance,
 			nullptr
 		);
+
+		CORE_CHECK(m_WindowHandle)
 
 		ShowWindow(m_WindowHandle, SW_SHOW);
 	}
