@@ -2,7 +2,6 @@
 #include <xcb/xcb.h>
 #include <xcb/xcb_keysyms.h>
 #include <cstring>
-#include "X11.hpp"
 
 #include "LinuxApplication.hpp"
 #include "LinuxWindow.hpp"
@@ -10,6 +9,7 @@
 #include "Application/Events/KeyEvent.h"
 #include "Application/Events/MouseEvents.h"
 #include "Application/Application.hpp"
+#include "X11.hpp"
 
 namespace Wi
 {
@@ -98,7 +98,7 @@ namespace Wi
 	{
 		m_Connection = xcb_connect(nullptr, nullptr);
 
-		if (m_Connection != nullptr)
+		if (m_Connection == nullptr)
 		{
 			return false;
 		}
