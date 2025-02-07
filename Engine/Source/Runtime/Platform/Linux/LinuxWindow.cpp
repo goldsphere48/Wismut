@@ -4,6 +4,7 @@
 #include <limits>
 
 #include "Core/Assertion.h"
+#include "Core/Logger/Logger.h"
 #include "LinuxApplication.h"
 
 namespace Wi
@@ -11,6 +12,8 @@ namespace Wi
 	LinuxWindow::LinuxWindow(const WindowDefinition& definition, xcb_connection_t* connection)
 		: m_Connection(connection)
 	{
+		WI_CORE_INFO("Creating Xcb window...")
+
 		m_WindowHandle = xcb_generate_id(connection);
 		CORE_CHECK(m_WindowHandle)
 

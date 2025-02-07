@@ -5,6 +5,8 @@
 #include "Events/WindowEvents.h"
 #include "Platform/Platform.h"
 #include "Core/Assertion.h"
+#include "Core/Logger/Logger.h"
+#include "Core/Logger/Sinks/ConsoleSink.h"
 
 namespace Wi
 {
@@ -12,9 +14,15 @@ namespace Wi
 
 	void Application::Run()
 	{
+		m_CoreLogger = new Logger;
+		m_CoreLogger->RegisterSink<ConsoleSink>();
+
 		CORE_CHECK(!s_Instance)
 
 		s_Instance = this;
+
+		WI_CORE_INFO("Wismut Engine Initialization...")
+
 		m_NativeApplication = Platform::CreateNativeApplication();
 
 		CORE_CHECK(m_NativeApplication->Startup())

@@ -5,9 +5,18 @@
 ------------------------------------------------------------------------------*/
 
 #include "Core.h"
+#include "Core/Time.h"
 #include "Platform/IPlatformApplication.h"
 
-namespace Wi::Platform
+
+namespace Wi
 {
-	UniquePtr<IPlatformApplication> CreateNativeApplication();
+	enum class LogLevel;
+
+	namespace Platform
+	{
+		UniquePtr<IPlatformApplication> CreateNativeApplication();
+		void ConsoleWriteColoredLog(LogLevel level, const char* message);
+		DateTime GetLocalTime();
+	}
 }
