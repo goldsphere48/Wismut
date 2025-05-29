@@ -105,5 +105,11 @@
 			"inherits": "x64-debug",
 			"cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
 		}
-	]
+	],
+	"buildPresets": [
+    {
+      "name": "x64-debug",
+      "configurePreset": "x64-debug"
+    }
+  ]
 }

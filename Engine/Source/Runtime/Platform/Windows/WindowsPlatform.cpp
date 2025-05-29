@@ -36,32 +36,32 @@ namespace Wi::Platform
 		return CreateUniquePtr<WindowsApplication>();
 	}
 
-	void ConsoleWriteColoredLog(Wi::LogLevel level, const char* message)
+	void ConsoleWriteColoredLog(LogLevel level, const char* message)
 	{
 		ConsoleForeground color = ConsoleForeground::WHITE;
 		switch (level)
 		{
-			case Wi::LogLevel::Verbose:
-				color = ConsoleForeground::WHITE;
-				break;
-			case Wi::LogLevel::Info:
-				color = ConsoleForeground::GREEN;
-				break;
-			case Wi::LogLevel::Debug:
-				color = ConsoleForeground::CYAN;
-				break;
-			case Wi::LogLevel::Warning:
-				color = ConsoleForeground::YELLOW;
-				break;
-			case Wi::LogLevel::Error:
-				color = ConsoleForeground::RED;
-				break;
-			case Wi::LogLevel::Fatal:
-				color = ConsoleForeground::DARKRED;
-				break;
+		case Wi::LogLevel::Verbose:
+			color = ConsoleForeground::WHITE;
+			break;
+		case Wi::LogLevel::Info:
+			color = ConsoleForeground::GREEN;
+			break;
+		case Wi::LogLevel::Debug:
+			color = ConsoleForeground::CYAN;
+			break;
+		case Wi::LogLevel::Warning:
+			color = ConsoleForeground::YELLOW;
+			break;
+		case Wi::LogLevel::Error:
+			color = ConsoleForeground::RED;
+			break;
+		case Wi::LogLevel::Fatal:
+			color = ConsoleForeground::DARKRED;
+			break;
 		}
 
-		bool error = level == Wi::LogLevel::Error || level == Wi::LogLevel::Fatal;
+		bool error = level == LogLevel::Error || level == LogLevel::Fatal;
 		DWORD nStdHandle = error ? STD_ERROR_HANDLE : STD_OUTPUT_HANDLE;
 		HANDLE handle = GetStdHandle(nStdHandle);
 		CORE_CHECK(handle)
