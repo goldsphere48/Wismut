@@ -5,7 +5,7 @@
 #include <xcb/xcb_keysyms.h>
 #include <cstring>
 
-#include "Core/Assertion.h"
+#include "Core.h"
 #include "LinuxWindow.h"
 #include "Application/Events/WindowEvents.h"
 #include "Application/Events/KeyEvent.h"

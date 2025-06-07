@@ -3,8 +3,7 @@
 
 #include <limits>
 
-#include "Core/Assertion.h"
-#include "Core/Logger/Logger.h"
+#include "Core.h"
 #include "LinuxApplication.h"
 
 namespace Wi
@@ -30,16 +29,10 @@ namespace Wi
 			XCB_EVENT_MASK_KEY_RELEASE;
 
 		u32 valueList[] = { m_Screen->black_pixel, eventMask };
-
-		CORE_CHECK(definition.PositionX <= std::numeric_limits<i16>::max());
-		CORE_CHECK(definition.PositionY <= std::numeric_limits<i16>::max());
-		CORE_CHECK(definition.Width >=0 && definition.Width <= std::numeric_limits<u16>::max());
-		CORE_CHECK(definition.Height >= 0 && definition.Height <= std::numeric_limits<u16>::max());
-
-		i16 clientX = static_cast<i16>(definition.PositionX);
-		i16 clientY = static_cast<i16>(definition.PositionY);
-		u16 clientWidth = static_cast<u16>(definition.Width);
-		u16 clientHeight = static_cast<u16>(definition.Height);
+		i16 clientX = definition.PositionX;
+		i16 clientY = definition.PositionY;
+		u16 clientWidth =  definition.Width;
+		u16 clientHeight = definition.Height;
 
 		auto request = xcb_create_window_checked(
 			connection,
@@ -87,12 +80,12 @@ namespace Wi
 		xcb_destroy_window(m_Connection, m_WindowHandle);
 	}
 
-	i32 LinuxWindow::GetWidth()
+	u16 LinuxWindow::GetWidth()
 	{
 		return m_Width;
 	}
 
-	i32 LinuxWindow::GetHeight()
+	u16 LinuxWindow::GetHeight()
 	{
 		return m_Height;
 	}

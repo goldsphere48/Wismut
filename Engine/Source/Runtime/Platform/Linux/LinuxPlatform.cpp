@@ -3,8 +3,7 @@
 
 #include <sys/time.h>
 
-#include "Core/Assertion.h"
-#include "Core/Logger/Logger.h"
+#include "Core.h"
 #include "Platform/IPlatform.h"
 #include "LinuxApplication.h"
 
@@ -15,32 +14,44 @@ namespace Wi::Platform
 		return CreateUniquePtr<LinuxApplication>();
 	}
 
-	void ConsoleWriteColoredLog(LogLevel level, const char* message)
+	void ConsoleWriteLog(LogLevel level, const char* message)
 	{
 		const char* colorCode = "\033[0m";
 		switch (level)
 		{
-			case Wi::LogLevel::Verbose:
+			case LogLevel::Verbose:
+			{
 				colorCode = "\033[37m";
 				break;
-			case Wi::LogLevel::Info:
+			}
+			case LogLevel::Info:
+			{
 				colorCode = "\033[32m";
 				break;
-			case Wi::LogLevel::Debug:
+			}
+			case LogLevel::Debug:
+			{
 				colorCode = "\033[36m";
 				break;
-			case Wi::LogLevel::Warning:
+			}
+			case LogLevel::Warning:
+			{
 				colorCode = "\033[33m";
 				break;
-			case Wi::LogLevel::Error:
+			}
+			case LogLevel::Error:
+			{
 				colorCode = "\033[31m";
 				break;
-			case Wi::LogLevel::Fatal:
+			}
+			case LogLevel::Fatal:
+			{
 				colorCode = "\033[1;31m";
 				break;
+			}
 		}
 
-		bool error = (level == Wi::LogLevel::Error) || (level == Wi::LogLevel::Fatal);
+		bool error = (level == LogLevel::Error) || (level == LogLevel::Fatal);
 		FILE* stream = error ? stderr : stdout;
 
 		int errorCode = fprintf(stream, "%s%s\033[0m", colorCode, message);
@@ -52,11 +63,11 @@ namespace Wi::Platform
 
 	DateTime GetLocalTime()
 	{
-		struct timeval tv;
+		timeval tv;
 		gettimeofday(&tv, nullptr);
 
-		struct tm local_tm;
-		localtime_r(&tv.tv_sec, &local_tm);
+		tm local_tm;
+		CORE_CHECK(localtime_r(&tv.tv_sec, &local_tm));
 
 		u64 milliseconds =
 			local_tm.tm_hour * 3600000ULL +
@@ -70,7 +81,7 @@ namespace Wi::Platform
 	void* Allocate(u32 bufferSize)
 	{
 		void* ptr = malloc(bufferSize);
-		CORE_CHECK(ptr);
+		CORE_CHECK(ptr)
 		return ptr;
 	}
 

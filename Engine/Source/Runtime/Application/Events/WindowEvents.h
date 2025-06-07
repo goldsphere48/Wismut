@@ -15,7 +15,7 @@ namespace Wi
 	class WindowResizeEvent : public Event
 	{
 	public:
-		WindowResizeEvent(i32 width, i32 height)
+		WindowResizeEvent(int width, int height)
 			: m_Width(width), m_Height(height)
 		{
 
@@ -23,8 +23,8 @@ namespace Wi
 
 		EVENT_TYPE(WindowResize)
 
-		i32 GetWidth() const { return m_Width; }
-		i32 GetHeight() const { return m_Height; }
+		int GetWidth() const { return m_Width; }
+		int GetHeight() const { return m_Height; }
 
 		std::string ToString() const override
 		{
@@ -34,7 +34,7 @@ namespace Wi
 		}
 
 	private:
-		i32 m_Width;
-		i32 m_Height;
+		int m_Width;
+		int m_Height;
 	};
 }

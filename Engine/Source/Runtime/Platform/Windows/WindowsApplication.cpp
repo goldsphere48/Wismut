@@ -2,7 +2,7 @@
 #include "WindowsApplication.h"
 #include <windowsx.h>
 
-#include "Core/Assertion.h"
+#include "Core.h"
 #include "Application/Application.h"
 #include "Application/Events/Event.h"
 #include "Application/Events/WindowEvents.h"
@@ -162,16 +162,16 @@ namespace Wi
 			}
 			case WM_SIZE:
 			{
-				i32 width = GET_X_LPARAM(lParam);
-				i32 height = GET_Y_LPARAM(lParam);
+				int width = GET_X_LPARAM(lParam);
+				int height = GET_Y_LPARAM(lParam);
 				WindowResizeEvent event(width, height);
 				app->OnEvent(event);
 				break;
 			}
 			case WM_MOUSEMOVE:
 			{
-				i32 x = GET_X_LPARAM(lParam);
-				i32 y = GET_Y_LPARAM(lParam);
+				int x = GET_X_LPARAM(lParam);
+				int y = GET_Y_LPARAM(lParam);
 				MouseMovedEvent event(x, y);
 				app->OnEvent(event);
 				break;

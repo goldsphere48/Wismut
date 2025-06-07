@@ -1,9 +1,10 @@
 #ifdef WI_PLATFORM_WIN
-#include "WindowsWindow.h"
+
 #include <array>
-#include "Core/Assertion.h"
+
+#include "Core.h"
+#include "WindowsWindow.h"
 #include "Platform/Platform.h"
-#include "Core/Logger/Logger.h"
 
 namespace Wi
 {
@@ -14,7 +15,7 @@ namespace Wi
 	{
 		WI_CORE_INFO("Creating Windows window...")
 
-		constexpr i32 titleSize = 256;
+		constexpr int titleSize = 256;
 		std::array<WCHAR, titleSize> title = { };
 		MultiByteToWideChar(CP_UTF8, 0, definition.Title.c_str(), -1, title.data(), titleSize);
 
@@ -46,12 +47,12 @@ namespace Wi
 		}
 	}
 
-	i32 WindowsWindow::GetWidth()
+	u16 WindowsWindow::GetWidth()
 	{
 		return m_Width;
 	}
 
-	i32 WindowsWindow::GetHeight()
+	u16 WindowsWindow::GetHeight()
 	{
 		return m_Height;
 	}

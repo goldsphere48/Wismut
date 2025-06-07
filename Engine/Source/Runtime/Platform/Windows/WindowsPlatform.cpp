@@ -4,12 +4,11 @@
 #include <Windows.h>
 #include <cstring>
 
-#include "Core/Assertion.h"
+#include "Core.h"
 #include "Platform/IPlatform.h"
 #include "WindowsApplication.h"
-#include "Core/Logger/Logger.h"
 
-enum class ConsoleForeground : WORD
+enum class ConsoleForeground : u8
 {
 	BLACK = 0,
 	DARKBLUE	= FOREGROUND_BLUE,
@@ -36,29 +35,41 @@ namespace Wi::Platform
 		return CreateUniquePtr<WindowsApplication>();
 	}
 
-	void ConsoleWriteColoredLog(LogLevel level, const char* message)
+	void ConsoleWriteLog(LogLevel level, const char* message)
 	{
 		ConsoleForeground color = ConsoleForeground::WHITE;
 		switch (level)
 		{
-		case Wi::LogLevel::Verbose:
-			color = ConsoleForeground::WHITE;
-			break;
-		case Wi::LogLevel::Info:
-			color = ConsoleForeground::GREEN;
-			break;
-		case Wi::LogLevel::Debug:
-			color = ConsoleForeground::CYAN;
-			break;
-		case Wi::LogLevel::Warning:
-			color = ConsoleForeground::YELLOW;
-			break;
-		case Wi::LogLevel::Error:
-			color = ConsoleForeground::RED;
-			break;
-		case Wi::LogLevel::Fatal:
-			color = ConsoleForeground::DARKRED;
-			break;
+			case LogLevel::Verbose:
+			{
+				color = ConsoleForeground::WHITE;
+				break;
+			}
+			case LogLevel::Info:
+			{
+				color = ConsoleForeground::GREEN;
+				break;
+			}
+			case LogLevel::Debug:
+			{
+				color = ConsoleForeground::CYAN;
+				break;
+			}
+			case LogLevel::Warning:
+			{
+				color = ConsoleForeground::YELLOW;
+				break;
+			}
+			case LogLevel::Error:
+			{
+				color = ConsoleForeground::RED;
+				break;
+			}
+			case LogLevel::Fatal:
+			{
+				color = ConsoleForeground::DARKRED;
+				break;
+			}
 		}
 
 		bool error = level == LogLevel::Error || level == LogLevel::Fatal;
@@ -91,7 +102,7 @@ namespace Wi::Platform
 	{
 		HANDLE heap = GetProcessHeap();
 		void* ptr = HeapAlloc(heap, HEAP_ZERO_MEMORY, bufferSize);
-		CORE_CHECK(ptr);
+		CORE_CHECK(ptr)
 		return ptr;
 	}
 

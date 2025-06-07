@@ -30,30 +30,18 @@ namespace Wi
 		virtual EventType GetType() const = 0;
 		virtual std::string ToString() const { return GetName(); }
 		bool Handled = false;
-	};
-
-	class EventDispatcher
-	{
-	public:
-		EventDispatcher(Event& event) : m_Event(event)
-		{
-
-		}
 
 		template<typename T>
-		bool Dispatch(const std::function<bool(T&)>& handler)
+		static bool Dispatch(Event& event, const std::function<bool(T&)>& handler)
 		{
-			if (T::GetStaticType() == m_Event.GetType() && !m_Event.Handled)
+			if (T::GetStaticType() == event.GetType() && !event.Handled)
 			{
-				m_Event.Handled |= handler(static_cast<T&>(m_Event));
+				event.Handled |= handler(static_cast<T&>(event));
 				return true;
 			}
 
 			return false;
 		}
-
-	private:
-		Event& m_Event;
 	};
 
 	using EventCallback = std::function<bool(Event&)>;

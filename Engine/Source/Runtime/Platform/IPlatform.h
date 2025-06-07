@@ -4,20 +4,20 @@
 	Platform common interface.
 ------------------------------------------------------------------------------*/
 
-#include "Core.h"
+#include "Core/Memory/Memory.h"
+#include "Core/CoreTypes.h"
 #include "Core/Time.h"
-#include "Platform/IPlatformApplication.h"
-
 
 namespace Wi
 {
 	enum class LogLevel;
+	class IPlatformApplication;
 
 	namespace Platform
 	{
 		UniquePtr<IPlatformApplication> CreateNativeApplication();
 
-		void ConsoleWriteColoredLog(LogLevel level, const char* message);
+		void ConsoleWriteLog(LogLevel level, const char* message);
 
 		DateTime GetLocalTime();
 

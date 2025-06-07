@@ -5,6 +5,6 @@ namespace Wi
 {
 	void ConsoleSink::Log(LogLevel level, const char* message)
 	{
-		Platform::ConsoleWriteColoredLog(level, message);
+		Platform::ConsoleWriteLog(level, message);
 	}
 }

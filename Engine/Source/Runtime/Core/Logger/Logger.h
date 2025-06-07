@@ -3,6 +3,8 @@
 #include <vector>
 #include <string>
 
+#include "ILoggerSink.h"
+
 namespace Wi
 {
 	enum class LogLevel
@@ -13,12 +15,6 @@ namespace Wi
 		Warning,
 		Error,
 		Fatal,
-	};
-
-	struct ILoggerSink
-	{
-		virtual ~ILoggerSink() = default;
-		virtual void Log(LogLevel level, const char* message) = 0;
 	};
 
 	class Logger
@@ -99,6 +95,10 @@ namespace Wi
 			LogString(LogLevel::Fatal, message);
 		}
 
+		static void Initialize();
+		static void Shutdown();
+		static const Logger* GetEngineLoggerPtr();
+
 	private:
 		template<typename ...Args>
 		void Log(LogLevel level, std::format_string<Args...> fmt, Args&&... args) const
@@ -110,15 +110,14 @@ namespace Wi
 		void LogString(LogLevel level, const char* messageBody) const;
 
 	private:
+		static Logger* s_EngineLogger;
 		std::vector<ILoggerSink*> m_Sinks;
 	};
 }
 
-
-#include "Application/Application.h"
-#define WI_CORE_VERBOSE(msg, ...)	::Wi::Application::InstancePtr()->GetCoreLoggerPtr()->Verbose(msg, ##__VA_ARGS__);
-#define WI_CORE_INFO(msg, ...)		::Wi::Application::InstancePtr()->GetCoreLoggerPtr()->Info(msg, ##__VA_ARGS__);
-#define WI_DEBUG_LOG(msg, ...)		::Wi::Application::InstancePtr()->GetCoreLoggerPtr()->Debug(msg, ##__VA_ARGS__);
-#define WI_CORE_WARN(msg, ...)		::Wi::Application::InstancePtr()->GetCoreLoggerPtr()->Warn(msg, ##__VA_ARGS__);
-#define WI_CORE_ERROR(msg, ...)		::Wi::Application::InstancePtr()->GetCoreLoggerPtr()->Error(msg, ##__VA_ARGS__);
-#define WI_CORE_FATAL(msg, ...)		::Wi::Application::InstancePtr()->GetCoreLoggerPtr()->Fatal(msg, ##__VA_ARGS__);
+#define WI_CORE_VERBOSE(msg, ...)	::Wi::Logger::GetEngineLoggerPtr()->Verbose(msg, ##__VA_ARGS__);
+#define WI_CORE_INFO(msg, ...)		::Wi::Logger::GetEngineLoggerPtr()->Info(msg, ##__VA_ARGS__);
+#define WI_DEBUG_LOG(msg, ...)		::Wi::Logger::GetEngineLoggerPtr()->Debug(msg, ##__VA_ARGS__);
+#define WI_CORE_WARN(msg, ...)		::Wi::Logger::GetEngineLoggerPtr()->Warn(msg, ##__VA_ARGS__);
+#define WI_CORE_ERROR(msg, ...)		::Wi::Logger::GetEngineLoggerPtr()->Error(msg, ##__VA_ARGS__);
+#define WI_CORE_FATAL(msg, ...)		::Wi::Logger::GetEngineLoggerPtr()->Fatal(msg, ##__VA_ARGS__);

@@ -1,11 +1,11 @@
 #include "Logger.h"
 
-#include "Sinks/ConsoleSink.h"
 #include "Platform/IPlatform.h"
+#include "Sinks/ConsoleSink.h"
 
 namespace Wi
 {
-	const char* LevelToString(LogLevel level)
+	static const char* LevelToString(LogLevel level)
 	{
 		switch (level)
 		{
@@ -23,6 +23,24 @@ namespace Wi
 				return "Fatal";
 		}
 		return "";
+	}
+
+	Logger* Logger::s_EngineLogger = nullptr;
+
+	void Logger::Initialize()
+	{
+		s_EngineLogger = new Logger;
+		s_EngineLogger->RegisterSink<ConsoleSink>();
+	}
+
+	void Logger::Shutdown()
+	{
+		delete s_EngineLogger;
+	}
+
+	const Logger* Logger::GetEngineLoggerPtr()
+	{
+		return s_EngineLogger;
 	}
 
 	Logger::~Logger()
