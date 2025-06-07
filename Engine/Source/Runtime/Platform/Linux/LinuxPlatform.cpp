@@ -66,5 +66,17 @@ namespace Wi::Platform
 
 		return TimeSpan(milliseconds);
 	}
+
+	void* Allocate(u32 bufferSize)
+	{
+		void* ptr = malloc(bufferSize);
+		CORE_CHECK(ptr);
+		return ptr;
+	}
+
+	void Free(void* buffer)
+	{
+		free(buffer);
+	}
 }
 #endif

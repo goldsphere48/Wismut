@@ -86,5 +86,19 @@ namespace Wi::Platform
 
 		return DateTime::FromMilliseconds(milliseconds);
 	}
+
+	void* Allocate(u32 bufferSize)
+	{
+		HANDLE heap = GetProcessHeap();
+		void* ptr = HeapAlloc(heap, HEAP_ZERO_MEMORY, bufferSize);
+		CORE_CHECK(ptr);
+		return ptr;
+	}
+
+	void Free(void* buffer)
+	{
+		HANDLE heap = GetProcessHeap();
+		HeapFree(heap, 0, buffer);
+	}
 }
 #endif

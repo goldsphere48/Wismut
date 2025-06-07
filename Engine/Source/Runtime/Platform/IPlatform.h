@@ -16,7 +16,13 @@ namespace Wi
 	namespace Platform
 	{
 		UniquePtr<IPlatformApplication> CreateNativeApplication();
+
 		void ConsoleWriteColoredLog(LogLevel level, const char* message);
+
 		DateTime GetLocalTime();
+
+		void* Allocate(u32 bufferSize);
+
+		void Free(void* buffer);
 	}
 }
