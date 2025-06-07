@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/Logger/Logger.h"
+#include "Core/Logger/ILoggerSink.h"
 
 namespace Wi
 {

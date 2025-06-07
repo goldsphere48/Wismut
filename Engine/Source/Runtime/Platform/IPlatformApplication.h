@@ -1,5 +1,6 @@
 #pragma once
-#include "Core.h"
+
+#include "Core/Memory/Memory.h"
 #include "IPlatformWindow.h"
 
 namespace Wi
@@ -7,7 +8,7 @@ namespace Wi
 	class IPlatformApplication
 	{
 	public:
-		RULE_OF_FIVE(IPlatformApplication)
+		DELETE_COPYING(IPlatformApplication)
 
 		virtual ~IPlatformApplication() = default;
 		virtual bool Startup() = 0;

@@ -6,7 +6,6 @@
 #include "Platform/Platform.h"
 #include "Core/Assertion.h"
 #include "Core/Logger/Logger.h"
-#include "Core/Logger/Sinks/ConsoleSink.h"
 
 namespace Wi
 {
@@ -14,8 +13,7 @@ namespace Wi
 
 	void Application::Run()
 	{
-		m_CoreLogger = new Logger;
-		m_CoreLogger->RegisterSink<ConsoleSink>();
+		Logger::Initialize();
 
 		CORE_CHECK(!s_Instance)
 
@@ -47,8 +45,7 @@ namespace Wi
 
 	bool Application::OnEvent(Event& event)
 	{
-		EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<WindowCloseEvent>([this](const WindowCloseEvent&) { return this->OnWindowClose(); });
+		Event::Dispatch<WindowCloseEvent>(event, [this](const WindowCloseEvent&) { return this->OnWindowClose(); });
 		return true;
 	}
 
@@ -62,5 +59,6 @@ namespace Wi
 	{
 		m_MainWindow->Destroy();
 		m_NativeApplication->Shutdown();
+		Logger::Shutdown();
 	}
 }

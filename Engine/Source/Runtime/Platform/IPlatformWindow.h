@@ -8,20 +8,20 @@ namespace Wi
 	struct WindowDefinition
 	{
 		std::string Title;
-		i32 PositionX;
-		i32 PositionY;
-		i32 Width;
-		i32 Height;
+		i16 PositionX;
+		i16 PositionY;
+		u16 Width;
+		u16 Height;
 	};
 
 	class IPlatformWindow
 	{
 	public:
-		RULE_OF_FIVE(IPlatformWindow)
+		DELETE_COPYING(IPlatformWindow)
 		virtual ~IPlatformWindow() = default;
 
-		virtual i32 GetWidth() = 0;
-		virtual i32 GetHeight() = 0;
+		virtual u16 GetWidth() = 0;
+		virtual u16 GetHeight() = 0;
 		virtual void Destroy() = 0;
 	};
 }
