@@ -12,13 +12,11 @@ namespace Wi
 
 	void Application::Run()
 	{
-		Logger::Initialize();
-
 		CORE_CHECK(!s_Instance)
 
 		s_Instance = this;
 
-		WI_CORE_INFO("Wismut Engine Initialization...")
+		Log::Info("Wismut Engine Initialization...");
 
 		m_NativeApplication = Platform::CreateNativeApplication();
 
@@ -58,6 +56,5 @@ namespace Wi
 	{
 		m_MainWindow->Destroy();
 		m_NativeApplication->Shutdown();
-		Logger::Shutdown();
 	}
 }

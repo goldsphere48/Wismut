@@ -2,11 +2,12 @@
 
 namespace Wi
 {
-	enum class LogLevel;
+	struct LogEntry;
 
-	struct ILoggerSink
+	class ILoggerSink
 	{
+	public:
 		virtual ~ILoggerSink() = default;
-		virtual void Log(LogLevel level, const char* message) = 0;
+		virtual void Log(const LogEntry& logEntry) = 0;
 	};
 }

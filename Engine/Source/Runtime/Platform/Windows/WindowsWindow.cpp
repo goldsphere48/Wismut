@@ -13,7 +13,7 @@ namespace Wi
 	WindowsWindow::WindowsWindow(const WindowDefinition& definition, HINSTANCE instance)
 		: m_Width(definition.Width), m_Height(definition.Height)
 	{
-		WI_CORE_INFO("Creating Windows window...")
+		Log::Info("Creating Windows window...");
 
 		constexpr int titleSize = 256;
 		std::array<WCHAR, titleSize> title = { };

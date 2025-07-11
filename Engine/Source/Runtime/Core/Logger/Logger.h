@@ -2,8 +2,10 @@
 #include <format>
 #include <vector>
 #include <string>
+#include <mutex>
 
 #include "ILoggerSink.h"
+#include "Core/Memory/Memory.h"
 
 namespace Wi
 {
@@ -20,104 +22,103 @@ namespace Wi
 	class Logger
 	{
 	public:
-		~Logger();
+		Logger() = default;
+		~Logger() = default;
+
+		Logger(const Logger&) = delete;
+		Logger& operator=(const Logger&) = delete;
+		Logger& operator=(Logger&&) = delete;
+		Logger(Logger&&) = delete;
 
 		template<typename TSink, typename ...Args>
 		void RegisterSink(Args&&... args)
 		{
-			TSink* sink = new TSink(std::forward<Args>(args)...);
-			m_Sinks.emplace_back(sink);
+			std::scoped_lock lock(m_SinksMutex);
+			m_Sinks.emplace_back(CreateUniquePtr<TSink>(std::forward<Args>(args)...));
 		}
 
-		template<typename ...Args>
-		void Verbose(std::format_string<Args...> fmt, Args&&... args) const
-		{
-			Log(LogLevel::Verbose, fmt, std::forward<Args>(args)...);
-		}
+		static const Logger& GetEngineLogger();
 
-		void Verbose(const char* message) const
-		{
-			LogString(LogLevel::Verbose, message);
-		}
-
-		template<typename ...Args>
-		void Info(std::format_string<Args...> fmt, Args&&... args) const
-		{
-			Log(LogLevel::Info, fmt, std::forward<Args>(args)...);
-		}
-
-		void Info(const char* message) const
-		{
-			LogString(LogLevel::Info, message);
-		}
-
-		template<typename ...Args>
-		void Debug(std::format_string<Args...> fmt, Args&&... args) const
-		{
-			Log(LogLevel::Debug, fmt, std::forward<Args>(args)...);
-		}
-
-		void Debug(const char* message) const
-		{
-			LogString(LogLevel::Debug, message);
-		}
-
-		template<typename ...Args>
-		void Warn(std::format_string<Args...> fmt, Args&&... args) const
-		{
-			Log(LogLevel::Warning, fmt, std::forward<Args>(args)...);
-		}
-
-		void Warn(const char* message) const
-		{
-			LogString(LogLevel::Warning, message);
-		}
-
-		template<typename ...Args>
-		void Error(std::format_string<Args...> fmt, Args&&... args) const
-		{
-			Log(LogLevel::Error, fmt, std::forward<Args>(args)...);
-		}
-
-		void Error(const char* message) const
-		{
-			LogString(LogLevel::Error, message);
-		}
-
-		template<typename ...Args>
-		void Fatal(std::format_string<Args...> fmt, Args&&... args) const
-		{
-			Log(LogLevel::Fatal, fmt, std::forward<Args>(args)...);
-		}
-
-		void Fatal(const char* message) const
-		{
-			LogString(LogLevel::Fatal, message);
-		}
-
-		static void Initialize();
-		static void Shutdown();
-		static const Logger* GetEngineLoggerPtr();
-
-	private:
 		template<typename ...Args>
 		void Log(LogLevel level, std::format_string<Args...> fmt, Args&&... args) const
 		{
 			std::string message = std::format(fmt, std::forward<Args>(args)...);
-			LogString(level, message.c_str());
+			Log(level, message);
 		}
 
-		void LogString(LogLevel level, const char* messageBody) const;
+		void Log(LogLevel level, std::string_view message) const;
 
 	private:
-		static Logger* s_EngineLogger;
-		std::vector<ILoggerSink*> m_Sinks;
+		mutable std::mutex m_SinksMutex;
+		std::vector<UniquePtr<ILoggerSink>> m_Sinks;
 	};
-}
 
-#define WI_CORE_VERBOSE(msg, ...)	::Wi::Logger::GetEngineLoggerPtr()->Verbose(msg, ##__VA_ARGS__);
-#define WI_CORE_INFO(msg, ...)		::Wi::Logger::GetEngineLoggerPtr()->Info(msg, ##__VA_ARGS__);
-#define WI_DEBUG_LOG(msg, ...)		::Wi::Logger::GetEngineLoggerPtr()->Debug(msg, ##__VA_ARGS__);
-#define WI_CORE_WARN(msg, ...)		::Wi::Logger::GetEngineLoggerPtr()->Warn(msg, ##__VA_ARGS__);
-#define WI_CORE_ERROR(msg, ...)		::Wi::Logger::GetEngineLoggerPtr()->Error(msg, ##__VA_ARGS__);
-#define WI_CORE_FATAL(msg, ...)		::Wi::Logger::GetEngineLoggerPtr()->Fatal(msg, ##__VA_ARGS__);
+	namespace Log
+	{
+		template<typename ...Args>
+		inline void Verbose(std::format_string<Args...> fmt, Args&&... args)
+		{
+			Logger::GetEngineLogger().Log(LogLevel::Verbose, fmt, std::forward<Args>(args)...);
+		}
+
+		inline void Verbose(std::string_view message)
+		{
+			Logger::GetEngineLogger().Log(LogLevel::Verbose, message);
+		}
+
+		template<typename ...Args>
+		inline void Info(std::format_string<Args...> fmt, Args&&... args)
+		{
+			Logger::GetEngineLogger().Log(LogLevel::Info, fmt, std::forward<Args>(args)...);
+		}
+
+		inline void Info(std::string_view message)
+		{
+			Logger::GetEngineLogger().Log(LogLevel::Info, message);
+		}
+
+		template<typename ...Args>
+		inline void Debug(std::format_string<Args...> fmt, Args&&... args)
+		{
+			Logger::GetEngineLogger().Log(LogLevel::Debug, fmt, std::forward<Args>(args)...);
+		}
+
+		inline void Debug(std::string_view message)
+		{
+			Logger::GetEngineLogger().Log(LogLevel::Debug, message);
+		}
+
+		template<typename ...Args>
+		inline void Warn(std::format_string<Args...> fmt, Args&&... args)
+		{
+			Logger::GetEngineLogger().Log(LogLevel::Warning, fmt, std::forward<Args>(args)...);
+		}
+
+		inline void Warn(std::string_view message)
+		{
+			Logger::GetEngineLogger().Log(LogLevel::Warning, message);
+		}
+
+		template<typename ...Args>
+		inline void Error(std::format_string<Args...> fmt, Args&&... args)
+		{
+			Logger::GetEngineLogger().Log(LogLevel::Error, fmt, std::forward<Args>(args)...);
+		}
+
+		inline void Error(std::string_view message)
+		{
+			Logger::GetEngineLogger().Log(LogLevel::Error, message);
+		}
+
+		template<typename ...Args>
+		inline void Fatal(std::format_string<Args...> fmt, Args&&... args)
+		{
+			Logger::GetEngineLogger().Log(LogLevel::Fatal, fmt, std::forward<Args>(args)...);
+		}
+
+		inline void Fatal(std::string_view message)
+		{
+			Logger::GetEngineLogger().Log(LogLevel::Fatal, message);
+		}
+	}
+}
