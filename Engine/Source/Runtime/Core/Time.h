@@ -7,34 +7,34 @@ namespace Wi
 	class TimeSpan
 	{
 	public:
-		TimeSpan(u64 milliseconds)
+		TimeSpan(uint64 milliseconds)
 			: m_Milliseconds(milliseconds)
 		{
 
 		}
 
-		u64 GetMilliseconds() const
+		uint64 GetMilliseconds() const
 		{
 			return m_Milliseconds;
 		}
 
-		u64 GetSeconds() const
+		uint64 GetSeconds() const
 		{
 			return m_Milliseconds / 1000;
 		}
 
-		u64 GetMinutes() const
+		uint64 GetMinutes() const
 		{
 			return m_Milliseconds / 1000 / 60;
 		}
 
-		u64 GetHours() const
+		uint64 GetHours() const
 		{
 			return m_Milliseconds / 1000 / 60 / 60;
 		}
 
 	private:
-		u64 m_Milliseconds;
+		uint64 m_Milliseconds;
 	};
 
 	class DateTime
@@ -46,22 +46,22 @@ namespace Wi
 			
 		}
 
-		u32 GetHours() const
+		uint32 GetHours() const
 		{
 			return m_TimePoint.GetHours() % 24;
 		}
 
-		u32 GetMinutes() const
+		uint32 GetMinutes() const
 		{
 			return m_TimePoint.GetMinutes() % 60;
 		}
 
-		u32 GetSeconds() const
+		uint32 GetSeconds() const
 		{
 			return m_TimePoint.GetSeconds() % 60;
 		}
 
-		static DateTime FromMilliseconds(u64 milliseconds)
+		static DateTime FromMilliseconds(uint64 milliseconds)
 		{
 			return { TimeSpan(milliseconds) };
 		}

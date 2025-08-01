@@ -8,7 +8,7 @@
 #include "Platform/IPlatform.h"
 #include "WindowsApplication.h"
 
-enum class ConsoleForeground : u8
+enum class ConsoleForeground : uint8
 {
 	BLACK = 0,
 	DARKBLUE	= FOREGROUND_BLUE,
@@ -89,7 +89,7 @@ namespace Wi::Platform
 		SYSTEMTIME systemTime;
 		GetLocalTime(&systemTime);
 
-		u64 milliseconds =
+		uint64 milliseconds =
 			systemTime.wHour * 3600000ULL +
 			systemTime.wMinute * 60000ULL +
 			systemTime.wSecond * 1000ULL +
@@ -98,7 +98,7 @@ namespace Wi::Platform
 		return DateTime::FromMilliseconds(milliseconds);
 	}
 
-	void* Allocate(u32 bufferSize)
+	void* Allocate(uint32 bufferSize)
 	{
 		HANDLE heap = GetProcessHeap();
 		void* ptr = HeapAlloc(heap, HEAP_ZERO_MEMORY, bufferSize);

@@ -4,7 +4,7 @@
 
 namespace Wi
 {
-	enum class KeyCode : u16
+	enum class KeyCode : uint16
 	{
 		Unknown = 0,
 		// From glfw3.h
@@ -141,7 +141,7 @@ namespace Wi
 		LastKeyCode
 	};
 
-	enum class KeyState : u8
+	enum class KeyState : uint8
 	{
 		None = 0,
 		Pressed,
@@ -149,14 +149,14 @@ namespace Wi
 		Released
 	};
 
-	enum class CursorMode : u8
+	enum class CursorMode : uint8
 	{
 		Normal = 0,
 		Hidden = 1,
 		Locked = 2
 	};
 
-	enum class MouseButton : u8
+	enum class MouseButton : uint8
 	{
 		Unknown = 0,
 		Button0 = 1,
@@ -174,13 +174,13 @@ namespace Wi
 
 	inline std::ostream& operator<<(std::ostream& os, KeyCode keyCode)
 	{
-		os << static_cast<u16>(keyCode);
+		os << static_cast<uint16>(keyCode);
 		return os;
 	}
 
 	inline std::ostream& operator<<(std::ostream& os, MouseButton button)
 	{
-		os << static_cast<u16>(button);
+		os << static_cast<uint16>(button);
 		return os;
 	}
 }

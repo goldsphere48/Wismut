@@ -21,7 +21,7 @@ namespace Wi
 
 		DateTime GetLocalTime();
 
-		void* Allocate(u32 bufferSize);
+		void* Allocate(uint32 bufferSize);
 
 		void Free(void* buffer);
 	}

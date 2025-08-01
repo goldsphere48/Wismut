@@ -47,12 +47,12 @@ namespace Wi
 		}
 	}
 
-	u16 WindowsWindow::GetWidth()
+	uint16 WindowsWindow::GetWidth()
 	{
 		return m_Width;
 	}
 
-	u16 WindowsWindow::GetHeight()
+	uint16 WindowsWindow::GetHeight()
 	{
 		return m_Height;
 	}

@@ -89,9 +89,9 @@ namespace Wi
 
 		EVENT_TYPE(MouseScrolled)
 
-		f32 GetZDelta() const { return m_zDelta; }
+		float32 GetZDelta() const { return m_zDelta; }
 
 	private:
-		f32 m_zDelta;
+		float32 m_zDelta;
 	};
 }

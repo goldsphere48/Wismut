@@ -19,7 +19,7 @@ namespace Wi
 		m_Screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
 		CORE_CHECK(m_Screen)
 
-		u32 eventMask =
+		uint32 eventMask =
 			XCB_EVENT_MASK_EXPOSURE |
 			XCB_EVENT_MASK_STRUCTURE_NOTIFY |
 			XCB_EVENT_MASK_POINTER_MOTION |
@@ -28,11 +28,11 @@ namespace Wi
 			XCB_EVENT_MASK_KEY_PRESS |
 			XCB_EVENT_MASK_KEY_RELEASE;
 
-		u32 valueList[] = { m_Screen->black_pixel, eventMask };
-		i16 clientX = definition.PositionX;
-		i16 clientY = definition.PositionY;
-		u16 clientWidth =  definition.Width;
-		u16 clientHeight = definition.Height;
+		uint32 valueList[] = { m_Screen->black_pixel, eventMask };
+		int16 clientX = definition.PositionX;
+		int16 clientY = definition.PositionY;
+		uint16 clientWidth =  definition.Width;
+		uint16 clientHeight = definition.Height;
 
 		auto request = xcb_create_window_checked(
 			connection,
@@ -80,12 +80,12 @@ namespace Wi
 		xcb_destroy_window(m_Connection, m_WindowHandle);
 	}
 
-	u16 LinuxWindow::GetWidth()
+	uint16 LinuxWindow::GetWidth()
 	{
 		return m_Width;
 	}
 
-	u16 LinuxWindow::GetHeight()
+	uint16 LinuxWindow::GetHeight()
 	{
 		return m_Height;
 	}

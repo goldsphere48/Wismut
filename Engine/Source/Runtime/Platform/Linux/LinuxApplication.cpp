@@ -157,8 +157,8 @@ namespace Wi
 				case XCB_CONFIGURE_NOTIFY:
 				{
 					auto* cfg = reinterpret_cast<xcb_configure_notify_event_t*>(event);
-					u16 width = cfg->width;
-					u16 height = cfg->height;
+					uint16 width = cfg->width;
+					uint16 height = cfg->height;
 					if (m_Windows.contains(cfg->window)) {
 						const auto window = m_Windows[cfg->window];
 						if (window->GetWidth() != width || window->GetHeight() != height)
@@ -182,8 +182,8 @@ namespace Wi
 				case XCB_MOTION_NOTIFY:
 				{
 					auto* motion = reinterpret_cast<xcb_motion_notify_event_t*>(event);
-					i16 x = motion->event_x;
-					i16 y = motion->event_y;
+					int16 x = motion->event_x;
+					int16 y = motion->event_y;
 					MouseMovedEvent e(x, y);
 					app->OnEvent(e);
 					break;

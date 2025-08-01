@@ -69,7 +69,7 @@ namespace Wi::Platform
 		tm local_tm;
 		CORE_CHECK(localtime_r(&tv.tv_sec, &local_tm));
 
-		u64 milliseconds =
+		uint64 milliseconds =
 			local_tm.tm_hour * 3600000ULL +
 			local_tm.tm_min * 60000ULL +
 			local_tm.tm_sec * 1000ULL +
@@ -78,7 +78,7 @@ namespace Wi::Platform
 		return TimeSpan(milliseconds);
 	}
 
-	void* Allocate(u32 bufferSize)
+	void* Allocate(uint32 bufferSize)
 	{
 		void* ptr = malloc(bufferSize);
 		CORE_CHECK(ptr)

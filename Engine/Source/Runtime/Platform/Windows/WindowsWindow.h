@@ -11,8 +11,8 @@ namespace Wi
 	public:
 		explicit WindowsWindow(const WindowDefinition& definition, HINSTANCE instance);
 		void Destroy() override;
-		u16 GetWidth() override;
-		u16 GetHeight() override;
+		uint16 GetWidth() override;
+		uint16 GetHeight() override;
 
 		static const wchar_t* AppWindowClass;
 
