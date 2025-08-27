@@ -10,8 +10,6 @@
 	#error "Unsupported platform"
 #endif
 
-#define PLATFORM_HEADER(header) PREPROCESSOR_STRINGIFY(PREPROCESSOR_CONCAT(PLATFORM_SOURCE_FOLDER/PLATFORM_SOURCE_FOLDER, header))
-
 #define DELETE_COPYING(ClassName)						\
 	ClassName() = default;							\
 	ClassName(const ClassName&) = delete;			\

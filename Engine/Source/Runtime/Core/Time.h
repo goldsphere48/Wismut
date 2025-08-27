@@ -6,11 +6,16 @@ namespace Wi
 {
 	class TimeSpan
 	{
-	public:
 		TimeSpan(uint64 milliseconds)
 			: m_Milliseconds(milliseconds)
 		{
 
+		}
+
+	public:
+		static TimeSpan FromMilliseconds(uint64 milliseconds)
+		{
+			return TimeSpan(milliseconds);
 		}
 
 		uint64 GetMilliseconds() const
@@ -63,7 +68,7 @@ namespace Wi
 
 		static DateTime FromMilliseconds(uint64 milliseconds)
 		{
-			return { TimeSpan(milliseconds) };
+			return { TimeSpan::FromMilliseconds(milliseconds) };
 		}
 
 	private:

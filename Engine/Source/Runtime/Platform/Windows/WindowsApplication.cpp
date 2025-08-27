@@ -293,5 +293,10 @@ namespace Wi
 			DispatchMessage(&msg);
 		}
 	}
+
+	UniquePtr<IPlatformApplication> WindowsApplication::CreateApplication()
+	{
+		return CreateUniquePtr<WindowsApplication>();
+	}
 }
 #endif

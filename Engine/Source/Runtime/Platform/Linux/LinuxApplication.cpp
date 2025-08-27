@@ -263,6 +263,11 @@ namespace Wi
 	{
 		xcb_disconnect(m_Connection);
 	}
+
+	UniquePtr<IPlatformApplication> LinuxApplication::CreateApplication()
+	{
+		return CreateUniquePtr<LinuxApplication>();
+	}
 }
 
 #endif

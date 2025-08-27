@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
-
-#include "Core.h"
+#include <Core/CoreTypes.h>
+#include <Core/CommonDefines.h>
 
 namespace Wi
 {

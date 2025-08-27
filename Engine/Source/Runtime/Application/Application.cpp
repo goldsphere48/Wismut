@@ -1,7 +1,5 @@
 #include "Application.h"
 
-#include "Events/KeyEvent.h"
-#include "Events/MouseEvents.h"
 #include "Events/WindowEvents.h"
 #include "Platform/Platform.h"
 #include "Core.h"
@@ -18,7 +16,7 @@ namespace Wi
 
 		Log::Info("Wismut Engine Initialization...");
 
-		m_NativeApplication = Platform::CreateNativeApplication();
+		m_NativeApplication = PlatformApplication::CreateApplication();
 
 		CORE_CHECK(m_NativeApplication->Startup())
 

@@ -16,6 +16,8 @@ namespace Wi
 		void PumpMessages() override;
 		void Shutdown() override;
 
+		static UniquePtr<IPlatformApplication> CreateApplication();
+
 	private:
 		static xcb_atom_t s_AtomWmDeleteWindow;
 		static xcb_atom_t s_AtomWmProtocols;
@@ -25,5 +27,7 @@ namespace Wi
 
 		friend LinuxWindow;
 	};
+
+	using PlatformApplication = LinuxApplication;
 }
 #endif

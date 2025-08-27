@@ -13,10 +13,14 @@ namespace Wi
 		SharedPtr<IPlatformWindow> MakeWindow(const WindowDefinition& config) override;
 		void PumpMessages() override;
 
+		static UniquePtr<IPlatformApplication> CreateApplication();
+
 	private:
 		HINSTANCE m_Instance = nullptr;
 		HICON m_Icon = nullptr;
 		HCURSOR m_Cursor = nullptr;
 	};
+
+	using PlatformApplication = WindowsApplication;
 }
 #endif

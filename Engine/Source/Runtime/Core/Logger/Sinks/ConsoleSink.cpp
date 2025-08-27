@@ -2,7 +2,7 @@
 
 #include <format>
 
-#include "Platform/IPlatform.h"
+#include "Platform/Platform.h"
 #include "Core/Logger/LogEntry.h"
 #include "Core/Logger/Logger.h"
 
@@ -39,6 +39,6 @@ namespace Wi
 			entry.Message
 		);
 
-		Platform::ConsoleWriteLog(entry.Level, formattedMessage.c_str());
+		PlatformConsole::ConsoleWriteLog(entry.Level, formattedMessage.c_str());
 	}
 }

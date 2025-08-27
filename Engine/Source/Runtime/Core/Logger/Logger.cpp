@@ -1,6 +1,6 @@
 #include "Logger.h"
 
-#include "Platform/IPlatform.h"
+#include "Platform/Platform.h"
 #include "Sinks/ConsoleSink.h"
 #include "LogEntry.h"
 
@@ -24,7 +24,7 @@ namespace Wi
 		LogEntry entry {
 			.Level = level,
 			.Message = messageBody,
-			.Timestamp = Platform::GetLocalTime()
+			.Timestamp = PlatformTime::GetLocalTime()
 		};
 
 		std::scoped_lock lock(m_SinksMutex);
