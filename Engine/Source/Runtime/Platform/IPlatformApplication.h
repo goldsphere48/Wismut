@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/Memory/Memory.h"
+#include "Core/Memory/MemoryTypes.h"
 #include "IPlatformWindow.h"
 
 namespace Wi

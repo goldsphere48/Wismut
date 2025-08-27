@@ -5,7 +5,7 @@
 #include <mutex>
 
 #include "ILoggerSink.h"
-#include "Core/Memory/Memory.h"
+#include "Core/Memory/MemoryTypes.h"
 
 namespace Wi
 {
