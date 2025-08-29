@@ -10,6 +10,8 @@ namespace Wi
 
 	void Application::Run()
 	{
+		Memory::Initialize();
+
 		CORE_CHECK(!s_Instance)
 
 		s_Instance = this;
@@ -54,5 +56,7 @@ namespace Wi
 	{
 		m_MainWindow->Destroy();
 		m_NativeApplication->Shutdown();
+
+		Memory::Shutdown();
 	}
 }

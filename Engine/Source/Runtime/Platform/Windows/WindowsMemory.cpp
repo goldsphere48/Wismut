@@ -1,24 +1,21 @@
 #if WI_PLATFORM_WIN
 #include "WindowsMemory.h"
 
-#include <Windows.h>
-
 #include "Core/Assertion.h"
+#include "Core/Math/MathUtils.h"
 
 namespace Wi
 {
-	void* WindowsMemory::HeapAlloc(uint32 bufferSize)
+	void* WindowsMemory::AlignedAlloc(usize size, usize alignment)
 	{
-		HANDLE heap = GetProcessHeap();
-		void* ptr = ::HeapAlloc(heap, HEAP_ZERO_MEMORY, bufferSize);
-		CORE_CHECK(ptr)
+		alignment = Math::Max(alignment, size >= DefaultAlignment ? DefaultAlignment : 8);
+		void* ptr = _aligned_malloc(size, alignment);
 		return ptr;
 	}
 
-	void WindowsMemory::HeapFree(void* buffer)
+	void WindowsMemory::AlignedFree(void* ptr)
 	{
-		HANDLE heap = GetProcessHeap();
-		::HeapFree(heap, 0, buffer);
+		_aligned_free(ptr);
 	}
 }
 #endif

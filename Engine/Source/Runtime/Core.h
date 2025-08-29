@@ -5,3 +5,4 @@
 #include "Core/CoreTypes.h"
 #include "Core/CommonDefines.h"
 #include "Core/Logger/Logger.h"
+#include "Core/Memory/Memory.h"

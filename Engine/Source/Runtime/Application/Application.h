@@ -1,12 +1,13 @@
 #pragma once
 
 #include "Application/Events/Event.h"
+#include "Core/Memory/Memory.h"
 #include "Platform/IPlatformApplication.h"
 #include "Platform/IPlatformWindow.h"
 
 namespace Wi
 {
-	class Application
+	class Application : public UseSystemMalloc
 	{
 	public:
 		void Run();

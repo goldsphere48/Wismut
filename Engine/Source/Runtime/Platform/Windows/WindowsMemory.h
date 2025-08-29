@@ -8,9 +8,8 @@ namespace Wi
 	class WindowsMemory : public GenericPlatformMemory
 	{
 	public:
-		static void* HeapAlloc(uint32 bufferSize);
-
-		static void HeapFree(void* buffer);
+		static void* AlignedAlloc(usize size, usize alignment);
+		static void AlignedFree(void* ptr);
 	};
 
 	using PlatformMemory = WindowsMemory;
