@@ -39,6 +39,8 @@ namespace Wi
 		MemoryTagStats TagStats[static_cast<uint8>(MemoryTag::Count)];
 	};
 
+	class Logger;
+
 	class MemoryTracker
 	{
 	public:
@@ -49,6 +51,9 @@ namespace Wi
 
 		static void TrackUntrackedMemoryAllocation(uint64 size);
 		static void TrackUntrackedMemoryFree(uint64 size);
+
+		static void DumpMemoryStats(const Logger& logger);
+		static void DumpMemoryLeaks(const Logger& logger);
 
 		static const MemoryStats& GetStats();
 		static bool IsEnabled();

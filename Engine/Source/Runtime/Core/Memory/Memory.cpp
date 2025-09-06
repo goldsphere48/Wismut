@@ -19,6 +19,7 @@ namespace Wi
 
 	void Memory::Shutdown()
 	{
+		MemoryTracker::DumpMemoryLeaks(Logger::GetEngineLogger());
 	}
 
 	void* Memory::Allocate(uint64 size, uint64 alignment, const char* filename, int line)
