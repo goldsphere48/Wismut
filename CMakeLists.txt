@@ -33,13 +33,6 @@ endif()
 add_subdirectory(Engine/Source/Runtime)
 add_subdirectory(Engine/Source/Sandbox)
 
-add_custom_target(
-	COPY_COMPILE_COMMANDS ALL
-	${CMAKE_COMMAND} -E copy_if_different
-	${CMAKE_BINARY_DIR}/compile_commands.json
-	${CMAKE_CURRENT_LIST_DIR}/compile_commands.json
-)
-
 if(EXISTS "${CMAKE_BINARY_DIR}/compile_commands.json")
 	execute_process(
 		COMMAND ${CMAKE_COMMAND} -E copy_if_different

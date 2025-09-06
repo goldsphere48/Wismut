@@ -6,5 +6,5 @@ class SandboxApp : public Wi::Application
 
 Wi::Application* CreateApplication()
 {
-	return new SandboxApp();
+	return WI_NEW SandboxApp();
 }
