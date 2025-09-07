@@ -44,5 +44,35 @@ namespace Wi
 	};
 
 	template<typename T>
+	struct RemoveVolatile
+	{
+		using Type = T;
+	};
+
+	template<typename T>
+	struct RemoveVolatile<volatile T>
+	{
+		using Type = T;
+	};
+
+	template<typename T>
+	struct RemoveVolatile<const volatile T>
+	{
+		using Type = const T;
+	};
+
+	template<typename T>
 	using RemoveCVType = typename RemoveCV<T>::Type;
+
+	template<typename T>
+	struct RemoveReference
+	{
+		using Type = T;
+	};
+
+	template<typename T>
+	struct RemoveReference<T&>
+	{
+		using Type = T;
+	};
 }
