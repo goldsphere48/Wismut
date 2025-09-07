@@ -17,8 +17,11 @@ namespace Wi
 	#define WI_ALLOC_ALIGNED(size, alignment) _wi_memalloc(size, alignment, __FILE__, __LINE__)
 	#define WI_FREE(ptr) _wi_memfree(ptr)
 
-	void* _wi_memalloc(uint64 size, uint64 alignment = 0, const char* filename = nullptr, int line = 0);
-	void _wi_memfree(void* ptr);
+	namespace Private
+	{
+		void* WMalloc(uint64 size, uint64 alignment = 0, const char* filename = nullptr, int line = 0);
+		void WFree(void* ptr);
+	}
 
 	struct IMalloc;
 
@@ -55,8 +58,8 @@ namespace Wi
 		friend void ::operator delete  (void* ptr, const char* filename, int line) noexcept;
 		friend void ::operator delete[](void* ptr, const char* filename, int line) noexcept;
 
-		friend void* _wi_memalloc(uint64 size, uint64 alignment, const char* filename, int line);
-		friend void _wi_memfree(void* ptr);
+		friend void* Private::WMalloc(uint64 size, uint64 alignment, const char* filename, int line);
+		friend void Private::WFree(void* ptr);
 
 		template<typename T>
 		friend class UntrackedAllocator;

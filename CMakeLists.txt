@@ -32,6 +32,7 @@ endif()
 
 add_subdirectory(Engine/Source/Runtime)
 add_subdirectory(Engine/Source/Sandbox)
+add_subdirectory(Engine/Source/Tests)
 
 if(EXISTS "${CMAKE_BINARY_DIR}/compile_commands.json")
 	execute_process(

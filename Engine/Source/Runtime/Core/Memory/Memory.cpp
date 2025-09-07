@@ -6,6 +6,7 @@
 #include "Core/Logger/Logger.h"
 #include "Core/Templates/AlignTemplates.h"
 #include "Core/Math/Math.h"
+#include "EngineSettigns.h"
 
 namespace Wi
 {
@@ -85,18 +86,19 @@ namespace Wi
 		return malloc;
 	}
 
-	void* _wi_memalloc(uint64 size, uint64 alignment, const char* filename, int line)
+	void* Private::WMalloc(uint64 size, uint64 alignment, const char* filename, int line)
 	{
 		return Memory::Allocate(size, alignment, filename, line);
 	}
 
-	void _wi_memfree(void* ptr)
+	void Private::WFree(void* ptr)
 	{
 		Memory::Free(ptr);
 	}
 
 }
 
+#if ENABLE_CUSTOM_MEMORY_SYSTEM
 void* operator new(size_t size)
 {
 	return Wi::Memory::Allocate(size);
@@ -186,3 +188,4 @@ void operator delete [](void* ptr, const char* filename, int line) noexcept
 {
 	return Wi::Memory::Free(ptr);
 }
+#endif
