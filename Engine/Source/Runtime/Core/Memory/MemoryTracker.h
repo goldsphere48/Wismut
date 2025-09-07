@@ -44,8 +44,6 @@ namespace Wi
 	class MemoryTracker
 	{
 	public:
-		static void Initialize();
-
 		static void TrackAllocation(const void* ptr, uint64 size, const char* filename = nullptr, int line = 0);
 		static void TrackFree(const void* ptr);
 
@@ -57,5 +55,7 @@ namespace Wi
 
 		static const MemoryStats& GetStats();
 		static bool IsEnabled();
+
+		static void ClearStats();
 	};
 }

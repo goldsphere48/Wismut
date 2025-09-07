@@ -74,21 +74,14 @@ namespace Wi
 		GetMemoryTagsStack().pop();
 	}
 
-	void MemoryTracker::Initialize()
-	{
-		if (!GMemoryTrackerEnabled)
-			return;
-
-		GetMemoryTagsStack().push(MemoryTag::Default);
-	}
-
 	void MemoryTracker::TrackAllocation(const void* ptr, uint64 size, const char* filename, int line)
 	{
 		if (!GMemoryTrackerEnabled)
 			return;
 
+		auto tagStack = GetMemoryTagsStack();
 		std::lock_guard lock(GetMemoryTraceMutex());
-		MemoryTag tag = GetMemoryTagsStack().top();
+		MemoryTag tag = tagStack.empty() ? MemoryTag::Default : tagStack.top();
 		AllocInfo info;
 		info.Size = size;
 		info.Address = ptr;
@@ -294,5 +287,26 @@ namespace Wi
 	bool MemoryTracker::IsEnabled()
 	{
 		return GMemoryTrackerEnabled;
+	}
+
+	void MemoryTracker::ClearStats()
+	{
+		if (!IsEnabled())
+			return;
+
+		std::lock_guard lock(GetMemoryTraceMutex());
+
+		MemoryStats& stats = GetStatsInternal();
+
+		stats.TotalAllocated = 0;
+		stats.CurrentUsed = 0;
+		stats.PeakUsed = 0;
+		stats.TotalAllocations = 0;
+		stats.TotalFrees = 0;
+
+		for (int i = 0; i < static_cast<int>(MemoryTag::Count); ++i)
+		{
+			stats.TagStats[i] = {};
+		}
 	}
 }

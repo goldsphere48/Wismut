@@ -13,9 +13,9 @@ void operator delete[](void* ptr, const char* filename, int line) noexcept;
 namespace Wi
 {
 	#define WI_NEW new(__FILE__, __LINE__)
-	#define WI_ALLOC(size) _wi_memalloc(size, 0, __FILE__, __LINE__)
-	#define WI_ALLOC_ALIGNED(size, alignment) _wi_memalloc(size, alignment, __FILE__, __LINE__)
-	#define WI_FREE(ptr) _wi_memfree(ptr)
+	#define WI_ALLOC(size) Wi::Private::WMalloc(size, 0, __FILE__, __LINE__)
+	#define WI_ALLOC_ALIGNED(size, alignment) Wi::Private::WMalloc(size, alignment, __FILE__, __LINE__)
+	#define WI_FREE(ptr) Wi::Private::WFree(ptr)
 
 	namespace Private
 	{

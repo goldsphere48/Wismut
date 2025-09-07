@@ -15,7 +15,6 @@ namespace Wi
 	void Memory::Initialize()
 	{
 		GetMalloc();
-		MemoryTracker::Initialize();
 	}
 
 	void Memory::Shutdown()
