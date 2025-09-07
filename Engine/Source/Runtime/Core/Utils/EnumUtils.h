@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string_view>
+#include <algorithm>
 #include <array>
 
 #include "Core/CoreTypes.h"
