@@ -10,6 +10,7 @@ namespace Wi
 	{
 	public:
 		static void* AlignedAlloc(uint64 size, uint64 alignment);
+		static void* AlignedRealloc(void* ptr, uint64 newSize, uint64 alignment);
 		static void  AlignedFree(void* ptr);
 	};
 

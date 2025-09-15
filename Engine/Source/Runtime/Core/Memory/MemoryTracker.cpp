@@ -100,7 +100,7 @@ namespace Wi
 		MemoryTagStats& tagStats = stats.TagStats[static_cast<int>(tag)];
 		tagStats.TotalAllocated += size;
 		tagStats.CurrentUsed += size;
-		tagStats.PeakUsed = Math::Max(stats.PeakUsed, stats.CurrentUsed);
+		tagStats.PeakUsed = Math::Max(tagStats.PeakUsed, stats.CurrentUsed);
 		tagStats.TotalAllocations++;
 	}
 
@@ -308,5 +308,64 @@ namespace Wi
 		{
 			stats.TagStats[i] = {};
 		}
+	}
+
+	void MemoryTracker::TrackReallocation(void* oldPtr, const void* newPtr, uint64 newSize, const char* filename, int line)
+	{
+		if (!GMemoryTrackerEnabled) return;
+
+		std::lock_guard lock(GetMemoryTraceMutex());
+		auto& active = GetActiveAllocations();
+
+		uint64 oldSize = 0;
+		MemoryTag tag = MemoryTag::Default;
+
+		if (oldPtr)
+		{
+			auto it = active.find(oldPtr);
+			if (it != active.end()) {
+				oldSize = it->second.Size;
+				tag = it->second.Tag;
+				active.erase(it);
+			}
+			else
+			{
+				Log::Warn("TrackReallocation: old pointer {} not found in active allocations", oldPtr);
+				auto tagStack = GetMemoryTagsStack();
+				tag = tagStack.empty() ? MemoryTag::Default : tagStack.top();
+			}
+		}
+		else
+		{
+			auto tagStack = GetMemoryTagsStack();
+			tag = tagStack.empty() ? MemoryTag::Default : tagStack.top();
+		}
+
+		AllocInfo info;
+		info.Size = newSize;
+		info.Address = newPtr;
+		info.Tag = tag;
+		info.Line = line;
+		info.Filename = filename;
+		active[newPtr] = info;
+
+		MemoryStats& stats = GetStatsInternal();
+		const int64 delta = static_cast<int64>(newSize) - static_cast<int64>(oldSize);
+
+		if (delta > 0)
+		{
+			stats.TotalAllocated += static_cast<uint64>(delta);
+		}
+		stats.CurrentUsed += delta;
+		stats.PeakUsed = Math::Max(stats.PeakUsed, stats.CurrentUsed);
+		stats.TotalAllocations++;
+
+		MemoryTagStats& t = stats.TagStats[static_cast<int>(tag)];
+		if (delta > 0) {
+			t.TotalAllocated += static_cast<uint64>(delta);
+		}
+		t.CurrentUsed += delta;
+		t.PeakUsed = Math::Max(t.PeakUsed, t.CurrentUsed);
+		t.TotalAllocations++;
 	}
 }

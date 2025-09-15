@@ -40,7 +40,7 @@ namespace Wi
 			return a;
 		}
 
-		constexpr void Fill (const TElementType& value)
+		constexpr void Fill(const TElementType& value)
 		{
 			for (uint32 i = 0; i < Size; ++i)
 			{

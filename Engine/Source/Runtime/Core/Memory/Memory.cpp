@@ -40,6 +40,35 @@ namespace Wi
 		return ptr;
 	}
 
+	void* Memory::Reallocate(void* ptr, uint64 newSize, uint64 alignment, const char* filename, int line)
+	{
+		alignment = Math::Max(DEFAULT_ALIGNMENT, alignment);
+
+		if (!Math::IsPowOf2(alignment))
+		{
+			Log::Error("Alignment must be power of 2, actual alignment is {0}", alignment);
+		}
+
+		if (newSize == 0)
+		{
+			GetMalloc().Free(ptr);
+			MemoryTracker::TrackFree(ptr);
+			return nullptr;
+		}
+
+		uint64 alignedSize = Align(newSize, alignment);
+
+		void* newPtr = GetMalloc().Reallocate(ptr, alignedSize, alignment);
+		if (newPtr == nullptr)
+		{
+			return nullptr;
+		}
+
+		MemoryTracker::TrackReallocation(ptr, newPtr, alignedSize, filename, line);
+
+		return newPtr;
+	}
+
 	void Memory::Free(void* ptr)
 	{
 		MemoryTracker::TrackFree(ptr);
@@ -88,6 +117,11 @@ namespace Wi
 	void* Private::WMalloc(uint64 size, uint64 alignment, const char* filename, int line)
 	{
 		return Memory::Allocate(size, alignment, filename, line);
+	}
+
+	void* Private::WRealloc(void* ptr, uint64 newSize, uint64 alignment, const char* filename, int line)
+	{
+		return Memory::Reallocate(ptr, newSize, alignment, filename, line);
 	}
 
 	void Private::WFree(void* ptr)

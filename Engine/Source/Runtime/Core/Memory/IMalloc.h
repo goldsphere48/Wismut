@@ -8,6 +8,7 @@ namespace Wi
 	{
 		virtual ~IMalloc() = default;
 		virtual void* Allocate(uint64 size, uint64 alignment) = 0;
+		virtual void* Reallocate(void* ptr, uint64 newSize, uint64 alignment) = 0;
 		virtual void Free(void* ptr) = 0;
 	};
 }

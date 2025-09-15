@@ -57,5 +57,6 @@ namespace Wi
 		static bool IsEnabled();
 
 		static void ClearStats();
+		static void TrackReallocation(void* oldPtr, const void* newPtr, uint64 newSize, const char* filename = nullptr, int line = 0);
 	};
 }

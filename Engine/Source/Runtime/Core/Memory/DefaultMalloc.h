@@ -8,6 +8,7 @@ namespace Wi
 	{
 	public:
 		void* Allocate(uint64 size, uint64 alignment) override;
+		void* Reallocate(void* ptr, uint64 newSize, uint64 alignment) override;
 		void Free(void* ptr) override;
 	};
 }

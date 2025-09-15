@@ -7,10 +7,15 @@ namespace Wi
 	void* DefaultMalloc::Allocate(uint64 size, uint64 alignment)
 	{
 		return PlatformMemory::AlignedAlloc(size, alignment);
-	};
+	}
+
+	void* DefaultMalloc::Reallocate(void* ptr, uint64 newSize, uint64 alignment)
+	{
+		return PlatformMemory::AlignedRealloc(ptr, newSize, alignment);
+	}
 
 	void DefaultMalloc::Free(void* ptr)
 	{
 		PlatformMemory::AlignedFree(ptr);
-	};
+	}
 }
