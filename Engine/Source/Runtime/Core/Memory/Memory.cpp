@@ -1,224 +1,106 @@
+// TODO: Сделать все потокобезопасным
 #include "Memory.h"
 
-#include "DefaultMalloc.h"
 #include "MemoryTracker.h"
+#include "SystemAllocator.h"
 #include "Core/Assertion.h"
-#include "Core/Logger/Logger.h"
-#include "Core/Templates/AlignTemplates.h"
 #include "Core/Math/Math.h"
-#include "EngineSettigns.h"
 
 namespace Wi
 {
-	static constexpr uint64 DEFAULT_ALIGNMENT = 16;
+	constexpr usize MinAlignment = alignof(std::max_align_t);
+	bool Memory::s_Initialized = false;
 
 	void Memory::Initialize()
 	{
-		GetMalloc();
+		WI_ASSERT(!s_Initialized)
+
+		s_Initialized = true;
+
+		m_MainAllocator = CreateUniquePtr<SystemAllocator>();
 	}
 
 	void Memory::Shutdown()
 	{
-		MemoryTracker::DumpMemoryLeaks(Logger::GetEngineLogger());
+		WI_ASSERT(s_Initialized)
+
+		s_Initialized = false;
 	}
 
-	void* Memory::Allocate(uint64 size, uint64 alignment, const char* filename, int line)
+	void* Memory::Allocate(usize size, usize alignment, const char* filename, int line) const
 	{
-		alignment = Math::Max(DEFAULT_ALIGNMENT, alignment);
+		WI_ASSERT(s_Initialized)
+		WI_ASSERT(alignment == 0 || Math::IsPowOf2(alignment))
 
-		if (!Math::IsPowOf2(alignment))
-		{
-			Log::Error("Alignment must be power of 2, actual alignment is {0}", alignment);
-		}
+		if (alignment <= 0)
+			alignment = MinAlignment;
+		
+		void* ptr = m_MainAllocator->Allocate(size, alignment);
 
-		uint64 alignedSize = Align(size, alignment);
-
-		void* ptr = GetMalloc().Allocate(alignedSize, alignment);
-
-		MemoryTracker::TrackAllocation(ptr, alignedSize, filename, line);
+		MemoryTracker::GetInstance()->TrackAllocation(ptr, size, nullptr, 0);
 
 		return ptr;
 	}
 
-	void* Memory::Reallocate(void* ptr, uint64 newSize, uint64 alignment, const char* filename, int line)
+	void* Memory::Reallocate(void* oldPtr, usize oldSize, usize newSize, usize alignment, const char* filename, int line) const
 	{
-		alignment = Math::Max(DEFAULT_ALIGNMENT, alignment);
+		WI_ASSERT(s_Initialized)
+		WI_ASSERT(alignment == 0 || Math::IsPowOf2(alignment))
 
-		if (!Math::IsPowOf2(alignment))
+		if (alignment <= 0)
+			alignment = MinAlignment;
+
+		void* ptr = m_MainAllocator->Reallocate(oldPtr, oldSize, newSize, alignment);
+
+		MemoryTracker::GetInstance()->TrackReallocation(oldPtr, ptr, newSize, nullptr, 0);
+
+		return ptr;
+	}
+
+	void Memory::Free(void* ptr) const
+	{
+		WI_ASSERT(s_Initialized)
+
+		m_MainAllocator->Free(ptr);
+
+		MemoryTracker::GetInstance()->TrackFree(ptr);
+	}
+
+	namespace Private
+	{
+		void* Allocate(usize size, usize alignment, const char* filename, int line)
 		{
-			Log::Error("Alignment must be power of 2, actual alignment is {0}", alignment);
+			return Memory::GetInstance()->Allocate(size, alignment, filename, line);
 		}
 
-		if (newSize == 0)
+		void* Reallocate(void* oldPtr, usize oldSize, usize newSize, usize alignment, const char* filename, int line)
 		{
-			GetMalloc().Free(ptr);
-			MemoryTracker::TrackFree(ptr);
-			return nullptr;
+			return Memory::GetInstance()->Reallocate(oldPtr, oldSize, newSize, alignment, filename, line);
 		}
 
-		uint64 alignedSize = Align(newSize, alignment);
-
-		void* newPtr = GetMalloc().Reallocate(ptr, alignedSize, alignment);
-		if (newPtr == nullptr)
+		void  Free(void* ptr)
 		{
-			return nullptr;
+			return Memory::GetInstance()->Free(ptr);
 		}
-
-		MemoryTracker::TrackReallocation(ptr, newPtr, alignedSize, filename, line);
-
-		return newPtr;
 	}
-
-	void Memory::Free(void* ptr)
-	{
-		MemoryTracker::TrackFree(ptr);
-		GetMalloc().Free(ptr);
-	}
-
-	void* Memory::UntrackedSystemAlloc(uint64 size)
-	{
-		if (MemoryTracker::IsEnabled()) {
-			int headerSize = sizeof(uint64);
-			void* ptr = malloc(size + headerSize);
-			*(static_cast<uint64*>(ptr)) = size;
-			void* userPtr = static_cast<uint8*>(ptr) + headerSize;
-
-			MemoryTracker::TrackUntrackedMemoryAllocation(size);
-
-			return userPtr;
-		}
-
-		return malloc(size);
-	}
-
-	void Memory::UntrackedSystemFree(void* ptr)
-	{
-		if (MemoryTracker::IsEnabled())
-		{
-			int headerSize = sizeof(uint64);
-			void* rawPtr = static_cast<uint8*>(ptr) - headerSize;
-			uint64 size = *static_cast<uint64*>(rawPtr);
-
-			MemoryTracker::TrackUntrackedMemoryFree(size);
-
-			free(rawPtr);
-			return;
-		}
-
-		free(ptr);
-	}
-
-	IMalloc& Memory::GetMalloc()
-	{
-		static DefaultMalloc malloc;
-		return malloc;
-	}
-
-	void* Private::WMalloc(uint64 size, uint64 alignment, const char* filename, int line)
-	{
-		return Memory::Allocate(size, alignment, filename, line);
-	}
-
-	void* Private::WRealloc(void* ptr, uint64 newSize, uint64 alignment, const char* filename, int line)
-	{
-		return Memory::Reallocate(ptr, newSize, alignment, filename, line);
-	}
-
-	void Private::WFree(void* ptr)
-	{
-		Memory::Free(ptr);
-	}
-
-}
-
-#if ENABLE_CUSTOM_MEMORY_SYSTEM
-void* operator new(size_t size)
-{
-	return Wi::Memory::Allocate(size);
-}
-
-void* operator new [](size_t size)
-{
-	return Wi::Memory::Allocate(size);
-}
-
-void* operator new(std::size_t size, const std::nothrow_t&) noexcept
-{
-	try {
-		return Wi::Memory::Allocate(size);
-	}
-	catch (...) {
-		return nullptr;
-	}
-}
-
-void* operator new [](std::size_t size, const std::nothrow_t&) noexcept
-{
-	try {
-		return Wi::Memory::Allocate(size);
-	}
-	catch (...) {
-		return nullptr;
-	}
-}
-
-void* operator new(std::size_t size, std::align_val_t align)
-{
-	return Wi::Memory::Allocate(size, static_cast<uint64>(align));
-}
-
-void* operator new [](std::size_t size, std::align_val_t align)
-{
-	return Wi::Memory::Allocate(size, static_cast<uint64>(align));
 }
 
 void* operator new(std::size_t size, const char* filename, int line)
 {
-	return Wi::Memory::Allocate(size, 0, filename, line);
+	return Wi::Private::Allocate(size, 0, filename, line);
 }
 
-void* operator new [](std::size_t size, const char* filename, int line)
+void* operator new[](std::size_t size, const char* filename, int line)
 {
-	return Wi::Memory::Allocate(size, 0, filename, line);
-}
-
-void operator delete(void* ptr) noexcept
-{
-	return Wi::Memory::Free(ptr);
-}
-
-void operator delete [](void* ptr) noexcept
-{
-	return Wi::Memory::Free(ptr);
-}
-
-void operator delete(void* ptr, const std::nothrow_t&) noexcept
-{
-	return Wi::Memory::Free(ptr);
-}
-
-void operator delete [](void* ptr, const std::nothrow_t&) noexcept
-{
-	return Wi::Memory::Free(ptr);
-}
-
-void operator delete(void* ptr, std::align_val_t) noexcept
-{
-	return Wi::Memory::Free(ptr);
-}
-
-void operator delete [](void* ptr, std::align_val_t) noexcept
-{
-	return Wi::Memory::Free(ptr);
+	return Wi::Private::Allocate(size, 0, filename, line);
 }
 
 void operator delete(void* ptr, const char* filename, int line) noexcept
 {
-	return Wi::Memory::Free(ptr);
+	Wi::Private::Free(ptr);
 }
 
-void operator delete [](void* ptr, const char* filename, int line) noexcept
+void operator delete[](void* ptr, const char* filename, int line) noexcept
 {
-	return Wi::Memory::Free(ptr);
+	Wi::Private::Free(ptr);
 }
-#endif

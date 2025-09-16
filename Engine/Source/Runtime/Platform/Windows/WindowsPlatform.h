@@ -1,7 +1,5 @@
 #pragma once
-#if WI_PLATFORM_WIN
-
-#include <intrin.h>
-
-#define PLATFORM_BREAK() (__nop(), __debugbreak())
+#ifdef WI_PLATFORM_WIN
+#include "Platform/IPlatform.h"
 #endif
+

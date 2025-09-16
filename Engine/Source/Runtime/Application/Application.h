@@ -9,15 +9,22 @@ namespace Wi
 	class Application
 	{
 	public:
-		void Run();
-		bool OnEvent(Event& event);
+		virtual ~Application() = default;
 
-		static Application* InstancePtr() { return s_Instance; }
+		void Run();
+		bool HandleEvent(Event& event);
+
+		static Application* GetInstance() { return s_Instance; }
 
 	protected:
 		bool OnWindowClose();
 
+		virtual void OnInit() {}
+		virtual void OnUpdate() {}
+		virtual void OnEvent(Event& event) {};
+
 	private:
+		void Update();
 		void Shutdown() const;
 
 	private:
@@ -26,4 +33,6 @@ namespace Wi
 		SharedPtr<IPlatformWindow> m_MainWindow;
 		bool m_IsRunning = true;
 	};
+
+	Application* CreateApplication();
 }

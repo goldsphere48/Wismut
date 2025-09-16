@@ -4,22 +4,19 @@ file(GLOB_RECURSE ALL_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 set(ALL_FILES ${ALL_SOURCE_FILES} ${ALL_HEADER_FILES})
 
 if(WIN32)
-    set(EXCLUDED_PLATFORM "Linux")
-    list(APPEND RUNTIME_COMPILE_DEFINITIONS WI_PLATFORM_WIN)
+	list(APPEND RUNTIME_COMPILE_DEFINITIONS WI_PLATFORM_WIN)
 elseif(UNIX)
-    set(EXCLUDED_PLATFORM "Windows")
-    list(APPEND RUNTIME_COMPILE_DEFINITIONS WI_PLATFORM_LINUX)
-    list(APPEND RUNTIME_LINK_LIBS xcb xcb-keysyms)
+	list(APPEND RUNTIME_COMPILE_DEFINITIONS WI_PLATFORM_LINUX)
+	list(APPEND RUNTIME_LINK_LIBS xcb xcb-keysyms)
 endif()
 
-set(SOURCE_FILES "")
-foreach(file ${ALL_FILES})
-    if(NOT file MATCHES ".*/${EXCLUDED_PLATFORM}/.*")
-        list(APPEND SOURCE_FILES ${file})
-    endif()
-endforeach()
+include(platform-filter-files)
+filter_files_by_platform(PLATFORM_FILTERED_FILES  "${ALL_FILES}")
 
-add_library(Runtime ${SOURCE_FILES})
+add_library(Runtime ${PLATFORM_FILTERED_FILES})
+
+include(sanitizers)
+enable_sanitizers(Runtime)
 
 set(RUNTIME_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}")
 set(RUNTIME_COMPILE_DEFINITIONS

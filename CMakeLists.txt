@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.19)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 option(CLANG_TIDY_ENABLED "Enable clang tidy checks" OFF)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -28,10 +30,11 @@ project(
 if(MSVC)
 	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	add_compile_options(/Zc:preprocessor)
 endif()
 
 add_subdirectory(Engine/Source/Runtime)
-add_subdirectory(Engine/Source/Sandbox)
+add_subdirectory(Engine/Source/Player)
 add_subdirectory(Engine/Source/Tests)
 
 if(EXISTS "${CMAKE_BINARY_DIR}/compile_commands.json")

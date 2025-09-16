@@ -1,10 +1,9 @@
 #ifdef WI_PLATFORM_LINUX
 #include "LinuxWindow.h"
 
-#include <limits>
-
-#include "Core.h"
 #include "LinuxApplication.h"
+#include "Core/Assertion.h"
+#include "Core/Logger/Logger.h"
 
 namespace Wi
 {
@@ -14,10 +13,10 @@ namespace Wi
 		Log::Info("Creating Xcb window...");
 
 		m_WindowHandle = xcb_generate_id(connection);
-		CORE_CHECK(m_WindowHandle)
+		WI_ASSERT(m_WindowHandle)
 
 		m_Screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
-		CORE_CHECK(m_Screen)
+		WI_ASSERT(m_Screen)
 
 		uint32 eventMask =
 			XCB_EVENT_MASK_EXPOSURE |
@@ -50,7 +49,7 @@ namespace Wi
 			valueList
 		);
 		auto error = xcb_request_check(m_Connection, request);
-		CORE_CHECK(!error)
+		WI_ASSERT(!error)
 
 		request = xcb_change_property_checked(
 			connection,
@@ -63,11 +62,11 @@ namespace Wi
 			&LinuxApplication::s_AtomWmDeleteWindow
 		);
 		error = xcb_request_check(m_Connection, request);
-		CORE_CHECK(!error)
+		WI_ASSERT(!error)
 
 		request = xcb_map_window_checked(connection, m_WindowHandle);
 		error = xcb_request_check(m_Connection, request);
-		CORE_CHECK(!error)
+		WI_ASSERT(!error)
 
 		xcb_flush(connection);
 

@@ -1,53 +1,55 @@
 #ifdef WI_PLATFORM_LINUX
-#include "LinuxMemory.h"
-#endif
+#include "Core/Memory/SystemAllocator.h"
+
 #include <cstdlib>
+#include <memory.h>
 #include <malloc.h>
 
 #include "Core/Assertion.h"
-#include "Core/Templates/AlignTemplates.h"
+#include "Core/Math/Math.h"
 
 namespace Wi
 {
-	void* LinuxMemory::AlignedAlloc(uint64 size, uint64 alignment)
+	void* SystemAllocator::Allocate(usize size, usize alignment)
 	{
-		CORE_CHECK(size == Align(size, alignment))
-		return aligned_alloc(alignment, size);
+		WI_ASSERT(Math::IsPowOf2(alignment))
+
+		usize alignedSize = Math::AlignUp(size, alignment);
+
+		return std::aligned_alloc(alignment, alignedSize);
 	}
 
-	void* LinuxMemory::AlignedRealloc(void* ptr, uint64 newSize, uint64 alignment)
+	void* SystemAllocator::Reallocate(void* ptr, usize oldSize, usize newSize, usize alignment)
 	{
+		WI_ASSERT(Math::IsPowOf2(alignment))
+		WI_ASSERT(alignment >= sizeof(void*))
+
+		if (newSize == 0) {
+			if (ptr)
+				free(ptr);
+
+			return nullptr;
+		}
+
 		void* result = nullptr;
-		if (ptr && newSize)
+
+		if (posix_memalign(&result, alignment, newSize) != 0)
+			return nullptr;
+
+		if (ptr)
 		{
-			usize usableSize = malloc_usable_size(ptr);
-			if (posix_memalign(&result, alignment, newSize) != 0)
-			{
-				result = nullptr;
-			}
-			else if (usableSize != 0)
-			{
-				MemCopy(result, ptr, usableSize);
-			}
+			if (const usize toCopy = (oldSize < newSize) ? oldSize : newSize)
+				memcpy(result, ptr, toCopy);
+
 			free(ptr);
 		}
-		else if (ptr == nullptr)
-		{
-			if (posix_memalign(&result, alignment, newSize) != 0)
-			{
-				result = nullptr;
-			}
-		}
-		else
-		{
-			free(ptr);
-			result = nullptr;
-		}
+
 		return result;
 	}
 
-	void LinuxMemory::AlignedFree(void* ptr)
+	void SystemAllocator::Free(void* ptr)
 	{
-		free(ptr);
+		std::free(ptr);
 	}
 }
+#endif

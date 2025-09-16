@@ -2,6 +2,8 @@
 
 #include <ostream>
 
+#include "Core/CoreTypes.h"
+
 namespace Wi
 {
 	enum class KeyCode : uint16

@@ -1,9 +1,10 @@
+// TODO: Сделать все потокобезопасным
+
 #include "Core/Memory/MemoryTracker.h"
 
-#include <mutex>
 #include <ranges>
+#include <stack>
 
-#include "Core/Containers/UntrackedContainers.h"
 #include "Core/Math/Math.h"
 #include "EngineSettigns.h"
 #include "Core/Logger/Logger.h"
@@ -11,57 +12,23 @@
 
 namespace Wi
 {
-	struct AllocInfo
-	{
-		const void*	Address;
-		uint64		Size;
-		int			Line;
-		MemoryTag	Tag;
-		const char*	Filename = nullptr;
-	};
-
-	static UntrackedMap<const void*, AllocInfo>& GetActiveAllocations()
-	{
-		static UntrackedMap<const void*, AllocInfo> instance;
-		return instance;
-	}
-
-	static UntrackedStack<MemoryTag>& GetMemoryTagsStack()
-	{
-		static UntrackedStack<MemoryTag> instance;
-		return instance;
-	}
-
-	static MemoryStats& GetStatsInternal()
-	{
-		static MemoryStats instance;
-		return instance;
-	}
-
-	static std::mutex& GetMemoryTraceMutex()
-	{
-		static std::mutex instance;
-		return instance;
-	}
-
-	static std::mutex& GetUntrackedMemoryTraceMutex()
-	{
-		static std::mutex instance;
-		return instance;
-	}
-
 #if ENABLE_MEMORY_TRACE
 	static bool GMemoryTrackerEnabled = true;
 #else
-	static bool GMemoryTrackerEnabled = true;
+	static bool GMemoryTrackerEnabled = false;
 #endif
+
+	static std::stack<MemoryTag>& GetMemoryTagsStack()
+	{
+		static std::stack<MemoryTag> instance;
+		return instance;
+	}
 
 	MemoryTagScope::MemoryTagScope(MemoryTag tag)
 	{
 		if (!GMemoryTrackerEnabled)
 			return;
 
-		std::lock_guard lock(GetMemoryTraceMutex());
 		GetMemoryTagsStack().push(tag);
 	}
 
@@ -70,7 +37,6 @@ namespace Wi
 		if (!GMemoryTrackerEnabled)
 			return;
 
-		std::lock_guard lock(GetMemoryTraceMutex());
 		GetMemoryTagsStack().pop();
 	}
 
@@ -80,7 +46,6 @@ namespace Wi
 			return;
 
 		auto tagStack = GetMemoryTagsStack();
-		std::lock_guard lock(GetMemoryTraceMutex());
 		MemoryTag tag = tagStack.empty() ? MemoryTag::Default : tagStack.top();
 		AllocInfo info;
 		info.Size = size;
@@ -89,18 +54,17 @@ namespace Wi
 		info.Line = line;
 		info.Filename = filename;
 
-		GetActiveAllocations()[ptr] = info;
+		m_ActiveAllocations[ptr] = info;
 
-		MemoryStats& stats = GetStatsInternal();
-		stats.TotalAllocated += size;
-		stats.CurrentUsed += size;
-		stats.PeakUsed = Math::Max(stats.PeakUsed, stats.CurrentUsed);
-		stats.TotalAllocations++;
+		m_Stats.TotalAllocated += size;
+		m_Stats.CurrentUsed += size;
+		m_Stats.PeakUsed = Math::Max(m_Stats.PeakUsed, m_Stats.CurrentUsed);
+		m_Stats.TotalAllocations++;
 
-		MemoryTagStats& tagStats = stats.TagStats[static_cast<int>(tag)];
+		MemoryTagStats& tagStats = m_Stats.TagStats[static_cast<int>(tag)];
 		tagStats.TotalAllocated += size;
 		tagStats.CurrentUsed += size;
-		tagStats.PeakUsed = Math::Max(tagStats.PeakUsed, stats.CurrentUsed);
+		tagStats.PeakUsed = Math::Max(tagStats.PeakUsed, m_Stats.CurrentUsed);
 		tagStats.TotalAllocations++;
 	}
 
@@ -109,60 +73,34 @@ namespace Wi
 		if (!GMemoryTrackerEnabled)
 			return;
 
-		std::lock_guard lock(GetMemoryTraceMutex());
-		auto& activeAllocations = GetActiveAllocations();
-
-		auto it = activeAllocations.find(ptr);
-		if (it != activeAllocations.end()) {
+		auto it = m_ActiveAllocations.find(ptr);
+		if (it != m_ActiveAllocations.end()) {
 			AllocInfo info = it->second;
-			activeAllocations.erase(it);
+			m_ActiveAllocations.erase(it);
 
-			MemoryStats& stats = GetStatsInternal();
+			m_Stats.CurrentUsed -= info.Size;
+			m_Stats.TotalFrees++;
 
-			stats.CurrentUsed -= info.Size;
-			stats.TotalFrees++;
-
-			MemoryTagStats& tagStats = stats.TagStats[static_cast<int>(info.Tag)];
+			MemoryTagStats& tagStats = m_Stats.TagStats[static_cast<int>(info.Tag)];
 			tagStats.CurrentUsed -= info.Size;
 			tagStats.TotalFrees++;
 		}
 	}
 
-	void MemoryTracker::TrackUntrackedMemoryAllocation(uint64 size)
-	{
-		if (!GMemoryTrackerEnabled)
-			return;
-
-		std::lock_guard lock(GetUntrackedMemoryTraceMutex());
-
-		GetStatsInternal().UntrackedMemoryAllocated += size;
-	}
-
-	void MemoryTracker::TrackUntrackedMemoryFree(uint64 size)
-	{
-		if (!GMemoryTrackerEnabled)
-			return;
-
-		std::lock_guard lock(GetUntrackedMemoryTraceMutex());
-
-		GetStatsInternal().UntrackedMemoryAllocated -= size;
-	}
-
 	void MemoryTracker::DumpMemoryStats(const Logger& logger)
 	{
-		MemoryStats& stats = GetStatsInternal();
 		logger.Log(LogLevel::Info, "================== Memory Statistic ==================");
-		logger.Log(LogLevel::Info, "Total allocated memory:  {0}", stats.TotalAllocated);
-		logger.Log(LogLevel::Info, "Current used memory:     {0}", stats.CurrentUsed);
-		logger.Log(LogLevel::Info, "Peak used memory:        {0}", stats.PeakUsed);
-		logger.Log(LogLevel::Info, "Untracked memory used:   {0}", stats.UntrackedMemoryAllocated);
-		logger.Log(LogLevel::Info, "Total allocations count: {0}", stats.TotalAllocations);
-		logger.Log(LogLevel::Info, "Total frees count:       {0}", stats.TotalFrees);
+		logger.Log(LogLevel::Info, "Total allocated memory:  {0}", m_Stats.TotalAllocated);
+		logger.Log(LogLevel::Info, "Current used memory:     {0}", m_Stats.CurrentUsed);
+		logger.Log(LogLevel::Info, "Peak used memory:        {0}", m_Stats.PeakUsed);
+		logger.Log(LogLevel::Info, "Untracked memory used:   {0}", m_Stats.UntrackedMemoryAllocated);
+		logger.Log(LogLevel::Info, "Total allocations count: {0}", m_Stats.TotalAllocations);
+		logger.Log(LogLevel::Info, "Total frees count:       {0}", m_Stats.TotalFrees);
 
 		for (int i = 0; i < static_cast<int>(MemoryTag::Count); ++i)
 		{
 			MemoryTag tag = static_cast<MemoryTag>(i);
-			MemoryTagStats tagStats= stats.TagStats[i];
+			MemoryTagStats tagStats= m_Stats.TagStats[i];
 
 			logger.Log(LogLevel::Info, "Memory category:         {0}", Utils::EnumToString<MemoryTag>(tag));
 			logger.Log(LogLevel::Info, "Total allocated memory:  {0}", tagStats.TotalAllocated);
@@ -187,14 +125,13 @@ namespace Wi
 		usize leaksByTag[static_cast<size_t>(MemoryTag::Count)] = { 0 };
 		uint64 leakedBytesByTag[static_cast<size_t>(MemoryTag::Count)] = { 0 };
 
-		usize untrackedMemory = GetStatsInternal().UntrackedMemoryAllocated;
+		usize untrackedMemory = m_Stats.UntrackedMemoryAllocated;
 
-		UntrackedVector<AllocInfo> leaksVector;
+		std::vector<AllocInfo> leaksVector;
 
 		logger.Log(LogLevel::Info, "================== Memory Leaks Report ==================");
 
-		const auto& activeAllocations = GetActiveAllocations();
-		for (const auto& allocInfo : activeAllocations | std::views::values)
+		for (const auto& allocInfo : m_ActiveAllocations | std::views::values)
 		{
 			hasLeaks = true;
 			totalLeakedBytes += allocInfo.Size;
@@ -239,24 +176,11 @@ namespace Wi
 				}
 			}
 
-			for (size_t i = 0; i < leaksVector.size() - 1; ++i)
-			{
-				for (size_t j = 0; j < leaksVector.size() - 1 - i; ++j)
-				{
-					if (leaksVector[j].Size < leaksVector[j + 1].Size)
-					{
-						AllocInfo temp = leaksVector[j];
-						leaksVector[j] = leaksVector[j + 1];
-						leaksVector[j + 1] = temp;
-					}
-				}
-			}
+			std::ranges::sort(leaksVector, std::less());
 
 			if (!leaksVector.empty())
 			{
-				logger.Log(LogLevel::Error, "Top 10 largest leaks:");
-				size_t topCount = leaksVector.size() < 10 ? leaksVector.size() : 10;
-				for (size_t i = 0; i < topCount; ++i)
+				for (size_t i = 0; i < leaksVector.size(); ++i)
 				{
 					const auto& leak = leaksVector[i];
 					logger.Log(LogLevel::Error,
@@ -279,9 +203,9 @@ namespace Wi
 		logger.Log(LogLevel::Info, "Untracked memory at end: {0} bytes", untrackedMemory);
 	}
 
-	const MemoryStats& MemoryTracker::GetStats()
+	const MemoryStats& MemoryTracker::GetStats() const
 	{
-		return GetStatsInternal();
+		return m_Stats;
 	}
 
 	bool MemoryTracker::IsEnabled()
@@ -294,39 +218,33 @@ namespace Wi
 		if (!IsEnabled())
 			return;
 
-		std::lock_guard lock(GetMemoryTraceMutex());
+		m_Stats.TotalAllocated = 0;
+		m_Stats.CurrentUsed = 0;
+		m_Stats.PeakUsed = 0;
+		m_Stats.TotalAllocations = 0;
+		m_Stats.TotalFrees = 0;
 
-		MemoryStats& stats = GetStatsInternal();
-
-		stats.TotalAllocated = 0;
-		stats.CurrentUsed = 0;
-		stats.PeakUsed = 0;
-		stats.TotalAllocations = 0;
-		stats.TotalFrees = 0;
-
-		for (int i = 0; i < static_cast<int>(MemoryTag::Count); ++i)
+		for (auto& tagStat : m_Stats.TagStats)
 		{
-			stats.TagStats[i] = {};
+			tagStat = {};
 		}
 	}
 
 	void MemoryTracker::TrackReallocation(void* oldPtr, const void* newPtr, uint64 newSize, const char* filename, int line)
 	{
-		if (!GMemoryTrackerEnabled) return;
-
-		std::lock_guard lock(GetMemoryTraceMutex());
-		auto& active = GetActiveAllocations();
+		if (!GMemoryTrackerEnabled)
+			return;
 
 		uint64 oldSize = 0;
 		MemoryTag tag = MemoryTag::Default;
 
 		if (oldPtr)
 		{
-			auto it = active.find(oldPtr);
-			if (it != active.end()) {
+			auto it = m_ActiveAllocations.find(oldPtr);
+			if (it != m_ActiveAllocations.end()) {
 				oldSize = it->second.Size;
 				tag = it->second.Tag;
-				active.erase(it);
+				m_ActiveAllocations.erase(it);
 			}
 			else
 			{
@@ -347,25 +265,22 @@ namespace Wi
 		info.Tag = tag;
 		info.Line = line;
 		info.Filename = filename;
-		active[newPtr] = info;
+		m_ActiveAllocations[newPtr] = info;
 
-		MemoryStats& stats = GetStatsInternal();
 		const int64 delta = static_cast<int64>(newSize) - static_cast<int64>(oldSize);
 
 		if (delta > 0)
-		{
-			stats.TotalAllocated += static_cast<uint64>(delta);
-		}
-		stats.CurrentUsed += delta;
-		stats.PeakUsed = Math::Max(stats.PeakUsed, stats.CurrentUsed);
-		stats.TotalAllocations++;
+			m_Stats.TotalAllocated += static_cast<uint64>(delta);
+		
+		m_Stats.CurrentUsed += delta;
+		m_Stats.PeakUsed = Math::Max(m_Stats.PeakUsed, m_Stats.CurrentUsed);
 
-		MemoryTagStats& t = stats.TagStats[static_cast<int>(tag)];
-		if (delta > 0) {
+		MemoryTagStats& t = m_Stats.TagStats[static_cast<int>(tag)];
+
+		if (delta > 0)
 			t.TotalAllocated += static_cast<uint64>(delta);
-		}
+		
 		t.CurrentUsed += delta;
 		t.PeakUsed = Math::Max(t.PeakUsed, t.CurrentUsed);
-		t.TotalAllocations++;
 	}
 }

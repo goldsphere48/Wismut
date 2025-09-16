@@ -14,7 +14,10 @@ namespace Wi
 
 		}
 
-		KeyCode GetKey() const { return Key; }
+		KeyCode GetKey() const
+		{
+			return Key;
+		}
 
 	protected:
 		KeyCode Key;
@@ -23,8 +26,8 @@ namespace Wi
 	class KeyPressedEvent : public KeyEvent
 	{
 	public:
-		KeyPressedEvent(KeyCode keyCode, bool repeated)
-			: KeyEvent(keyCode), m_IsRepeated(repeated)
+		KeyPressedEvent(KeyCode keyCode, int repeatedCount)
+			: KeyEvent(keyCode), m_repeatedCount(repeatedCount)
 		{
 		}
 
@@ -33,14 +36,22 @@ namespace Wi
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "KeyPressed: " << Key << " " << m_IsRepeated;
+			ss << "KeyPressed: " << Key << " " << m_repeatedCount;
 			return ss.str();
 		}
 
-		bool IsRepeated() const { return m_IsRepeated; }
+		int GetRepeatedCount() const
+		{
+			return m_repeatedCount;
+		}
+
+		bool IsRepeated() const
+		{
+			return m_repeatedCount > 1;
+		}
 
 	private:
-		bool m_IsRepeated;
+		int m_repeatedCount;
 	};
 
 	class KeyReleasedEvent : public KeyEvent

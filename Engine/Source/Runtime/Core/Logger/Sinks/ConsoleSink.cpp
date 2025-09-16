@@ -39,6 +39,6 @@ namespace Wi
 			entry.Message
 		);
 
-		PlatformConsole::ConsoleWriteLog(entry.Level, formattedMessage.c_str());
+		Platform::Console::WriteLog(entry.Level, formattedMessage.c_str());
 	}
 }

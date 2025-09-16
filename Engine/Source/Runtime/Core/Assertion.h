@@ -1,16 +1,31 @@
 #pragma once
 
-#include "PreprocessorHelpers.h"
-#include "Platform/Platform.h"
+#include <format>
 
-#define CORE_CHECK_IMPL(expr) \
-		if (!BOOL_CAST(expr)) \
-		{					  \
-			PLATFORM_BREAK(); \
-		}
+#include "Utils/PreprocessorHelpers.h"
+#include "Utils/CompilerMacros.h"
+
+namespace Wi
+{
+	void ErrorMessage(const char* str);
+
+	FORCEINLINE void AssertFail(const char* expr, const char* file, int line, std::string_view msg = {})
+	{
+		std::string message = std::format("[ASSERT] {}:{} '{}' failed. {}", file, line, expr, msg);
+		ErrorMessage(message.c_str());
+	}
+}
+
 
 #ifdef WI_DEBUG
-	#define CORE_CHECK(expr) CORE_CHECK_IMPL(expr)
+	#define WI_ASSERT_IMPL(true_condition, ...)																			\
+		if (!BOOL_CAST(true_condition))																				\
+		{	\
+			::Wi::AssertFail(#true_condition, __FILE__, __LINE__ __VA_OPT__(, std::format(__VA_ARGS__)));																\
+			DEBUGBREAK();																							\
+		}
+
+	#define WI_ASSERT(true_condition, ...) WI_ASSERT_IMPL(true_condition, __VA_ARGS__)
 #else
-	#define CORE_CHECK(expr)
+	#define WI_ASSERT(expr)
 #endif

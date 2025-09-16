@@ -1,10 +1,12 @@
 #ifdef WI_PLATFORM_WIN
 
+#include "WindowsWindow.h"
+
 #include <array>
 
-#include "Core.h"
-#include "WindowsWindow.h"
+#include "Core/Assertion.h"
 #include "Platform/Platform.h"
+#include "Core/Logger/Logger.h"
 
 namespace Wi
 {
@@ -34,7 +36,7 @@ namespace Wi
 			nullptr
 		);
 
-		CORE_CHECK(m_WindowHandle)
+		WI_ASSERT(m_WindowHandle)
 
 		ShowWindow(m_WindowHandle, SW_SHOW);
 	}
@@ -49,12 +51,12 @@ namespace Wi
 
 	uint16 WindowsWindow::GetWidth()
 	{
-		return m_Width;
+		return static_cast<uint16>(m_Width);
 	}
 
 	uint16 WindowsWindow::GetHeight()
 	{
-		return m_Height;
+		return static_cast<uint16>(m_Height);
 	}
 }
 #endif

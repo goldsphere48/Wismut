@@ -11,7 +11,7 @@ namespace Wi
 	class LinuxApplication final : public IPlatformApplication
 	{
 	public:
-		bool Startup() override;
+		void Startup() override;
 		SharedPtr<IPlatformWindow> MakeWindow(const WindowDefinition& config) override;
 		void PumpMessages() override;
 		void Shutdown() override;

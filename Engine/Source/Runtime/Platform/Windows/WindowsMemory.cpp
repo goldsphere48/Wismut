@@ -1,32 +1,26 @@
-#if WI_PLATFORM_WIN
-#include "WindowsMemory.h"
+#ifdef WI_PLATFORM_WIN
+#include "Core/Memory/SystemAllocator.h"
+
+#include <Windows.h>
 
 #include "Core/Assertion.h"
+#include "Core/Math/Math.h"
 
 namespace Wi
 {
-	void* WindowsMemory::AlignedAlloc(uint64 size, uint64 alignment)
+	void* SystemAllocator::Allocate(usize size, usize alignment)
 	{
+		WI_ASSERT(Math::IsPowOf2(alignment))
+
 		return _aligned_malloc(size, alignment);
 	}
 
-	void* WindowsMemory::AlignedRealloc(void* ptr, uint64 newSize, uint64 alignment)
+	void* SystemAllocator::Reallocate(void* ptr, usize oldSize, usize newSize, usize alignment)
 	{
-		if (ptr && newSize)
-		{
-			return _aligned_realloc(ptr, newSize, alignment);
-		}
-
-		if (ptr == nullptr)
-		{
-			return _aligned_malloc(newSize, alignment);
-		}
-
-		_aligned_free(ptr);
-		return nullptr;
+		return _aligned_realloc(ptr, newSize, alignment);
 	}
 
-	void WindowsMemory::AlignedFree(void* ptr)
+	void SystemAllocator::Free(void* ptr)
 	{
 		_aligned_free(ptr);
 	}

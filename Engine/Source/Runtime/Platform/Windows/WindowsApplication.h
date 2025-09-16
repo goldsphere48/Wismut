@@ -1,6 +1,7 @@
 #pragma once
 #ifdef WI_PLATFORM_WIN
-#include "WindowsWindow.h"
+#include <Windows.h>
+
 #include "Platform/IPlatformApplication.h"
 
 namespace Wi
@@ -8,7 +9,7 @@ namespace Wi
 	class WindowsApplication final : public IPlatformApplication
 	{
 	public:
-		bool Startup() override;
+		void Startup() override;
 		void Shutdown() override;
 		SharedPtr<IPlatformWindow> MakeWindow(const WindowDefinition& config) override;
 		void PumpMessages() override;

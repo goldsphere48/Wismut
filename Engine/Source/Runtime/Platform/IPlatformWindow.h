@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 #include <Core/CoreTypes.h>
-#include <Core/CommonDefines.h>
 
 namespace Wi
 {
@@ -17,7 +16,6 @@ namespace Wi
 	class IPlatformWindow
 	{
 	public:
-		DELETE_COPYING(IPlatformWindow)
 		virtual ~IPlatformWindow() = default;
 
 		virtual uint16 GetWidth() = 0;

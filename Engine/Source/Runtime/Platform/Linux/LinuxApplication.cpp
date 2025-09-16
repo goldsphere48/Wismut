@@ -5,13 +5,13 @@
 #include <xcb/xcb_keysyms.h>
 #include <cstring>
 
-#include "Core.h"
 #include "LinuxWindow.h"
 #include "Application/Events/WindowEvents.h"
 #include "Application/Events/KeyEvent.h"
 #include "Application/Events/MouseEvents.h"
 #include "Application/Application.h"
 #include "X11.h"
+#include "Core/Assertion.h"
 
 namespace Wi
 {
@@ -96,10 +96,10 @@ namespace Wi
 	xcb_atom_t LinuxApplication::s_AtomWmDeleteWindow = 0;
 	xcb_atom_t LinuxApplication::s_AtomWmProtocols = 0;
 
-	bool LinuxApplication::Startup()
+	void LinuxApplication::Startup()
 	{
 		m_Connection = xcb_connect(nullptr, nullptr);
-		CORE_CHECK(m_Connection);
+		WI_ASSERT(m_Connection);
 
 		xcb_intern_atom_cookie_t wmDeleteCookie = xcb_intern_atom(
 			m_Connection,
@@ -129,8 +129,6 @@ namespace Wi
 
 		free(wmProtocolsReply);
 		free(wmDeleteReply);
-
-		return true;
 	}
 
 	SharedPtr<IPlatformWindow> LinuxApplication::MakeWindow(const WindowDefinition& config)
@@ -143,7 +141,7 @@ namespace Wi
 
 	void LinuxApplication::PumpMessages()
 	{
-		Application* app = Application::InstancePtr();
+		Application* app = Application::GetInstance();
 		xcb_generic_event_t* event = nullptr;
 		while ((event = xcb_poll_for_event(m_Connection)) != nullptr)
 		{
@@ -164,7 +162,7 @@ namespace Wi
 						if (window->GetWidth() != width || window->GetHeight() != height)
 						{
 							WindowResizeEvent e(width, height);
-							app->OnEvent(e);
+							app->HandleEvent(e);
 						}
 					}
 					break;
@@ -175,7 +173,7 @@ namespace Wi
 					if (msg->data.data32[0] == s_AtomWmDeleteWindow)
 					{
 						WindowCloseEvent e;
-						app->OnEvent(e);
+						app->HandleEvent(e);
 					}
 					break;
 				}
@@ -185,7 +183,7 @@ namespace Wi
 					int16 x = motion->event_x;
 					int16 y = motion->event_y;
 					MouseMovedEvent e(x, y);
-					app->OnEvent(e);
+					app->HandleEvent(e);
 					break;
 				}
 				case XCB_BUTTON_PRESS:
@@ -202,13 +200,13 @@ namespace Wi
 						case 4:
 						{
 							MouseScrolledEvent e(+1.0f);
-							app->OnEvent(e);
+							app->HandleEvent(e);
 							return;
 						}
 						case 5:
 						{
 							MouseScrolledEvent e(-1.0f);
-							app->OnEvent(e);
+							app->HandleEvent(e);
 							return;
 						}
 						default: break;
@@ -218,11 +216,11 @@ namespace Wi
 						if (pressed)
 						{
 							MouseButtonPressedEvent e(btn);
-							app->OnEvent(e);
+							app->HandleEvent(e);
 						} else
 						{
 							MouseButtonReleasedEvent e(btn);
-							app->OnEvent(e);
+							app->HandleEvent(e);
 						}
 					}
 					break;
@@ -242,11 +240,11 @@ namespace Wi
 						if (pressed)
 						{
 							KeyPressedEvent e(code, false);
-							app->OnEvent(e);
+							app->HandleEvent(e);
 						} else
 						{
 							KeyReleasedEvent e(code);
-							app->OnEvent(e);
+							app->HandleEvent(e);
 						}
 					}
 					break;	

@@ -35,24 +35,23 @@
 			}
 		},
 		{
-			"name": "base-windows-ninja",
-			"hidden": true,
-			"generator": "Ninja",
-			"binaryDir": "${sourceDir}/Build/build/${presetName}",
-			"installDir": "${sourceDir}/Build/install/${presetName}",
-			"condition": {
-				"type": "equals",
-				"lhs": "${hostSystemName}",
-				"rhs": "Windows"
-			}
-		},
-		{
 			"name": "linux-debug",
 			"displayName": "Linux Debug",
 			"description": "Target the Windows Subsystem for Linux (WSL) or a remote Linux system.",
 			"inherits": "base-linux",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Debug"
+			}
+		},
+		{
+			"name": "linux-debug-sanitizers",
+			"displayName": "Linux Debug Sanitizers",
+			"description": "Target the Windows Subsystem for Linux (WSL) or a remote Linux system.",
+			"inherits": "linux-debug",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug",
+				"ENABLE_ASAN": "ON",
+				"ENABLE_UBSAN": "ON"
 			}
 		},
 		{
@@ -65,7 +64,7 @@
 			}
 		},
 		{
-			"name": "windows-x64-debug-vs",
+			"name": "windows-debug",
 			"displayName": "Windows x64 Debug VS",
 			"description": "Target Windows (64-bit) with the Visual Studio development environment. (Debug)",
 			"inherits": "base-windows-vs",
@@ -78,32 +77,25 @@
 			}
 		},
 		{
-			"name": "windows-x64-release-vs",
-			"displayName": "x64 Release",
-			"description": "Target Windows (64-bit) with the Visual Studio development environment. (Release)",
-			"inherits": "windows-x64-debug-vs",
-			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Release"
-			}
-		},
-		{
-			"name": "windows-x64-debug-ninja",
-			"displayName": "Windows x64 Debug Ninja",
+			"name": "windows-debug-sanitizers",
+			"displayName": "Windows x64 Debug VS",
 			"description": "Target Windows (64-bit) with the Visual Studio development environment. (Debug)",
-			"inherits": "base-windows-ninja",
+			"inherits": "base-windows-vs",
 			"architecture": {
 				"value": "x64",
 				"strategy": "external"
 			},
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Debug"
+				"CMAKE_BUILD_TYPE": "Debug",
+				"ENABLE_ASAN": "ON",
+				"ENABLE_UBSAN": "ON"
 			}
 		},
 		{
-			"name": "windows-x64-release-ninja",
-			"displayName": "Windows x64 Release Ninja",
+			"name": "windows-release",
+			"displayName": "x64 Release",
 			"description": "Target Windows (64-bit) with the Visual Studio development environment. (Release)",
-			"inherits": "windows-x64-debug-ninja",
+			"inherits": "windows-debug",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Release"
 			}
@@ -111,24 +103,24 @@
 	],
 	"buildPresets": [
 		{
-			"name": "windows-x64-debug-vs",
-			"configurePreset": "windows-x64-debug-vs"
+			"name": "windows-debug",
+			"configurePreset": "windows-debug"
 		},
 		{
-			"name": "windows-x64-release-vs",
-			"configurePreset": "windows-x64-release-vs"
+			"name": "windows-debug-sanitizers",
+			"configurePreset": "windows-debug-sanitizers"
 		},
 		{
-			"name": "windows-x64-debug-ninja",
-			"configurePreset": "windows-x64-debug-ninja"
-		},
-		{
-			"name": "windows-x64-release-ninja",
-			"configurePreset": "windows-x64-release-ninja"
+			"name": "windows-release",
+			"configurePreset": "windows-release"
 		},
 		{
 			"name": "linux-debug",
 			"configurePreset": "linux-debug"
+		},
+		{
+			"name": "linux-debug-sanitizers",
+			"configurePreset": "linux-debug-sanitizers"
 		},
 		{
 			"name": "linux-release",

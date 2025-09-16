@@ -2,12 +2,14 @@
 #include "WindowsApplication.h"
 #include <windowsx.h>
 
-#include "Core.h"
+#include "WindowsWindow.h"
 #include "Application/Application.h"
 #include "Application/Events/Event.h"
 #include "Application/Events/WindowEvents.h"
 #include "Application/Events/MouseEvents.h"
 #include "Application/Events/KeyEvent.h"
+#include "Core/Assertion.h"
+#include "Core/Logger/Logger.h"
 
 namespace Wi
 {
@@ -151,13 +153,13 @@ namespace Wi
 
 	static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
-		Application* app = Application::InstancePtr();
+		Application* app = Application::GetInstance();
 		switch (msg)
 		{
 			case WM_CLOSE:
 			{
 				WindowCloseEvent event;
-				app->OnEvent(event);
+				app->HandleEvent(event);
 				break;
 			}
 			case WM_SIZE:
@@ -165,7 +167,7 @@ namespace Wi
 				int width = GET_X_LPARAM(lParam);
 				int height = GET_Y_LPARAM(lParam);
 				WindowResizeEvent event(width, height);
-				app->OnEvent(event);
+				app->HandleEvent(event);
 				break;
 			}
 			case WM_MOUSEMOVE:
@@ -173,7 +175,7 @@ namespace Wi
 				int x = GET_X_LPARAM(lParam);
 				int y = GET_Y_LPARAM(lParam);
 				MouseMovedEvent event(x, y);
-				app->OnEvent(event);
+				app->HandleEvent(event);
 				break;
 			}
 			case WM_LBUTTONDOWN:
@@ -211,11 +213,11 @@ namespace Wi
 				if (pressed)
 				{
 					MouseButtonPressedEvent event(mouseButton);
-					app->OnEvent(event);
+					app->HandleEvent(event);
 				} else
 				{
 					MouseButtonReleasedEvent event(mouseButton);
-					app->OnEvent(event);
+					app->HandleEvent(event);
 				}
 				break;
 			}
@@ -223,7 +225,7 @@ namespace Wi
 			{
 				short zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
 				MouseScrolledEvent event(zDelta < 0 ? -1 : 1);
-				app->OnEvent(event);
+				app->HandleEvent(event);
 				break;
 			}
 			case WM_KEYDOWN:
@@ -235,12 +237,12 @@ namespace Wi
 				KeyCode key = TranslateKeyCode(wParam, lParam);
 				if (pressed)
 				{
-					KeyPressedEvent event(key, LOWORD(lParam) > 0);
-					app->OnEvent(event);
+					KeyPressedEvent event(key, LOWORD(lParam) > 1);
+					app->HandleEvent(event);
 				} else
 				{
 					KeyReleasedEvent event(key);
-					app->OnEvent(event);
+					app->HandleEvent(event);
 				}
 				break;
 			}
@@ -250,7 +252,7 @@ namespace Wi
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 	}
 
-	bool WindowsApplication::Startup()
+	void WindowsApplication::Startup()
 	{
 		m_Instance = GetModuleHandle(nullptr);
 		m_Icon = LoadIcon(m_Instance, IDI_APPLICATION);
@@ -269,9 +271,7 @@ namespace Wi
 			.lpszClassName = WindowsWindow::AppWindowClass
 		};
 
-		CORE_CHECK(RegisterClass(&wc))
-
-		return true;
+		WI_ASSERT(RegisterClass(&wc))
 	}
 
 	void WindowsApplication::Shutdown()

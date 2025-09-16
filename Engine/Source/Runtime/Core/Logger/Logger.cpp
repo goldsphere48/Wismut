@@ -24,7 +24,7 @@ namespace Wi
 		LogEntry entry {
 			.Level = level,
 			.Message = messageBody,
-			.Timestamp = PlatformTime::GetLocalTime()
+			.Timestamp = Platform::Time::GetLocalTime()
 		};
 
 		std::scoped_lock lock(m_SinksMutex);

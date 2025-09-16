@@ -1,8 +1,16 @@
 #pragma once
-
-#include <new>
-
+#include "IAllocator.h"
+#include "MemoryTypes.h"
 #include "Core/CoreTypes.h"
+
+#define WI_ALLOC(size)											::Wi::Private::Allocate(size, 0, __FILE__, __LINE__)
+#define WI_ALLOC_ALIGNED(size, alignment)						::Wi::Private::Allocate(size, alignment, __FILE__, __LINE__)
+#define WI_REALLOC(oldPtr, oldSize, newSize)					::Wi::Private::Reallocate(oldPtr, oldSize, newSize, 0, __FILE__, __LINE__)
+#define WI_REALLOC_ALIGNED(oldPtr, oldSize, newSize, alignment)	::Wi::Private::Reallocate(oldPtr, oldSize, newSize, alignment, __FILE__, __LINE__)
+#define WI_FREE(ptr)											::Wi::Private::Free(ptr)
+#define WI_NEW													new(__FILE__, __LINE__)
+#define WI_DELETE(ptr)											operator delete(ptr, __FILE__, __LINE__)
+#define WI_DELETE_ARR(ptr)										operator delete[](ptr, __FILE__, __LINE__)
 
 void* operator new  (std::size_t size, const char* filename, int line);
 void* operator new[](std::size_t size, const char* filename, int line);
@@ -12,60 +20,38 @@ void operator delete[](void* ptr, const char* filename, int line) noexcept;
 
 namespace Wi
 {
-	#define WI_NEW new(__FILE__, __LINE__)
-	#define WI_ALLOC(size) Wi::Private::WMalloc(size, 0, __FILE__, __LINE__)
-	#define WI_ALLOC_ALIGNED(size, alignment) Wi::Private::WMalloc(size, alignment, __FILE__, __LINE__)
-	#define WI_REALLOC_ALIGNED(ptr, newSize, alignment) Wi::Private::WRealloc(ptr, newSize, alignment, __FILE__, __LINE__)
-	#define WI_FREE(ptr) Wi::Private::WFree(ptr)
-
 	namespace Private
 	{
-		void* WMalloc(uint64 size, uint64 alignment = 0, const char* filename = nullptr, int line = 0);
-		void* WRealloc(void* ptr, uint64 newSize, uint64 alignment = 0, const char* filename = nullptr, int line = 0);
-		void  WFree(void* ptr);
+		void* Allocate(usize size, usize alignment, const char* filename, int line);
+		void* Reallocate(void* oldPtr, usize oldSize, usize newSize, usize alignment, const char* filename, int line);
+		void  Free(void* ptr);
 	}
-
-	struct IMalloc;
 
 	class Memory
 	{
 	public:
-		static void Initialize();
-		static void Shutdown();
+		void Initialize();
+		void Shutdown();
+
+		static Memory* GetInstance()
+		{
+			static Memory instance = Memory();
+			return &instance;
+		}
 
 	private:
-		static void* UntrackedSystemAlloc(uint64 size);
-		static void UntrackedSystemFree(void* ptr);
+		Memory() = default;
 
-		static void* Allocate(uint64 size, uint64 alignment = 0, const char* filename = nullptr, int line = 0);
-		static void* Reallocate(void* ptr, uint64 newSize, uint64 alignment = 0, const char* filename = nullptr, int line = 0);
-		static void Free(void* ptr);
+		void* Allocate(usize size, usize alignment, const char* filename, int line) const;
+		void* Reallocate(void* oldPtr, usize oldSize, usize newSize, usize alignment, const char* filename, int line) const;
+		void  Free(void* ptr) const;
+		
+		friend void* Private::Allocate(usize size, usize alignment, const char* filename, int line);
+		friend void* Private::Reallocate(void* oldPtr, usize oldSize, usize newSize, usize alignment, const char* filename, int line);
+		friend void  Private::Free(void* ptr);
 
-		static IMalloc& GetMalloc();
-
-		friend void* ::operator new  (std::size_t size);
-		friend void* ::operator new[](std::size_t size);
-		friend void* ::operator new  (std::size_t size, const std::nothrow_t&) noexcept;
-		friend void* ::operator new[](std::size_t size, const std::nothrow_t&) noexcept;
-		friend void* ::operator new  (std::size_t size, std::align_val_t);
-		friend void* ::operator new[](std::size_t size, std::align_val_t);
-		friend void* ::operator new  (std::size_t size, const char* filename, int line);
-		friend void* ::operator new[](std::size_t size, const char* filename, int line);
-
-		friend void ::operator delete  (void* ptr) noexcept;
-		friend void ::operator delete[](void* ptr) noexcept;
-		friend void ::operator delete  (void* ptr, const std::nothrow_t&) noexcept;
-		friend void ::operator delete[](void* ptr, const std::nothrow_t&) noexcept;
-		friend void ::operator delete  (void* ptr, std::align_val_t) noexcept;
-		friend void ::operator delete[](void* ptr, std::align_val_t) noexcept;
-		friend void ::operator delete  (void* ptr, const char* filename, int line) noexcept;
-		friend void ::operator delete[](void* ptr, const char* filename, int line) noexcept;
-
-		friend void* Private::WMalloc (uint64 size, uint64 alignment, const char* filename, int line);
-		friend void* Private::WRealloc(void* ptr, uint64 newSize, uint64 alignment, const char* filename, int line);
-		friend void  Private::WFree	  (void* ptr);
-
-		template<typename T>
-		friend class UntrackedAllocator;
+	private:
+		UniquePtr<IAllocator> m_MainAllocator;
+		static bool s_Initialized;
 	};
 }
