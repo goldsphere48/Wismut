@@ -18,6 +18,11 @@ namespace Wi
 		int			Line;
 		MemoryTag	Tag;
 		const char*	Filename = nullptr;
+
+		bool operator<(const AllocInfo& other) const
+		{
+			return Size < other.Size;
+		}
 	};
 
 	static UntrackedMap<const void*, AllocInfo>& GetActiveAllocations()
@@ -89,7 +94,8 @@ namespace Wi
 		info.Line = line;
 		info.Filename = filename;
 
-		GetActiveAllocations()[ptr] = info;
+		auto& activeAllocations = GetActiveAllocations();
+		activeAllocations[ptr] = info;
 
 		MemoryStats& stats = GetStatsInternal();
 		stats.TotalAllocated += size;
@@ -239,24 +245,11 @@ namespace Wi
 				}
 			}
 
-			for (size_t i = 0; i < leaksVector.size() - 1; ++i)
-			{
-				for (size_t j = 0; j < leaksVector.size() - 1 - i; ++j)
-				{
-					if (leaksVector[j].Size < leaksVector[j + 1].Size)
-					{
-						AllocInfo temp = leaksVector[j];
-						leaksVector[j] = leaksVector[j + 1];
-						leaksVector[j + 1] = temp;
-					}
-				}
-			}
+			std::ranges::sort(leaksVector, std::less());
 
 			if (!leaksVector.empty())
 			{
-				logger.Log(LogLevel::Error, "Top 10 largest leaks:");
-				size_t topCount = leaksVector.size() < 10 ? leaksVector.size() : 10;
-				for (size_t i = 0; i < topCount; ++i)
+				for (size_t i = 0; i < leaksVector.size(); ++i)
 				{
 					const auto& leak = leaksVector[i];
 					logger.Log(LogLevel::Error,
