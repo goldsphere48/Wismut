@@ -1,3 +1,5 @@
+option(COMPILE_OPENGL_RENDERER "Compile open gl renderer" ON)
+
 file(GLOB_RECURSE ALL_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 file(GLOB_RECURSE ALL_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 
@@ -29,5 +31,10 @@ set(RUNTIME_COMPILE_DEFINITIONS
 target_include_directories(Runtime PUBLIC ${RUNTIME_INCLUDE_DIRS})
 target_compile_definitions(Runtime PUBLIC ${RUNTIME_COMPILE_DEFINITIONS})
 target_link_libraries(Runtime PRIVATE ${RUNTIME_LINK_LIBS})
+
+if (COMPILE_OPENGL_RENDERER)
+	find_package(OpenGL REQUIRED)
+	target_link_libraries(Runtime PRIVATE glad ${OPENGL_LIBRARIES})
+endif()
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCE_FILES})

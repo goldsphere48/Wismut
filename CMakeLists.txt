@@ -22,7 +22,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 project(
 	Wismut
-	LANGUAGES CXX
+	LANGUAGES C CXX
 	VERSION 0.0.1
 	DESCRIPTION "Wismut Game Engine"
 )
@@ -33,9 +33,12 @@ if(MSVC)
 	add_compile_options(/Zc:preprocessor)
 endif()
 
+add_subdirectory(Engine/ThirdParty/OpenGL)
+
 add_subdirectory(Engine/Source/Runtime)
 add_subdirectory(Engine/Source/Player)
 add_subdirectory(Engine/Source/Tests)
+
 
 if(EXISTS "${CMAKE_BINARY_DIR}/compile_commands.json")
 	execute_process(

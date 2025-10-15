@@ -8,6 +8,7 @@
 #include "Input.h"
 #include "Events/KeyEvent.h"
 #include "Events/MouseEvents.h"
+#include "Renderer/Renderer.h"
 
 namespace Wi
 {
@@ -35,6 +36,8 @@ namespace Wi
 		m_NativeApplication = PlatformApplication::CreateApplication();
 		m_NativeApplication->Startup();
 
+		Renderer::Initialize();
+
 		const WindowDefinition windowConfig = WindowDefinition {
 			.Title = "Wismut Engine",
 			.PositionX = 300,
@@ -54,6 +57,7 @@ namespace Wi
 			m_NativeApplication->PumpMessages();
 
 			Update();
+			Render();
 
 			Input::ClearReleasedKeys();
 		}
@@ -66,6 +70,14 @@ namespace Wi
 		OnUpdate();
 	}
 
+	void Application::Render()
+	{
+		auto* viewport = m_MainWindow->GetViewport();
+		Renderer::GetBackend()->BeginRenderViewport(viewport);
+		Renderer::GetBackend()->ClearColor(0, 1, 0);
+		Renderer::GetBackend()->EndRenderViewport(viewport);
+		OnRender(m_MainWindow);
+	}
 
 	bool Application::HandleEvent(Event& event)
 	{
@@ -91,6 +103,7 @@ namespace Wi
 	void Application::Shutdown() const
 	{
 		m_MainWindow->Destroy();
+		Renderer::Shutdown();
 		m_NativeApplication->Shutdown();
 		Memory::GetInstance()->Shutdown();
 	}

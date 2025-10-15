@@ -7,6 +7,7 @@
 #include "Core/Assertion.h"
 #include "Platform/Platform.h"
 #include "Core/Logger/Logger.h"
+#include "Renderer/Renderer.h"
 
 namespace Wi
 {
@@ -36,6 +37,8 @@ namespace Wi
 			nullptr
 		);
 
+		m_Viewport = Renderer::CreateViewport(m_WindowHandle);
+
 		WI_ASSERT(m_WindowHandle)
 
 		ShowWindow(m_WindowHandle, SW_SHOW);
@@ -45,6 +48,7 @@ namespace Wi
 	{
 		if (m_WindowHandle != nullptr)
 		{
+			Renderer::DestroyViewport(m_Viewport);
 			DestroyWindow(m_WindowHandle);
 		}
 	}
@@ -57,6 +61,16 @@ namespace Wi
 	uint16 WindowsWindow::GetHeight()
 	{
 		return static_cast<uint16>(m_Height);
+	}
+
+	void* WindowsWindow::GetNativeHandle() const
+	{
+		return m_WindowHandle;
+	}
+
+	IRenderViewport* WindowsWindow::GetViewport()
+	{
+		return m_Viewport;
 	}
 }
 #endif

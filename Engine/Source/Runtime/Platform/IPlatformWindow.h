@@ -2,6 +2,8 @@
 #include <string>
 #include <Core/CoreTypes.h>
 
+#include "Renderer/IRenderViewport.h"
+
 namespace Wi
 {
 	struct WindowDefinition
@@ -21,5 +23,8 @@ namespace Wi
 		virtual uint16 GetWidth() = 0;
 		virtual uint16 GetHeight() = 0;
 		virtual void Destroy() = 0;
+		virtual void* GetNativeHandle() const = 0;
+
+		virtual IRenderViewport* GetViewport() = 0;
 	};
 }
