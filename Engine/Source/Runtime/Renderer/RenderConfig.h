@@ -4,7 +4,7 @@ namespace Wi
 {
 	struct RenderConfig
 	{
-		static const RenderConfig& GetInstance()
+		static RenderConfig& GetInstance()
 		{
 			static RenderConfig instance;
 			return instance;

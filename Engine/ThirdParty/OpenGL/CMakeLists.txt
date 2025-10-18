@@ -4,6 +4,12 @@ if (WIN32)
 	list(APPEND GLAD_SOURCE_FILES wgl/src/glad_wgl.c)
 endif()
 
+if (UNIX)
+	list(APPEND GLAD_SOURCE_FILES glx/src/glad_glx.c)
+endif()
+
+message(STATUS ${GLAD_SOURCE_FILES})
+
 add_library(glad STATIC ${GLAD_SOURCE_FILES})
 
-target_include_directories(glad PUBLIC glad/include wgl/include)
+target_include_directories(glad PUBLIC glad/include wgl/include glx/include)

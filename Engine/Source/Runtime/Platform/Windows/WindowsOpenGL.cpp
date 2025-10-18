@@ -10,6 +10,7 @@
 #include "Renderer/RenderConfig.h"
 #include "Renderer/OpenGL/OpenGLPlatform.h"
 #include "Renderer/OpenGL/GLUtils.h"
+#include "Core/Utils/StringUtils.h"
 
 namespace Wi
 {
@@ -18,20 +19,30 @@ namespace Wi
 		HWND WindowHandle;
 		HGLRC OpenGLContext = nullptr;
 		HDC DeviceContext;
+		bool VSync;
 	};
+
+
+	static const char* GExtensionsString;
+	static bool GIsVSyncSupported;
+
+	static bool IsVSyncExtensionSupported()
+	{
+		return Utils::HasSubstringInCString(GExtensionsString, "WGL_EXT_swap_control");
+	}
 
 	static void InitPixelFormatARB(HDC hdc)
 	{
 		const int pixelAttributes[] =
 		{
-			WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
-			WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
-			WGL_DOUBLE_BUFFER_ARB,  GL_TRUE,
-			WGL_PIXEL_TYPE_ARB,     WGL_TYPE_RGBA_ARB,
-			WGL_COLOR_BITS_ARB,     32,
-			WGL_DEPTH_BITS_ARB,     24,
-			WGL_STENCIL_BITS_ARB,   8,
-			WGL_ACCELERATION_ARB,   WGL_FULL_ACCELERATION_ARB,
+			WGL_DRAW_TO_WINDOW_ARB,	GL_TRUE,
+			WGL_SUPPORT_OPENGL_ARB,	GL_TRUE,
+			WGL_DOUBLE_BUFFER_ARB,	GL_TRUE,
+			WGL_PIXEL_TYPE_ARB,		WGL_TYPE_RGBA_ARB,
+			WGL_COLOR_BITS_ARB,		32,
+			WGL_DEPTH_BITS_ARB,		24,
+			WGL_STENCIL_BITS_ARB,	8,
+			WGL_ACCELERATION_ARB,	WGL_FULL_ACCELERATION_ARB,
 			0,
 		};
 
@@ -112,6 +123,9 @@ namespace Wi
 		WI_ASSERT(gladLoadWGL(dummyContext.DeviceContext))
 		WI_ASSERT(gladLoadGL())
 
+		GExtensionsString = wglGetExtensionsStringEXT();
+		GIsVSyncSupported = IsVSyncExtensionSupported();
+
 		auto version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
 		auto vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
 		Log::Info("Windows OpenGL Initialized: Version: {}", version, vendor);
@@ -122,7 +136,7 @@ namespace Wi
 		DestroyWindow(dummyContext.WindowHandle);
 	}
 
-	PlatformOpenGLContext* PlatformCreateOpenGLContext(void* hwnd)
+	PlatformOpenGLContext* PlatformOpenGLCreateContext(void* hwnd)
 	{
 		WI_ASSERT(hwnd)
 
@@ -143,16 +157,14 @@ namespace Wi
 		return context;
 	}
 
-	void PlatformDestroyOpenGLContext(const PlatformOpenGLContext* context)
+	void PlatformOpenGLDestroyContext(const PlatformOpenGLContext* context)
 	{
 		WI_ASSERT(context)
 
 		ReleaseDC(context->WindowHandle, context->DeviceContext);
 		HGLRC current = wglGetCurrentContext();
 		if (context->OpenGLContext == current)
-		{
 			wglMakeCurrent(nullptr, nullptr);
-		}
 
 		wglDeleteContext(context->OpenGLContext);
 
@@ -160,7 +172,7 @@ namespace Wi
 		context = nullptr;
 	}
 
-	void PlatformSwapBuffers(const PlatformOpenGLContext* context)
+	void PlatformOpenGLSwapBuffers(const PlatformOpenGLContext* context)
 	{
 		WI_ASSERT(context)
 		WI_ASSERT(context->DeviceContext)
@@ -168,14 +180,19 @@ namespace Wi
 		::SwapBuffers(context->DeviceContext);
 	}
 
-	void PlatformBeginRenderViewport(const PlatformOpenGLContext* context)
+	void PlatformOpenGLBeginRenderViewport(PlatformOpenGLContext* context)
 	{
 		WI_ASSERT(context)
 		WI_ASSERT(context->DeviceContext)
 		WI_ASSERT(context->OpenGLContext)
 
 		wglMakeCurrent(context->DeviceContext, context->OpenGLContext);
-		wglSwapIntervalEXT(RenderConfig::GetInstance().VSync ? 1 : 0);
+
+		if (GIsVSyncSupported && RenderConfig::GetInstance().VSync != context->VSync)
+		{
+			context->VSync = RenderConfig::GetInstance().VSync;
+			wglSwapIntervalEXT(context->VSync ? 1 : 0);
+		}
 	}
 }
 #endif

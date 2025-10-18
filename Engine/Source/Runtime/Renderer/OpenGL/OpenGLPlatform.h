@@ -6,11 +6,11 @@ namespace Wi
 
 	void PlatformInitOpenGL();
 
-	PlatformOpenGLContext* PlatformCreateOpenGLContext(void* hwnd);
+	PlatformOpenGLContext* PlatformOpenGLCreateContext(void* hwnd);
 
-	void PlatformDestroyOpenGLContext(const PlatformOpenGLContext* context);
+	void PlatformOpenGLDestroyContext(const PlatformOpenGLContext* context);
 
-	void PlatformSwapBuffers(const PlatformOpenGLContext* context);
+	void PlatformOpenGLSwapBuffers(const PlatformOpenGLContext* context);
 
-	void PlatformBeginRenderViewport(const PlatformOpenGLContext* context);
+	void PlatformOpenGLBeginRenderViewport(PlatformOpenGLContext* context);
 }

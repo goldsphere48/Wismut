@@ -26,14 +26,14 @@ namespace Wi
 	{
 		GLViewport* glView = static_cast<GLViewport*>(viewport);
 
-		PlatformBeginRenderViewport(glView->GetContext());
+		PlatformOpenGLBeginRenderViewport(glView->GetContext());
 	}
 
 	void GLRenderBackend::EndRenderViewport(IRenderViewport* viewport)
 	{
 		GLViewport* glView = static_cast<GLViewport*>(viewport);
 
-		PlatformSwapBuffers(glView->GetContext());
+		PlatformOpenGLSwapBuffers(glView->GetContext());
 	}
 
 	void GLRenderBackend::ClearColor(float r, float g, float b)

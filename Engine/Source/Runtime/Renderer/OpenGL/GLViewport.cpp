@@ -6,13 +6,13 @@ namespace Wi
 {
 	GLViewport::GLViewport(void* nativeHandler)
 	{
-		m_Context = PlatformCreateOpenGLContext(nativeHandler);
+		m_Context = PlatformOpenGLCreateContext(nativeHandler);
 		WI_ASSERT(m_Context)
 	}
 
 	GLViewport::~GLViewport()
 	{
-		PlatformDestroyOpenGLContext(m_Context);
+		PlatformOpenGLDestroyContext(m_Context);
 	}
 
 	PlatformOpenGLContext* GLViewport::GetContext() const

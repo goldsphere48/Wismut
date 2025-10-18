@@ -6,7 +6,7 @@ file(GLOB_RECURSE HEADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.h ${CMAKE_CURRENT_S
 set(ALL_FILES ${SOURCE_FILES} ${HEADER_FILES})
 
 include(platform-filter-files)
-filter_files_by_platform(PLATFORM_FILTERED_FILES  "${ALL_FILES}")
+filter_files_by_platform(PLATFORM_FILTERED_FILES "${ALL_FILES}")
 
 add_executable(Player ${PLATFORM_FILTERED_FILES})
 
