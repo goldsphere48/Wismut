@@ -13,4 +13,6 @@ namespace Wi
 	void PlatformSwapBuffers(const PlatformOpenGLContext* context);
 
 	void PlatformBeginRenderViewport(const PlatformOpenGLContext* context);
+
+	bool PlatformHasVSyncExtension();
 }

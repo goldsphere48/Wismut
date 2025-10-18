@@ -10,6 +10,7 @@
 #include "Renderer/RenderConfig.h"
 #include "Renderer/OpenGL/OpenGLPlatform.h"
 #include "Renderer/OpenGL/GLUtils.h"
+#include "Core/Utils/StringUtils.h"
 
 namespace Wi
 {
@@ -20,18 +21,25 @@ namespace Wi
 		HDC DeviceContext;
 	};
 
+	static void OverrideRenderConfig()
+	{
+		RenderConfig::GetInstance().VSync = PlatformHasVSyncExtension();
+	}
+
+	static const char* GExtensionsString;
+
 	static void InitPixelFormatARB(HDC hdc)
 	{
 		const int pixelAttributes[] =
 		{
-			WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
-			WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
-			WGL_DOUBLE_BUFFER_ARB,  GL_TRUE,
-			WGL_PIXEL_TYPE_ARB,     WGL_TYPE_RGBA_ARB,
-			WGL_COLOR_BITS_ARB,     32,
-			WGL_DEPTH_BITS_ARB,     24,
-			WGL_STENCIL_BITS_ARB,   8,
-			WGL_ACCELERATION_ARB,   WGL_FULL_ACCELERATION_ARB,
+			WGL_DRAW_TO_WINDOW_ARB,	GL_TRUE,
+			WGL_SUPPORT_OPENGL_ARB,	GL_TRUE,
+			WGL_DOUBLE_BUFFER_ARB,	GL_TRUE,
+			WGL_PIXEL_TYPE_ARB,		WGL_TYPE_RGBA_ARB,
+			WGL_COLOR_BITS_ARB,		32,
+			WGL_DEPTH_BITS_ARB,		24,
+			WGL_STENCIL_BITS_ARB,	8,
+			WGL_ACCELERATION_ARB,	WGL_FULL_ACCELERATION_ARB,
 			0,
 		};
 
@@ -112,6 +120,9 @@ namespace Wi
 		WI_ASSERT(gladLoadWGL(dummyContext.DeviceContext))
 		WI_ASSERT(gladLoadGL())
 
+		GExtensionsString = wglGetExtensionsStringEXT();
+		OverrideRenderConfig();
+
 		auto version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
 		auto vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
 		Log::Info("Windows OpenGL Initialized: Version: {}", version, vendor);
@@ -175,7 +186,14 @@ namespace Wi
 		WI_ASSERT(context->OpenGLContext)
 
 		wglMakeCurrent(context->DeviceContext, context->OpenGLContext);
-		wglSwapIntervalEXT(RenderConfig::GetInstance().VSync ? 1 : 0);
+
+		if (RenderConfig::GetInstance().VSync)
+			wglSwapIntervalEXT(1);
+	}
+
+	bool PlatformHasVSyncExtension()
+	{
+		return Utils::HasSubstringInCString(GExtensionsString, "WGL_EXT_swap_control");
 	}
 }
 #endif

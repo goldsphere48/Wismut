@@ -8,12 +8,20 @@ set(ALL_FILES ${ALL_SOURCE_FILES} ${ALL_HEADER_FILES})
 if(WIN32)
 	list(APPEND RUNTIME_COMPILE_DEFINITIONS WI_PLATFORM_WIN)
 elseif(UNIX)
+	find_package(X11 REQUIRED)
+	find_library(X11_XCB_LIB NAMES X11-xcb REQUIRED)
+
 	list(APPEND RUNTIME_COMPILE_DEFINITIONS WI_PLATFORM_LINUX)
-	list(APPEND RUNTIME_LINK_LIBS xcb xcb-keysyms)
+	list(APPEND RUNTIME_LINK_LIBS
+		xcb
+		${X11_XCB_LIB}  
+		xcb-keysyms
+		X11::X11
+	)
 endif()
 
 include(platform-filter-files)
-filter_files_by_platform(PLATFORM_FILTERED_FILES  "${ALL_FILES}")
+filter_files_by_platform(PLATFORM_FILTERED_FILES "${ALL_FILES}")
 
 add_library(Runtime ${PLATFORM_FILTERED_FILES})
 

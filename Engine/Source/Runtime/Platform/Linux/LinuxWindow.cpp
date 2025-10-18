@@ -4,6 +4,7 @@
 #include "LinuxApplication.h"
 #include "Core/Assertion.h"
 #include "Core/Logger/Logger.h"
+#include "Renderer/Renderer.h"
 
 namespace Wi
 {
@@ -72,6 +73,10 @@ namespace Wi
 
 		m_Width = definition.Width;
 		m_Height = definition.Height;
+
+		xcb_window_t* windowPtr = new xcb_window_t(m_WindowHandle);
+		m_Viewport = Renderer::CreateViewport(windowPtr);
+		delete windowPtr;
 	}
 
 	void LinuxWindow::Destroy()
@@ -87,6 +92,16 @@ namespace Wi
 	uint16 LinuxWindow::GetHeight()
 	{
 		return m_Height;
+	}
+
+	void* LinuxWindow::GetNativeHandle() const
+	{
+		return reinterpret_cast<void*>(m_WindowHandle);
+	}
+
+	IRenderViewport* LinuxWindow::GetViewport()
+	{
+		return m_Viewport;
 	}
 }
 #endif
