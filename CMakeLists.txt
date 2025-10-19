@@ -34,11 +34,9 @@ if(MSVC)
 endif()
 
 add_subdirectory(Engine/ThirdParty/OpenGL)
-
 add_subdirectory(Engine/Source/Runtime)
 add_subdirectory(Engine/Source/Player)
 add_subdirectory(Engine/Source/Tests)
-
 
 if(EXISTS "${CMAKE_BINARY_DIR}/compile_commands.json")
 	execute_process(

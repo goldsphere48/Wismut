@@ -29,8 +29,6 @@ namespace Wi
 
 		std::scoped_lock lock(m_SinksMutex);
 		for (const auto& sink : m_Sinks)
-		{
 			sink->Log(entry);
-		}
 	}
 }
