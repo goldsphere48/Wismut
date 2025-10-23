@@ -1,15 +1,16 @@
 set(GLAD_SOURCE_FILES glad/src/glad.c)
+set(GLAD_INCLUDE glad/include)
 
 if (WIN32)
+	list(APPEND GLAD_INCLUDE wgl/include)
 	list(APPEND GLAD_SOURCE_FILES wgl/src/glad_wgl.c)
-endif()
-
-if (UNIX)
+elseif(ANDROID)
+	list(APPEND GLAD_INCLUDE egl/include)
+	list(APPEND GLAD_SOURCE_FILES egl/src/glad_egl.c)
+elseif (UNIX)
+	list(APPEND GLAD_INCLUDE glx/include)
 	list(APPEND GLAD_SOURCE_FILES glx/src/glad_glx.c)
 endif()
 
-message(STATUS ${GLAD_SOURCE_FILES})
-
 add_library(glad STATIC ${GLAD_SOURCE_FILES})
-
-target_include_directories(glad PUBLIC glad/include wgl/include glx/include)
+target_include_directories(glad PUBLIC ${GLAD_INCLUDE})

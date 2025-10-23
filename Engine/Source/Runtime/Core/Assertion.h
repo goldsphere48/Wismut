@@ -27,5 +27,5 @@ namespace Wi
 
 	#define WI_ASSERT(true_condition, ...) WI_ASSERT_IMPL(true_condition, __VA_ARGS__)
 #else
-	#define WI_ASSERT(expr)
+	#define WI_ASSERT(expr, ...) (void)0;
 #endif

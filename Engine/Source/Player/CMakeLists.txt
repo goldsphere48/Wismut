@@ -2,6 +2,8 @@ add_subdirectory(Game)
 
 if (WIN32)
 	add_subdirectory(Platform/Windows)
+elseif (ANDROID)
+	add_subdirectory(Platform/Android)
 elseif (UNIX)
 	add_subdirectory(Platform/Linux)
 endif()

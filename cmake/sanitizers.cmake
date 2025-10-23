@@ -1,8 +1,8 @@
 # cmake/sanitizers.cmake
 include_guard(GLOBAL)
 
-option(ENABLE_ASAN	"Enable ASan"	ON)
-option(ENABLE_UBSAN "Enable UBSan"	ON)
+option(ENABLE_ASAN	"Enable ASan"	OFF)
+option(ENABLE_UBSAN "Enable UBSan"	OFF)
 
 function(enable_sanitizers target)
 	if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang|GNU")
@@ -13,7 +13,6 @@ function(enable_sanitizers target)
 		if (ENABLE_UBSAN)
 			list(APPEND san_list "undefined")
 		endif()
-
 		if (san_list)
 			string(REPLACE ";" "," san_joined "${san_list}")
 			target_compile_options(${target} PRIVATE
