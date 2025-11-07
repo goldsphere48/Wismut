@@ -25,7 +25,7 @@ namespace Wi::Platform::Time
 		gettimeofday(&tv, nullptr);
 
 		tm local_tm;
-		WI_ASSERT(localtime_r(&tv.tv_sec, &local_tm));
+		localtime_r(&tv.tv_sec, &local_tm);
 
 		uint64 milliseconds =
 			local_tm.tm_hour * 3600000ULL +

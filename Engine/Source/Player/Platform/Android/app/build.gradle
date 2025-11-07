@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace 'com.wismut.androidplayer'
+    namespace = 'com.wismut.androidplayer'
     compileSdk {
         version = release(36)
     }
@@ -20,7 +20,7 @@ android {
 
     buildTypes {
         release {
-			signingConfig signingConfigs.debug
+			signingConfig = signingConfigs.debug
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -32,11 +32,11 @@ android {
     externalNativeBuild {
         cmake {
             path file('../../../../../../CMakeLists.txt')
-            version '3.22.1'
+            version = '3.22.1'
         }
     }
     buildFeatures {
-        viewBinding true
+        viewBinding = true
     }
 }
 

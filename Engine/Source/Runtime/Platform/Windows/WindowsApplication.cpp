@@ -271,7 +271,7 @@ namespace Wi
 			.lpszClassName = WindowsWindow::AppWindowClass
 		};
 
-		WI_ASSERT(RegisterClass(&wc))
+		WI_CHECK(RegisterClass(&wc))
 	}
 
 	void WindowsApplication::Shutdown()

@@ -1,4 +1,5 @@
 #ifdef WI_PLATFORM_ANDROID
+#include "Core/Assertion.h"
 
 #include <android/native_window.h>
 #include <glad/glad_egl.h>
@@ -22,20 +23,22 @@ namespace Wi
 		bool VSync = false;
 	};
 
-	static int GGlesVersion = 0;
+	static int GGLESVersion = 0;
 
 	void PlatformInitOpenGL()
 	{
+		WI_CHECK(gladLoadEGL(), "Failed to load EGL");
+
 		EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-		WI_ASSERT(display != EGL_NO_DISPLAY, "Failed to get EGL display");
+		WI_CHECK(display != EGL_NO_DISPLAY, "Failed to get EGL display");
 
 		int major = 0;
 		int minor = 0;
-		WI_ASSERT(eglInitialize(display, &major, &minor), "Failed to initialize EGL");
+		WI_CHECK(eglInitialize(display, &major, &minor), "Failed to initialize EGL");
 
 		Log::Info("EGL Initialized: Version {}.{}", major, minor);
 
-		WI_ASSERT(eglBindAPI(EGL_OPENGL_ES_API), "Failed to bind OpenGL ES API")
+		WI_CHECK(eglBindAPI(EGL_OPENGL_ES_API), "Failed to bind OpenGL ES API")
 
 		EGLint numConfigs;
 		EGLConfig tempConfig;
@@ -46,7 +49,7 @@ namespace Wi
 			EGL_NONE
 		};
 
-		GGlesVersion = 3;
+		GGLESVersion = 3;
 		if (!eglChooseConfig(display, gles3Attributes, &tempConfig, 1, &numConfigs) || numConfigs == 0)
 		{
 			constexpr EGLint gles2Attributes[] =
@@ -56,9 +59,9 @@ namespace Wi
 			};
 
 			if (eglChooseConfig(display, gles2Attributes, &tempConfig, 1, &numConfigs) && numConfigs > 0)
-				GGlesVersion = 2;
+				GGLESVersion = 2;
 			else
-				WI_ASSERT(false, "Failed to select gles config")
+				WI_CHECK(false, "Failed to select gles config")
 		}
 
 		const EGLint pBufferAttributes[] =
@@ -69,11 +72,11 @@ namespace Wi
 		};
 
 		EGLSurface tempSurface = eglCreatePbufferSurface(display, tempConfig, pBufferAttributes);
-		WI_ASSERT(tempSurface != EGL_NO_SURFACE, "Failed to create temporary surface")
+		WI_CHECK(tempSurface != EGL_NO_SURFACE, "Failed to create temporary surface")
 
 		const EGLint contextAttributes[] =
 		{
-			EGL_CONTEXT_CLIENT_VERSION, GGlesVersion,
+			EGL_CONTEXT_CLIENT_VERSION, GGLESVersion,
 			EGL_NONE
 		};
 
@@ -81,23 +84,17 @@ namespace Wi
 		if (tempContext == EGL_NO_CONTEXT)
 		{
 			eglDestroySurface(display, tempSurface);
-			WI_ASSERT(false, "Failed to create OpenGL ES context")
-			return;
+			WI_FAIL("Failed to create OpenGL ES context")
 		}
 
 		if (!eglMakeCurrent(display, tempSurface, tempSurface, tempContext))
 		{
-			Log::Error("Failed to make context current");
 			eglDestroyContext(display, tempContext);
 			eglDestroySurface(display, tempSurface);
-			return;
+			WI_FAIL("Failed to make context current")
 		}
 
-		if (!gladLoadGLES2Loader((GLADloadproc)eglGetProcAddress))
-		{
-			WI_ASSERT(false, "Failed to load OpenGL ES functions")
-			return;
-		}
+		WI_CHECK(gladLoadGLES2Loader((GLADloadproc)eglGetProcAddress), "Failed to load OpenGL ES functions")
 
 		const char* version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
 		const char* vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
@@ -122,12 +119,11 @@ namespace Wi
 		if (!eglInitialize(context->Display, nullptr, nullptr))
 		{
 			delete context;
-			WI_ASSERT(false, "Failed to initialize EGL");
-			return nullptr;
+			WI_FAIL("Failed to initialize EGL");
 		}
 
 		const EGLint configAttributes[] = {
-			EGL_RENDERABLE_TYPE, (GGlesVersion == 3) ? EGL_OPENGL_ES3_BIT : EGL_OPENGL_ES2_BIT,
+			EGL_RENDERABLE_TYPE, (GGLESVersion == 3) ? EGL_OPENGL_ES3_BIT : EGL_OPENGL_ES2_BIT,
 			EGL_SURFACE_TYPE,    EGL_WINDOW_BIT,
 			EGL_BLUE_SIZE,       8,
 			EGL_GREEN_SIZE,      8,
@@ -142,8 +138,7 @@ namespace Wi
 		if (!eglChooseConfig(context->Display, configAttributes, &context->Config, 1, &numConfigs) || numConfigs == 0)
 		{
 			delete context;
-			WI_ASSERT(false, "Failed to choose EGL config")
-			return nullptr;
+			WI_FAIL("Failed to choose EGL config")
 		}
 
 		EGLint format;
@@ -159,8 +154,7 @@ namespace Wi
 		if (context->Surface == EGL_NO_SURFACE)
 		{
 			delete context;
-			WI_ASSERT(false, "Failed to create window surface")
-			return nullptr;
+			WI_FAIL("Failed to create window surface")
 		}
 
 		bool debugSupported = false;
@@ -177,7 +171,7 @@ namespace Wi
 		{
 			const EGLint debugContextAttributes[] =
 			{
-				EGL_CONTEXT_CLIENT_VERSION, GGlesVersion,
+				EGL_CONTEXT_CLIENT_VERSION, GGLESVersion,
 				EGL_CONTEXT_OPENGL_DEBUG,   EGL_TRUE,
 				EGL_NONE
 			};
@@ -187,7 +181,7 @@ namespace Wi
 		{
 			const EGLint contextAttributes[] =
 			{
-				EGL_CONTEXT_CLIENT_VERSION, GGlesVersion,
+				EGL_CONTEXT_CLIENT_VERSION, GGLESVersion,
 				EGL_NONE
 			};
 			context->Context = eglCreateContext(context->Display, context->Config, EGL_NO_CONTEXT, contextAttributes);
@@ -197,8 +191,7 @@ namespace Wi
 		{
 			eglDestroySurface(context->Display, context->Surface);
 			delete context;
-			WI_ASSERT(false, "Failed to create EGL context")
-			return nullptr;
+			WI_FAIL("Failed to create EGL context")
 		}
 
 		eglMakeCurrent(context->Display, context->Surface, context->Surface, context->Context);

@@ -38,18 +38,18 @@ namespace Wi
 	void PlatformInitOpenGL()
 	{
 		GSharedDisplay = XOpenDisplay(nullptr);
-		WI_ASSERT(GSharedDisplay, "Failed to open X display")
+		WI_CHECK(GSharedDisplay, "Failed to open X display")
 
 		GXcbConnection = XGetXCBConnection(GSharedDisplay);
 
 		int screen = DefaultScreen(GSharedDisplay);
-		WI_ASSERT(gladLoadGLX(GSharedDisplay, screen))
+		WI_CHECK(gladLoadGLX(GSharedDisplay, screen))
 
 		GExtensionsList = glXQueryExtensionsString(GSharedDisplay, screen);
 		GIsVSyncSupported = IsVSyncExtensionSupported();
 
 		int glxMajor, glxMinor;
-		WI_ASSERT(glXQueryVersion(GSharedDisplay, &glxMajor, &glxMinor), "Failed to query GLX version")
+		WI_CHECK(glXQueryVersion(GSharedDisplay, &glxMajor, &glxMinor), "Failed to query GLX version")
 
 		static int visualAttributes[] = {
 			GLX_RENDER_TYPE,	GLX_RGBA_BIT,
@@ -72,12 +72,12 @@ namespace Wi
 			&fbCount
 		);
 
-		WI_ASSERT(fbConfigs && fbCount > 0, "Failed to find suitable framebuffer config")
+		WI_CHECK(fbConfigs && fbCount > 0, "Failed to find suitable framebuffer config")
 
 		GLXFBConfig fbc = fbConfigs[0];
 		XVisualInfo* visualInfo = glXGetVisualFromFBConfig(GSharedDisplay, fbc);
 
-		WI_ASSERT(visualInfo, "Failed to get visual info")
+		WI_CHECK(visualInfo, "Failed to get visual info")
 
 		Window root = RootWindow(GSharedDisplay, visualInfo->screen);
 		XSetWindowAttributes swa;
@@ -98,11 +98,11 @@ namespace Wi
 		);
 
 		GLXContext tempContext = glXCreateContext(GSharedDisplay, visualInfo, nullptr, GL_TRUE);
-		WI_ASSERT(tempContext, "Failed to create temporary GL context")
+		WI_CHECK(tempContext, "Failed to create temporary GL context")
 
 		glXMakeCurrent(GSharedDisplay, tempWindow, tempContext);
 
-		WI_ASSERT(gladLoadGL(), "Failed to load OpenGL")
+		WI_CHECK(gladLoadGL(), "Failed to load OpenGL")
 
 		glGetIntegerv(GL_MAJOR_VERSION, &GMajorVersion);
 		glGetIntegerv(GL_MINOR_VERSION, &GMinorVersion);
@@ -152,7 +152,7 @@ namespace Wi
 			&fbCount
 		);
 
-		WI_ASSERT(fbConfigs && fbCount > 0, "Failed to find suitable framebuffer config")
+		WI_CHECK(fbConfigs && fbCount > 0, "Failed to find suitable framebuffer config")
 
 		xcb_get_window_attributes_cookie_t wc = xcb_get_window_attributes(GXcbConnection, window);
 		xcb_get_window_attributes_reply_t* wa = xcb_get_window_attributes_reply(GXcbConnection, wc, nullptr);
@@ -186,7 +186,7 @@ namespace Wi
 
 		XFree(fbConfigs);
 
-		WI_ASSERT(context->OpenGLContext, "Failed to create OpenGL context")
+		WI_CHECK(context->OpenGLContext, "Failed to create OpenGL context")
 
 		glXMakeCurrent(context->XDisplay, context->WindowHandle, context->OpenGLContext);
 		Debug::OpenGL::InitDebugContext();

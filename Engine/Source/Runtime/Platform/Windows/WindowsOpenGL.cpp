@@ -16,12 +16,11 @@ namespace Wi
 {
 	struct PlatformOpenGLContext
 	{
-		HWND WindowHandle;
+		HWND WindowHandle = nullptr;
 		HGLRC OpenGLContext = nullptr;
-		HDC DeviceContext;
-		bool VSync;
+		HDC DeviceContext = nullptr;
+		bool VSync = false;
 	};
-
 
 	static const char* GExtensionsString;
 	static bool GIsVSyncSupported;
@@ -89,7 +88,7 @@ namespace Wi
 		pfd.iLayerType = PFD_MAIN_PLANE;
 
 		int format = ChoosePixelFormat(outContext->DeviceContext, &pfd);
-		WI_ASSERT(SetPixelFormat(outContext->DeviceContext, format, &pfd))
+		WI_CHECK(SetPixelFormat(outContext->DeviceContext, format, &pfd))
 	}
 
 	static void CreateOpenGLCoreContext(PlatformOpenGLContext* context, int majorVersion, int minorVersion)
@@ -120,8 +119,8 @@ namespace Wi
 		dummyContext.OpenGLContext = wglCreateContext(dummyContext.DeviceContext);
 		wglMakeCurrent(dummyContext.DeviceContext, dummyContext.OpenGLContext);
 
-		WI_ASSERT(gladLoadWGL(dummyContext.DeviceContext))
-		WI_ASSERT(gladLoadGL())
+		WI_CHECK(gladLoadWGL(dummyContext.DeviceContext))
+		WI_CHECK(gladLoadGL())
 
 		GExtensionsString = wglGetExtensionsStringEXT();
 		GIsVSyncSupported = IsVSyncExtensionSupported();
@@ -169,7 +168,6 @@ namespace Wi
 		wglDeleteContext(context->OpenGLContext);
 
 		delete context;
-		context = nullptr;
 	}
 
 	void PlatformOpenGLSwapBuffers(const PlatformOpenGLContext* context)

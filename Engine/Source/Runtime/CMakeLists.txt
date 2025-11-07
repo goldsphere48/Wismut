@@ -15,9 +15,6 @@ elseif(ANDROID)
 		log
 	)
 
-	# Fix VS intellsense include path
-	# list(APPEND RUNTIME_COMPILE_OPTIONS PUBLIC "-I${CMAKE_SYSROOT}/usr/include")
-
 	find_path(NATIVE_APP_GLUE_DIR android_native_app_glue.h
 		HINTS
 		$ENV{ANDROID_NDK}/sources/android/native_app_glue
