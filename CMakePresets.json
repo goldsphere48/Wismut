@@ -19,9 +19,9 @@
 			}
 		},
 		{
-			"name": "base-windows-vs",
+			"name": "base-windows",
 			"hidden": true,
-			"generator": "Visual Studio 17 2022",
+			"generator": "Ninja",
 			"binaryDir": "${sourceDir}/Build/build/${presetName}",
 			"installDir": "${sourceDir}/Build/install/${presetName}",
 			"cacheVariables": {
@@ -67,7 +67,7 @@
 			"name": "windows-debug",
 			"displayName": "Windows x64 Debug VS",
 			"description": "Target Windows (64-bit) with the Visual Studio development environment. (Debug)",
-			"inherits": "base-windows-vs",
+			"inherits": "base-windows",
 			"architecture": {
 				"value": "x64",
 				"strategy": "external"
@@ -80,7 +80,7 @@
 			"name": "windows-debug-sanitizers",
 			"displayName": "Windows x64 Debug VS",
 			"description": "Target Windows (64-bit) with the Visual Studio development environment. (Debug)",
-			"inherits": "base-windows-vs",
+			"inherits": "base-windows",
 			"architecture": {
 				"value": "x64",
 				"strategy": "external"

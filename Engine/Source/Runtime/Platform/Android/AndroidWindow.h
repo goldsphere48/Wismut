@@ -21,6 +21,7 @@ namespace Wi
 
 	private:
 		IRenderViewport* m_Viewport;
+		ANativeWindow* m_WindowHandle;
 	};
 }
 #endif

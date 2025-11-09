@@ -9,7 +9,7 @@ class SandboxApp final : public Wi::Application
 protected:
 	void OnInit() override
 	{
-		
+		Wi::Log::Info("Welcome from sandbox app");
 	}
 
 	void OnUpdate() override

@@ -2,48 +2,46 @@ cmake_minimum_required(VERSION 3.19)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-option(CLANG_TIDY_ENABLED "Enable clang tidy checks" OFF)
+include(options)
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-if (CLANG_TIDY_ENABLED)
-	message(STATUS "Clang Tidy Enabled")
-	find_program(CLANG_TIDY_PROGRAM "clang-tidy")
-	if (NOT CLANG_TIDY_PROGRAM)
-		message(SEND_ERROR "Can't find clang-tidy")
-	else()
-		set(CMAKE_CXX_CLANG_TIDY "clang-tidy")
-	endif()
-endif()
-
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-project(
-	Wismut
+project(Wismut
 	LANGUAGES C CXX
 	VERSION 0.0.1
 	DESCRIPTION "Wismut Game Engine"
 )
 
-if(MSVC)
-	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
-	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-	add_compile_options(/Zc:preprocessor)
-endif()
+# General settings
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+# Modules
+include(platform/detect_platform)
+include(platform/utils)
+include(compiler/compiler_interface)
+include(wismut)
+
+# Subdirectories
 add_subdirectory(Engine/ThirdParty/OpenGL)
 add_subdirectory(Engine/Source/Runtime)
-add_subdirectory(Engine/Source/Player)
-# add_subdirectory(Engine/Source/Tests)
+add_subdirectory(Sandbox)
+add_subdirectory(Engine/Source/Launch)
 
 if(EXISTS "${CMAKE_BINARY_DIR}/compile_commands.json")
-	execute_process(
-		COMMAND ${CMAKE_COMMAND} -E copy_if_different
+	file(COPY_FILE
 		${CMAKE_BINARY_DIR}/compile_commands.json
 		${CMAKE_SOURCE_DIR}/compile_commands.json
-		COMMAND_ERROR_IS_FATAL ANY
 	)
-	message(STATUS "Copied compile_commands.json to the project root. ✅")
+	message(STATUS "Copied compile_commands.json to project root ✅")
+endif()
+
+if(CLANG_TIDY_ENABLED)
+	find_program(CLANG_TIDY_PROGRAM "clang-tidy")
+	if(NOT CLANG_TIDY_PROGRAM)
+		message(SEND_ERROR "Can't find clang-tidy")
+	else()
+		message(STATUS "Clang Tidy enabled: ${CLANG_TIDY_PROGRAM}")
+		set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_PROGRAM}" PARENT_SCOPE)
+	endif()
 endif()

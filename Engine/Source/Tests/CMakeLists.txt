@@ -7,11 +7,6 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-include(sanitizers)
-
-enable_sanitizers(gtest)
-enable_sanitizers(gtest_main)
-
 enable_testing()
 
 file(GLOB_RECURSE SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)

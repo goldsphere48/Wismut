@@ -6,6 +6,7 @@ namespace Wi
 {
 	AndroidWindow::AndroidWindow(const WindowDefinition& definition, ANativeWindow* window)
 	{
+		m_WindowHandle = window;
 		m_Viewport = Renderer::CreateViewport(window);
 	}
 
@@ -26,7 +27,7 @@ namespace Wi
 
 	void* AndroidWindow::GetNativeHandle() const
 	{
-		return nullptr;
+		return m_WindowHandle;
 	}
 
 	IRenderViewport* AndroidWindow::GetViewport()

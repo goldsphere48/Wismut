@@ -1,0 +1,7 @@
+option(COMPILE_OPENGL_RENDERER  "Compile OpenGL renderer"			ON)
+option(CLANG_TIDY_ENABLED		"Enable clang-tidy checks"			OFF)
+option(ENABLE_ASAN				"Enable AddressSanitizer"			OFF)
+option(ENABLE_UBSAN				"Enable UndefinedBehaviorSanitizer" OFF)
+option(ENABLE_TSAN				"Enable ThreadSanitizer"			OFF)
+option(ENABLE_MSAN				"Enable MemorySanitizer"			OFF)
+option(BUILD_SANDBOX			"Use Sandbox target as main target" OFF)

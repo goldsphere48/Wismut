@@ -1,4 +1,3 @@
-# cmake/platform-filter-files.cmake
 include_guard(GLOBAL)
 
 function(filter_files_by_platform OUT_VAR FILE_LIST)
@@ -12,7 +11,7 @@ function(filter_files_by_platform OUT_VAR FILE_LIST)
 		endif()
 	elseif(ANDROID)
 		set(CURRENT_PLATFORM "Android")
-	elseif(UNIX)
+	elseif(LINUX)
 		set(CURRENT_PLATFORM "Linux")
 	else()
 		set(CURRENT_PLATFORM "Unknown")
