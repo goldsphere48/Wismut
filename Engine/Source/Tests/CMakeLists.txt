@@ -18,7 +18,7 @@ enable_sanitizers(Tests)
 target_link_libraries(
 	Tests
 	GTest::gtest_main
-	Runtime
+	Wismut::Runtime
 )
 
 include(GoogleTest)

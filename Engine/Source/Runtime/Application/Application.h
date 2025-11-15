@@ -19,10 +19,10 @@ namespace Wi
 	protected:
 		bool OnWindowClose();
 
-		virtual void OnInit() {}
-		virtual void OnUpdate() {}
-		virtual void OnRender(SharedPtr<IPlatformWindow> window) {}
-		virtual void OnEvent(Event& event) {};
+		virtual void OnInit() { }
+		virtual void OnUpdate() { }
+		virtual void OnRender(const SharedPtr<IPlatformWindow>& window) { }
+		virtual void OnEvent(Event& event) { }
 
 	private:
 		void Update();

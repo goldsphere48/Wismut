@@ -7,15 +7,16 @@ file(GLOB_RECURSE ALL_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 
 filter_files_by_platform(PLATFORM_FILTERED_FILES "${ALL_SOURCE_FILES};${ALL_HEADER_FILES}")
 
-add_library(Runtime STATIC ${PLATFORM_FILTERED_FILES})
+add_library(WismutRuntime STATIC ${PLATFORM_FILTERED_FILES})
+add_library(Wismut::Runtime ALIAS WismutRuntime)
 
 # OpenGL Renderer
 if(COMPILE_OPENGL_RENDERER)
-	target_link_libraries(Runtime PRIVATE glad)
+	target_link_libraries(WismutRuntime PRIVATE glad)
 	
 	if(ANDROID)
 		find_library(GLES_LIBRARY
-			NAMES GLESv3 GLESv2 GLES
+			NAMES GLESv3
 			DOC "OpenGL ES library"
 		)
 		
@@ -23,10 +24,10 @@ if(COMPILE_OPENGL_RENDERER)
 			message(FATAL_ERROR "OpenGL ES library not found.")
 		endif()
 		
-		target_link_libraries(Runtime  PRIVATE ${GLES_LIBRARY} EGL)
+		target_link_libraries(WismutRuntime  PRIVATE ${GLES_LIBRARY} EGL)
 	else()
 		find_package(OpenGL REQUIRED)
-		target_link_libraries(Runtime PRIVATE ${OPENGL_LIBRARIES})
+		target_link_libraries(WismutRuntime PRIVATE ${OPENGL_LIBRARIES})
 	endif()
 endif()
 
@@ -46,11 +47,11 @@ elseif(LINUX)
 	)
 endif()
 
-target_include_directories(Runtime PUBLIC
+target_include_directories(WismutRuntime PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(Runtime PUBLIC
+target_link_libraries(WismutRuntime PUBLIC
 	${PLATFORM_LIBRARIES}
 	Wismut::CompilerSettings
 )

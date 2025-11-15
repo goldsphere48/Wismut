@@ -20,13 +20,11 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 include(platform/detect_platform)
 include(platform/utils)
 include(compiler/compiler_interface)
-include(wismut)
 
 # Subdirectories
 add_subdirectory(Engine/ThirdParty/OpenGL)
 add_subdirectory(Engine/Source/Runtime)
-add_subdirectory(Sandbox)
-add_subdirectory(Engine/Source/Launch)
+add_subdirectory(Engine/Sandbox)
 
 if(EXISTS "${CMAKE_BINARY_DIR}/compile_commands.json")
 	file(COPY_FILE
