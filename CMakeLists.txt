@@ -21,7 +21,10 @@ include(platform/detect_platform)
 include(platform/utils)
 include(compiler/compiler_interface)
 
+set(GLM_ENABLE_CXX_20 ON CACHE BOOL "Enable C++20 in GLM" FORCE)
+
 # Subdirectories
+add_subdirectory(Engine/ThirdParty/glm)
 add_subdirectory(Engine/ThirdParty/OpenGL)
 add_subdirectory(Engine/Source/Runtime)
 add_subdirectory(Engine/Sandbox)

@@ -54,6 +54,7 @@ target_include_directories(WismutRuntime PUBLIC
 target_link_libraries(WismutRuntime PUBLIC
 	${PLATFORM_LIBRARIES}
 	Wismut::CompilerSettings
+	glm::glm
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${PLATFORM_FILTERED_FILES})

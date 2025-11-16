@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/Concepts/CIntegral.h"
+#include "GLMWrapper.h"
 
 namespace Wi::Math
 {
