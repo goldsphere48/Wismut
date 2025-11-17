@@ -1,6 +1,5 @@
 #pragma once
 #include "IRenderBackend.h"
-#include "IRenderViewport.h"
 #include "Core/Memory/MemoryTypes.h"
 
 namespace Wi
@@ -12,9 +11,6 @@ namespace Wi
 	public:
 		static void Initialize();
 		static void Shutdown();
-
-		static IRenderViewport* CreateViewport(void* handle);
-		static void DestroyViewport(const IRenderViewport* viewport);
 
 		static const UniquePtr<IRenderBackend>& GetBackend()
 		{

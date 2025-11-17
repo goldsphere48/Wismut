@@ -75,12 +75,13 @@ namespace Wi
 		m_Height = definition.Height;
 
 		xcb_window_t* windowPtr = new xcb_window_t(m_WindowHandle);
-		m_Viewport = Renderer::CreateViewport(windowPtr);
+		m_Viewport = Renderer::GetBackend()->CreateViewport(windowPtr);
 		delete windowPtr;
 	}
 
 	void LinuxWindow::Destroy()
 	{
+		Renderer::GetBackend()->DestroyViewport(m_Viewport)
 		xcb_destroy_window(m_Connection, m_WindowHandle);
 	}
 

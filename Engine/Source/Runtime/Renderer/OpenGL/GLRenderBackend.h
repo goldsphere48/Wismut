@@ -4,6 +4,11 @@
 
 namespace Wi
 {
+	struct GLBufferHandler : BufferHandler
+	{
+		
+	};
+
 	class GLRenderBackend : public IRenderBackend
 	{
 	public:
@@ -12,8 +17,6 @@ namespace Wi
 		IRenderViewport* CreateViewport(void* hwnd) const override;
 		void DestroyViewport(const IRenderViewport* viewport) const override;
 
-		void BeginRenderViewport(IRenderViewport* viewport) override;
-		void EndRenderViewport(IRenderViewport* viewport) override;
 		void ClearColor(float r, float g, float b) override;
 	};
 }

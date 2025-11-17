@@ -7,12 +7,12 @@ namespace Wi
 	AndroidWindow::AndroidWindow(const WindowDefinition& definition, ANativeWindow* window)
 	{
 		m_WindowHandle = window;
-		m_Viewport = Renderer::CreateViewport(window);
+		m_Viewport = Renderer::GetBackend()->CreateViewport(window);
 	}
 
 	void AndroidWindow::Destroy()
 	{
-		Renderer::DestroyViewport(m_Viewport);
+		Renderer::GetBackend()->DestroyViewport(m_Viewport);
 	}
 
 	uint16 AndroidWindow::GetWidth()

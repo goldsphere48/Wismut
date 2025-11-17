@@ -37,7 +37,7 @@ namespace Wi
 			nullptr
 		);
 
-		m_Viewport = Renderer::CreateViewport(m_WindowHandle);
+		m_Viewport = Renderer::GetBackend()->CreateViewport(m_WindowHandle);
 
 		WI_ASSERT(m_WindowHandle)
 
@@ -48,7 +48,7 @@ namespace Wi
 	{
 		if (m_WindowHandle != nullptr)
 		{
-			Renderer::DestroyViewport(m_Viewport);
+			Renderer::GetBackend()->DestroyViewport(m_Viewport);
 			DestroyWindow(m_WindowHandle);
 		}
 	}

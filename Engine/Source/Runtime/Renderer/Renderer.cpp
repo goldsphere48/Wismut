@@ -21,14 +21,4 @@ namespace Wi
 	{
 		Log::Info("Renderer destroyed");
 	}
-
-	IRenderViewport* Renderer::CreateViewport(void* handle)
-	{
-		return s_RenderBackend->CreateViewport(handle);
-	}
-
-	void Renderer::DestroyViewport(const IRenderViewport* viewport)
-	{
-		s_RenderBackend->DestroyViewport(viewport);
-	}
 }

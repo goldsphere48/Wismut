@@ -73,10 +73,10 @@ namespace Wi
 	void Application::Render()
 	{
 		auto* viewport = m_MainWindow->GetViewport();
-		Renderer::GetBackend()->BeginRenderViewport(viewport);
+		viewport->MakeCurrent();
 		Renderer::GetBackend()->ClearColor(0, 1, 0);
-		Renderer::GetBackend()->EndRenderViewport(viewport);
 		OnRender(m_MainWindow);
+		viewport->Present();
 	}
 
 	bool Application::HandleEvent(Event& event)

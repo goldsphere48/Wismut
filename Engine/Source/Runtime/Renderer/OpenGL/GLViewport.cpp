@@ -19,4 +19,14 @@ namespace Wi
 	{
 		return m_Context;
 	}
+
+	void GLViewport::MakeCurrent()
+	{
+		PlatformOpenGLBeginRenderViewport(m_Context);
+	}
+
+	void GLViewport::Present()
+	{
+		PlatformOpenGLSwapBuffers(m_Context);
+	}
 }

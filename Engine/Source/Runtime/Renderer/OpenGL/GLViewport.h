@@ -13,6 +13,9 @@ namespace Wi
 
 		PlatformOpenGLContext* GetContext() const;
 
+		void MakeCurrent() override;
+		void Present() override;
+
 	private:
 		PlatformOpenGLContext* m_Context = nullptr;
 	};

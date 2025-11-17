@@ -22,20 +22,6 @@ namespace Wi
 		delete viewport;
 	}
 
-	void GLRenderBackend::BeginRenderViewport(IRenderViewport* viewport)
-	{
-		GLViewport* glView = static_cast<GLViewport*>(viewport);
-
-		PlatformOpenGLBeginRenderViewport(glView->GetContext());
-	}
-
-	void GLRenderBackend::EndRenderViewport(IRenderViewport* viewport)
-	{
-		GLViewport* glView = static_cast<GLViewport*>(viewport);
-
-		PlatformOpenGLSwapBuffers(glView->GetContext());
-	}
-
 	void GLRenderBackend::ClearColor(float r, float g, float b)
 	{
 		glClearColor(r, g, b, 1.0f);
