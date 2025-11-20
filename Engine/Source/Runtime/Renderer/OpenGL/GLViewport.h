@@ -1,4 +1,5 @@
 #pragma once
+#ifdef WI_OPENGL_BUILTIN
 
 #include "Renderer/OpenGL/OpenGLPlatform.h"
 #include "Renderer/IRenderViewport.h"
@@ -20,3 +21,4 @@ namespace Wi
 		PlatformOpenGLContext* m_Context = nullptr;
 	};
 }
+#endif

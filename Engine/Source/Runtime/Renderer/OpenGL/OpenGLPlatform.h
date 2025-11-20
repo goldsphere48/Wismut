@@ -1,4 +1,5 @@
 #pragma once
+#ifdef WI_OPENGL_BUILTIN
 
 namespace Wi
 {
@@ -14,3 +15,4 @@ namespace Wi
 
 	void PlatformOpenGLBeginRenderViewport(PlatformOpenGLContext* context);
 }
+#endif

@@ -13,18 +13,14 @@ add_library(Wismut::Runtime ALIAS WismutRuntime)
 # OpenGL Renderer
 if(COMPILE_OPENGL_RENDERER)
 	target_link_libraries(WismutRuntime PRIVATE glad)
-	
+	target_compile_definitions(WismutRuntime PUBLIC WI_OPENGL_BUILTIN)
 	if(ANDROID)
-		find_library(GLES_LIBRARY
-			NAMES GLESv3
-			DOC "OpenGL ES library"
-		)
-		
+		find_library(GLES_LIBRARY NAMES GLESv3)
 		if(NOT GLES_LIBRARY)
 			message(FATAL_ERROR "OpenGL ES library not found.")
 		endif()
 		
-		target_link_libraries(WismutRuntime  PRIVATE ${GLES_LIBRARY} EGL)
+		target_link_libraries(WismutRuntime PRIVATE ${GLES_LIBRARY} EGL)
 	else()
 		find_package(OpenGL REQUIRED)
 		target_link_libraries(WismutRuntime PRIVATE ${OPENGL_LIBRARIES})

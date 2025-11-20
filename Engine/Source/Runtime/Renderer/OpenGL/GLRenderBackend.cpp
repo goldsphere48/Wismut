@@ -1,3 +1,4 @@
+#ifdef WI_OPENGL_BUILTIN
 #include "GLRenderBackend.h"
 
 #include "GLViewport.h"
@@ -28,3 +29,4 @@ namespace Wi
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 }
+#endif

@@ -1,3 +1,4 @@
+#ifdef WI_OPENGL_BUILTIN
 #include "GLViewport.h"
 
 #include "Core/Assertion.h"
@@ -30,3 +31,4 @@ namespace Wi
 		PlatformOpenGLSwapBuffers(m_Context);
 	}
 }
+#endif

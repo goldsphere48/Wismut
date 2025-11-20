@@ -1,3 +1,5 @@
+#ifdef WI_OPENGL_BUILTIN
+
 #include "GLUtils.h"
 #include "Core/Logger/Logger.h"
 #include "Renderer/RenderConfig.h"
@@ -73,3 +75,4 @@ namespace Wi::Debug::OpenGL
 		}
 	}
 }
+#endif

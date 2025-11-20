@@ -11,7 +11,11 @@ namespace Wi
 	{
 		Log::Info("Renderer initialization...");
 
+#ifdef WI_OPENGL_BUILTIN
 		s_RenderBackend = CreateUniquePtr<GLRenderBackend>();
+#else
+	#error "Implement something better..."
+#endif
 
 		Log::Info("Renderer initialized");
 	}

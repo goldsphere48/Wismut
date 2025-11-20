@@ -1,4 +1,5 @@
 #pragma once
+#ifdef WI_OPENGL_BUILTIN
 
 #include "Renderer/IRenderBackend.h"
 
@@ -20,3 +21,4 @@ namespace Wi
 		void ClearColor(float r, float g, float b) override;
 	};
 }
+#endif
