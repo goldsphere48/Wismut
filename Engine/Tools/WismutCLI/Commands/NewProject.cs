@@ -6,7 +6,7 @@ public static partial class Commands
 	public static void NewProject(
 		[WismutCommandParam("wismut-path", required: true)] string wismutRoot,
 		[WismutCommandParam("template")] string template,
-		[WismutCommandParam("output")] string outputPath,
+		[WismutCommandParam("location")] string outputPath,
 		[WismutCommandParam("name")] string name
 	)
 	{
