@@ -2,7 +2,6 @@
 
 #include "Core/Logger/Logger.h"
 #include "OpenGL/GLRenderBackend.h"
-#include "OpenGL/GLViewport.h"
 
 namespace Wi
 {
