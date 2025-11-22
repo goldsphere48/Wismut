@@ -15,14 +15,14 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+include(platform/detect_platform)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Build/${CMAKE_BUILD_TYPE}/${WI_PLATFORM_NAME}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Build/${CMAKE_BUILD_TYPE}/${WI_PLATFORM_NAME}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Build/${CMAKE_BUILD_TYPE}/${WI_PLATFORM_NAME}/lib)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-# Modules
-include(platform/detect_platform)
+# Modules-
 include(platform/utils)
 include(compiler/compiler_interface)
 
@@ -34,10 +34,8 @@ add_subdirectory(Engine/ThirdParty/OpenGL)
 
 # Engine
 add_subdirectory(Engine/Source/Runtime)
+add_subdirectory(Engine/Source/CLI)
 add_subdirectory(Engine/Sandbox)
-
-# Third party tools
-add_subdirectory(Engine/Tools/CLI)
 
 if(EXISTS "${CMAKE_BINARY_DIR}/compile_commands.json")
 	file(COPY_FILE

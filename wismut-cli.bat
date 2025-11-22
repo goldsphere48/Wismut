@@ -7,4 +7,4 @@ cmake --build --preset=windows-release
 
 popd
 
-%~dp0Engine\Tools\CLI\bin\Release\Windows\wismut-cli.exe --wismut-path=%~dp0 --location=%CALL_LOCATION% %*
+%~dp0Build\Release\Windows\bin\wismut-cli.exe --wismut-path=%~dp0 --location=%CALL_LOCATION% %*
