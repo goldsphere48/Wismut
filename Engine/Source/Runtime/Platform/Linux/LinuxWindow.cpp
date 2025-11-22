@@ -81,7 +81,7 @@ namespace Wi
 
 	void LinuxWindow::Destroy()
 	{
-		Renderer::GetBackend()->DestroyViewport(m_Viewport)
+		Renderer::GetBackend()->DestroyViewport(m_Viewport);
 		xcb_destroy_window(m_Connection, m_WindowHandle);
 	}
 

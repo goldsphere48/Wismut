@@ -27,7 +27,7 @@ if (WIN32)
 elseif (ANDROID)
 	add_library(${WISMUT_GAME} SHARED ${CMAKE_CURRENT_SOURCE_DIR}/Platform/Android/app/src/main/cpp/AndroidMain.cpp)
 elseif (LINUX)
-	add_executable(${WISMUT_GAME} ${CMAKE_CURRENT_SOURCE_DIR}/Platform/Android/LinuxMain.cpp)
+	add_executable(${WISMUT_GAME} ${CMAKE_CURRENT_SOURCE_DIR}/Platform/Linux/LinuxMain.cpp)
 endif()
 
 target_link_libraries(${WISMUT_GAME} PRIVATE Wismut::Runtime ${WISMUT_GAME_LIB})
