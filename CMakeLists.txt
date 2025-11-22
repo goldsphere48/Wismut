@@ -23,10 +23,6 @@ include(compiler/compiler_interface)
 
 set(GLM_ENABLE_CXX_20 ON CACHE BOOL "Enable C++20 in GLM" FORCE)
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
-
 # Third party submodules
 add_subdirectory(Engine/ThirdParty/glm)
 add_subdirectory(Engine/ThirdParty/OpenGL)
