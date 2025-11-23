@@ -1,7 +1,7 @@
 #include <Application/Application.h>
 #include "Core/Logger/Logger.h"
 
-class {name}App final : public Wi::Application
+class SandboxApp final : public Wi::Application
 {
 protected:
 	void OnInit() override
@@ -22,5 +22,5 @@ protected:
 
 Wi::Application* Wi::CreateApplication()
 {
-	return new {name}App();
+	return new SandboxApp();
 }

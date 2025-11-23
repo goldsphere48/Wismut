@@ -1,0 +1,155 @@
+{
+	"version": 3,
+	"configurePresets": [
+		{
+			"name": "base-linux",
+			"hidden": true,
+			"generator": "Ninja",
+			"binaryDir": "${sourceDir}/Build/build/${presetName}",
+			"installDir": "${sourceDir}/Build/install/${presetName}",
+			"condition": {
+				"type": "equals",
+				"lhs": "${hostSystemName}",
+				"rhs": "Linux"
+			},
+			"vendor": {
+				"microsoft.com/VisualStudioRemoteSettings/CMake/2.0": {
+					"remoteSourceRootDir": "$env{HOME}/.vs/$ms{projectDirName}"
+				}
+			}
+		},
+		{
+			"name": "base-windows",
+			"hidden": true,
+			"generator": "Ninja",
+			"binaryDir": "${sourceDir}/Build/build/${presetName}",
+			"installDir": "${sourceDir}/Build/install/${presetName}",
+			"cacheVariables": {
+				"CMAKE_C_COMPILER": "cl.exe",
+				"CMAKE_CXX_COMPILER": "cl.exe"
+			},
+			"condition": {
+				"type": "equals",
+				"lhs": "${hostSystemName}",
+				"rhs": "Windows"
+			}
+		},
+		{
+			"name": "linux-debug",
+			"displayName": "Linux Debug",
+			"description": "Target the Windows Subsystem for Linux (WSL) or a remote Linux system.",
+			"inherits": "base-linux",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug"
+			}
+		},
+		{
+			"name": "linux-debug-sanitizers",
+			"displayName": "Linux Debug Sanitizers",
+			"description": "Target the Windows Subsystem for Linux (WSL) or a remote Linux system.",
+			"inherits": "linux-debug",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug",
+				"ENABLE_ASAN": "ON",
+				"ENABLE_UBSAN": "ON"
+			}
+		},
+		{
+			"name": "linux-release",
+			"displayName": "Linux Release",
+			"description": "Target the Windows Subsystem for Linux (WSL) or a remote Linux system. (Release)",
+			"inherits": "base-linux",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release"
+			}
+		},
+		{
+			"name": "windows-debug",
+			"displayName": "Windows x64 Debug VS",
+			"description": "Target Windows (64-bit) with the Visual Studio development environment. (Debug)",
+			"inherits": "base-windows",
+			"architecture": {
+				"value": "x64",
+				"strategy": "external"
+			},
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug"
+			}
+		},
+		{
+			"name": "windows-debug-sanitizers",
+			"displayName": "Windows x64 Debug VS",
+			"description": "Target Windows (64-bit) with the Visual Studio development environment. (Debug)",
+			"inherits": "base-windows",
+			"architecture": {
+				"value": "x64",
+				"strategy": "external"
+			},
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug",
+				"ENABLE_ASAN": "ON",
+				"ENABLE_UBSAN": "ON"
+			}
+		},
+		{
+			"name": "windows-release",
+			"displayName": "x64 Release",
+			"description": "Target Windows (64-bit) with the Visual Studio development environment. (Release)",
+			"inherits": "windows-debug",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release"
+			}
+		},
+		{
+			"name": "android-arm64-debug",
+			"displayName": "Android ARM64 Debug",
+			"description": "Target Android (ARM64) with Ninja. (Debug)",
+			"generator": "Ninja",
+			"binaryDir": "${sourceDir}/Build/build/${presetName}",
+			"installDir": "${sourceDir}/Build/install/${presetName}",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug",
+				"CMAKE_TOOLCHAIN_FILE": "$env{ANDROID_NDK}/build/cmake/android.toolchain.cmake",
+				"CMAKE_ANDROID_ABI": "arm64-v8a",
+				"CMAKE_ANDROID_API": "24",
+				"ENABLE_ASAN": "OFF",
+				"ENABLE_UBSAN": "OFF"
+			},
+			"condition": {
+				"type": "equals",
+				"lhs": "${hostSystemName}",
+				"rhs": "Windows"
+			}
+		}
+	],
+	"buildPresets": [
+		{
+			"name": "windows-debug",
+			"configurePreset": "windows-debug"
+		},
+		{
+			"name": "windows-debug-sanitizers",
+			"configurePreset": "windows-debug-sanitizers"
+		},
+		{
+			"name": "windows-release",
+			"configurePreset": "windows-release"
+		},
+		{
+			"name": "linux-debug",
+			"configurePreset": "linux-debug"
+		},
+		{
+			"name": "linux-debug-sanitizers",
+			"configurePreset": "linux-debug-sanitizers"
+		},
+		{
+			"name": "linux-release",
+			"configurePreset": "linux-release"
+		},
+		{
+			"name": "android-arm64-debug",
+			"configurePreset": "android-arm64-debug"
+		}
+	]
+}

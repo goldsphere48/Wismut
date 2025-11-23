@@ -20,9 +20,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Build/${CMAKE_BUI
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Build/${CMAKE_BUILD_TYPE}/${WI_PLATFORM_NAME}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Build/${CMAKE_BUILD_TYPE}/${WI_PLATFORM_NAME}/lib)
 
+set(WISMUT_ROOT ${CMAKE_CURRENT_SOURCE_DIR} CACHE INTERNAL "Wismut engine root")
+
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-# Modules-
+# Modules
 include(platform/utils)
 include(compiler/compiler_interface)
 
@@ -34,8 +36,10 @@ add_subdirectory(Engine/ThirdParty/OpenGL)
 
 # Engine
 add_subdirectory(Engine/Source/Runtime)
-add_subdirectory(Engine/Source/CLI)
-add_subdirectory(Engine/Sandbox)
+
+if (WIN32 OR LINUX OR APPLE)
+	add_subdirectory(Engine/Source/CLI)
+endif()
 
 if(EXISTS "${CMAKE_BINARY_DIR}/compile_commands.json")
 	file(COPY_FILE
@@ -53,4 +57,10 @@ if(CLANG_TIDY_ENABLED)
 		message(STATUS "Clang Tidy enabled: ${CLANG_TIDY_PROGRAM}")
 		set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_PROGRAM}" PARENT_SCOPE)
 	endif()
+endif()
+
+include(wismut_api)
+
+if (BUILD_SANDBOX)
+	add_subdirectory(Engine/Sandbox)
 endif()

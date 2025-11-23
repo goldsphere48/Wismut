@@ -1,0 +1,52 @@
+plugins {
+    alias(libs.plugins.android.application)
+}
+
+android {
+    namespace = '@ANDROID_ID@'
+    compileSdk {
+        version = release(36)
+    }
+
+    defaultConfig {
+        applicationId "@ANDROID_ID@"
+        minSdk 24
+        targetSdk 36
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+			signingConfig = signingConfigs.debug
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    externalNativeBuild {
+        cmake {
+            path file('@WISMUT_GAME_ROOT_CMAKE_PATH@')
+            version = '3.22.1'
+        }
+    }
+    buildFeatures {
+        viewBinding = true
+    }
+	task copyAssets(type: Copy) {
+        description = "Copies user assets from source to Android project assets folder."
+        from('@ASSETS_SRC_PATH@') 
+        into('src/main/assets') 
+        onlyIf { file('@ASSETS_SRC_PATH@').exists() }
+    }
+
+    preBuild.dependsOn copyAssets 
+}
+
+dependencies {
+}

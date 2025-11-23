@@ -14,6 +14,7 @@ void CLI::Initialize()
 	CommandRegistry::Instance().RegisterCommandParameter("new-project", "template", false);
 	CommandRegistry::Instance().RegisterCommandParameter("new-project", "location", false);
 	CommandRegistry::Instance().RegisterCommandParameter("new-project", "name", false);
+	CommandRegistry::Instance().RegisterCommandParameter("new-project", "company", false);
 }
 
 void CLI::ExecuteCommand(const std::string& command, const std::map<std::string, std::string>& arguments)
